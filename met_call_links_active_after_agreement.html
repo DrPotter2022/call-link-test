@@ -1,0 +1,91 @@
+<html><head><meta charset="utf-8"/><title>発信リンク（メットライフカラー）</title><style>
+body {
+  font-family: sans-serif;
+  padding: 20px;
+  background-color: #f7f9fc;
+  max-width: 480px;
+  margin: 0 auto;
+}
+label {
+  font-size: 16px;
+  margin-right: 10px;
+}
+input[type="text"] {
+  padding: 6px 10px;
+  font-size: 16px;
+  width: 200px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+button {
+  padding: 6px 14px;
+  font-size: 16px;
+  background-color: #0060df;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #004bb5;
+}
+#linkContainer a {
+  display: block;
+  font-size: 16px;
+  text-align: center;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+#linkContainer a:nth-of-type(1n) {
+  background-color: #007cba;
+  color: white;
+}
+#linkContainer a:nth-of-type(2n) {
+  background-color: #78be20;
+  color: white;
+}
+#linkContainer a:hover {
+  opacity: 0.9;
+}
+
+.tile {
+  background-color: #e6f1f7;
+  border-left: 6px solid #007cba;
+  padding: 12px;
+  margin: 12px 0;
+  border-radius: 6px;
+}
+.tile h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: #003865;
+}
+.tile p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+</style></head><body><p style="font-size: 17px; font-weight: bold; margin-bottom: 20px;">メットライフ生命代理店プロデューサー向け
+コールセンターガイダンス(テスト)</p><button onclick="showCallInterface()" style="margin-bottom: 16px;">利用規約に同意します</button><button href="https://www.metlife.co.jp/" onclick="window.location.href='https://www.metlife.co.jp/';" style="margin-left: 12px; font-size: 14px; padding: 6px 12px; background-color: #ccc; color: black; border: none; border-radius: 4px; cursor: pointer;">同意しません</button><div id="formBlock" style="display:none; margin-top:12px;"><label for="userInput">募集人番号：</label><input id="userInput" placeholder="例:1234567" type="text"/><button id="setupBtn" onclick="setupCallLink()" style="margin-left:10px;">SetUp</button><button onclick="generateLink()">代理店向け専用照会デスクに発信</button><div id="callLinkArea" style="margin-top:10px; font-weight:bold;"></div></div><div id="linkContainer" style="display:none;"><div class="tile"><h3>【1】一般保険(保全・保険金)</h3><p>平日・土曜9:00-18:00</p><p>※※既契約の一般的な税務は平日9:00-17:00</p></div><div class="tile"><h3>【2】年金保険(保全・保険金)</h3><p>平日9:00-18:00</p><p>※既契約の一般的な税務は平日9:00-17:00</p></div><div class="tile"><h3>【3】新契約</h3><p>医務上引受目安・進捗・着金確認・査定結果・不備</p><p>平日・土曜9:00-19:00</p><p>日祝9:00-18:00</p><p>※年金保険・ビーウィズユープラス/プラス2の税務含む</p></div><div class="tile"><h3>【4】e-Mirai操作</h3><p>平日9:00-19:00</p><p>土日祝9:00-18:00</p></div><div class="tile"><h3>【5】メットライフナビ　ログイン関連</h3><p>平日9:00-19:00</p><p>土日祝9:00-18:00</p></div><div class="tile"><h3>【6】c-Force関連</h3><p>平日9:00-18:00</p></div></div><script>
+function setupCallLink() {
+  const number = document.getElementById("userInput").value.trim();
+  if (!number) {
+    alert("募集人番号を入力してください");
+    return;
+  }
+
+  const baseNumber = "tel:0120945779,,,,," + number + "#";
+  const callLink = document.getElementById("callLink");
+  callLink.href = baseNumber;
+  callLink.style.display = "inline-block";
+}
+
+function showCallInterface() {
+  setupCallLink();
+  document.getElementById("formBlock").style.display = "block";
+  document.getElementById("linkContainer").style.display = "block";
+}
+</script></body></html>
