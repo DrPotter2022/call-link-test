@@ -1,0 +1,33 @@
+<html><head><meta charset="utf-8"/><title>発信リンク生成（修正）</title></head><body><div><label for="userInput">募集人番号：</label><input id="userInput" placeholder="例:1234567" type="text"/><button onclick="generateLinks()">番号をセット</button></div><div id="linkContainer" style="margin-top:20px;"></div><script>
+function generateLinks() {
+  const number = document.getElementById("userInput").value.trim();
+  if (!number) {
+    alert("募集人番号を入力してください");
+    return;
+  }
+
+  const baseNumber = "tel:0120945779,,,,,,,,,," + number + "#";
+  const container = document.getElementById("linkContainer");
+
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+
+  // 代理店向けリンク
+  const baseLink = document.createElement("a");
+  baseLink.href = baseNumber;
+  baseLink.innerText = "📞 代理店向け専用照会デスクに発信";
+  baseLink.style = "display:block; font-size:18px; margin-bottom:12px;";
+  container.appendChild(baseLink);
+
+  // コードリンク
+  const codes = ["11", "13", "15", "16", "17", "21", "22", "23", "25", "26", "27", "28", "29", "52", "63", "68", "72", "81"];
+  codes.forEach(code => {
+    const link = document.createElement("a");
+    link.href = baseNumber + ";" + code;
+    link.innerText = "📞 【" + code + "】に発信";
+    link.style = "display:block; margin: 5px 0; font-size: 16px;";
+    container.appendChild(link);
+  });
+}
+</script></body></html>
