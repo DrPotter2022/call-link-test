@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>保険会社問合せ一覧</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+
+    .accordion {
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+      padding: 14px 20px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 18px;
+      margin-top: 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .accordion:hover {
+      background-color: #0056b3;
+    }
+
+    .panel {
+      padding: 10px 20px;
+      background-color: white;
+      display: none;
+      overflow: hidden;
+      border: 1px solid #ccc;
+      border-radius: 0 0 5px 5px;
+      margin-bottom: 10px;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 10px;
+    }
+
+    li::before {
+      content: "・";
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>保険会社問合せ一覧</h1>
+
+  <button class="accordion">生命保険会社（26社）</button>
+  <div class="panel">
+    <ul>
+      <li><a href="https://www.wize.uno/axa_call_links_axacolor_final.html">アクサ生命保険株式会社</a></li>
+      <li>朝日生命保険相互会社</li>
+      <li>SBI生命保険株式会社</li>
+      <li>エヌエヌ生命保険株式会社</li>
+      <li>FWD生命保険株式会社</li>
+      <li><a href="https://www.wize.uno/orix_call_links_helpdesk_final_with_webimage.html">オリックス生命保険株式会社</a></li>
+      <li>ジブラルタ生命保険株式会社</li>
+      <li>住友生命保険相互会社</li>
+      <li>ソニー生命保険株式会社</li>
+      <li><a hreF="https://vivr.himawari-life.co.jp/7/hilfreichewebsite_esc_index.html">SOMPOひまわり生命保険株式会社</a></li>
+      <li>第一生命保険株式会社</li>
+      <li>第一フロンティア生命保険株式会社</li>
+      <li>チューリッヒ生命保険株式会社</li>
+      <li><a href="https://www.wize.uno/anshin_call_links_final_with_extra_refs.html">東京海上日動あんしん生命保険株式会社</a></li>
+      <li>なないろ生命保険株式会社</li>
+      <li>ニッセイ・ウェルス生命保険株式会社</li>
+      <li>日本生命保険相互会社</li>
+      <li>ネオファースト生命保険株式会社</li>
+      <li>はなさく生命保険株式会社</li>
+      <li>プルデンシャルジブラルタファイナンシャル生命保険株式会社</li>
+      <li>マニュライフ生命保険株式会社</li>
+      <li>三井住友海上あいおい生命保険株式会社</li>
+      <li>三井住友海上プライマリー生命保険株式会社</li>
+      <li>明治安田生命保険相互会社</li>
+      <li><a href="https://www.wize.uno/met_call_links_footer_all_links_corrected.html">メットライフ生命保険株式会社</a></li>
+      <li>メディケア生命保険株式会社</li>
+    </ul>
+  </div>
+
+  <button class="accordion">損害保険会社（15社）</button>
+  <div class="panel">
+    <ul>
+      <li>あいおいニッセイ同和損害保険株式会社</li>
+      <li>アイペット損害保険株式会社</li>
+      <li>AIG損害保険株式会社</li>
+      <li>キャピタル損害保険株式会社</li>
+      <li>共栄火災海上保険株式会社</li>
+      <li>スター保険</li>
+      <li>セコム損害保険株式会社</li>
+      <li>ソニー損害保険株式会社</li>
+      <li>損害保険ジャパン株式会社</li>
+      <li>大同火災海上保険株式会社</li>
+      <li>Chubb損害保険株式会社</li>
+      <li>東京海上日動火災保険株式会社</li>
+      <li>日新火災海上保険株式会社</li>
+      <li><a href="https://www.wize.uno/mitsui_call_links_chatbold_fixed.html">三井住友海上火災保険株式会社</a></li>
+      <li>楽天損害保険株式会社</li>
+    </ul>
+  </div>
+
+  <button class="accordion">少額短期保険会社（1社）</button>
+  <div class="panel">
+    <ul>
+      <li>あんしん少額短期保険株式会社</li>
+    </ul>
+  </div>
+
+  <script>
+    const acc = document.getElementsByClassName("accordion");
+    for (let i = 0; i < acc.length; i++) {
+      acc[i].addEventListener("click", function () {
+        this.classList.toggle("active");
+        const panel = this.nextElementSibling;
+        panel.style.display = (panel.style.display === "block") ? "none" : "block";
+      });
+    }
+  </script>
+
+</body>
+</html>
