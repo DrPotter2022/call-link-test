@@ -1,0 +1,221 @@
+<html lang="ja">
+<head>
+<style>
+   body {
+      font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+      background-color: #ffffff;
+      margin: 0;
+      padding: 30px;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    header img {
+      max-height: 60px;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2d684b;
+      margin-bottom: 10px;
+    }
+    h2 {
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #006e95;
+      border-left: 6px solid #2d684b;
+      padding-left: 10px;
+    }
+    .note {
+      background-color: #bed2c6;
+      border-left: 4px solid #2d684b;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 12px 0;
+      padding: 14px;
+      border-radius: 10px;
+      background-color: #f8f9fa;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      font-size: 14px;
+    }
+    li:hover {
+      background-color: #bee0ce;
+    }
+    
+    
+    a {
+      display: inline-block;
+      padding: 10px 16px;
+      background-color: #275945 !important;
+      color: white !important;
+      border-radius: 6px;
+      text-decoration: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    a:hover {
+      background-color: #010066 !important;
+      transform: translateY(-1px);
+    }
+    
+    
+    .footer-note {
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+      margin-top: 40px;
+    }
+  </style>
+<meta charset="utf-8"/>
+<meta content="telephone=no" name="format-detection"/>
+<title>日新火災ヘルプデスク</title>
+<style>
+   body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 10px;
+    }
+    a {
+      color: blue;
+      text-decoration: none;
+    }
+  
+    a {
+      display: inline-block;
+      padding: 10px 16px;
+      background-color: #006e95;
+      color: white !important;
+      border-radius: 6px;
+      transition: background-color 0.3s, transform 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    a:hover {
+      background-color: #005377;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+<div style="text-align: center;"><img src="data:image/png;base64,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" alt="日新火災ロゴ" style="max-height: 60px; margin-bottom: 10px;"/></div>
+
+<header>
+<h1> 日新火災　代理店ヘルプデスク  </h1>
+<div style="text-align: center; margin-top: 20px;">
+<P>お急ぎでない方は日新ねっとログイン後に画面右上の水色のボタン<B>「システムサポートページ」</B>をクリックして</P>
+<P>メールやフォームまたお困りごと解消法をご活用ください。</p>
+<P>当日15時までの問い合わせは原則当日中、15時以降は翌営業日に回答します。</P>
+</div>
+
+</header>
+<div class="note">
+   
+※はじめに代理店コード(数字6桁)をお申し出ください。 ボタンを押すと自動発信をします。
+  </div>
+
+<h2> 📞システムサポートデスク</h2>
+
+<ul>
+⚠️次の内容は対象外です。<P>
+商品内容、引受、規定、帳票番号、帳票記入方法
+帳票番号、帳票記入方法<P>
+セキュリティソフト、Teams、e-ラーニング、Excel操作
+<li>
+
+<a href="tel:0120464106">
+      0120-464-106 </a>
+<span style="margin-left: 8px; font-size: 14px; color: #333;">
+    　平日9:00-18:00/土9:00-17:00(日・祝・年末年始を除く)
+    </span>
+
+
+</li>
+  ※IP電話からの発信の場合は<B>050-2018-2430</B>へおかけください。
+<li>
+<a href="tel:0120464106,1">#1日新ねっと導入・接続</a>💻📱<P>
+日新ねっとログイン・ID導入・更新、パスワード</li>
+<li>
+<a href="tel:0120464106,2">#2日新ねっと操作</a>💻<P>
+Webオンライン以外の操作方法(PC)・そんぽタリフ・帳票ダウンロード・領収書発行<P>
+日新ねっと印刷不具合・Web事故受付
+</li>
+<li>
+<a href="tel:0120464106,3">#3 e-JIBAI One-JIBAI</a>💻<P>
+e-JIBAIの操作・One-JIBAIの操作
+</li>
+
+<li>
+<a href="tel:0120464106,4">#4 Webオンライン自動車</a>💻📱<P>
+自動車のWebオンラインのエラー修正
+</li>
+<li>
+<a href="tel:0120464106,5">#5 Webオンライン自動車以外</a>💻📱<P>
+自動車以外のWebオンラインのエラー修正<P>
+Web販売用の計上
+</li>
+<li>
+<a href="tel:0120464106,6">#6 iPad版日新ねっと設定</a>📱<P>
+iPadの導入、更新、接続
+</li>
+
+<li>
+<a href="tel:0120464106,7">#7 デイリー清算</a>💻<P>
+新デイリー清算、ダイレクトペイジー清算
+</li>
+
+
+ <h2> 📞Webオンライン基本操作サポートデスク</h2>
+  <ul>
+    <P><B>自動車・火災・傷害・新種保険</B></P>
+初めて申込書を作るのだが、入口がどこだかわからない…<BR>
+これが2回目の変更計上で、どうやって進めたらよいか分からない…<P>
+<P>
+<dd bgcolor="#FFCC99"><B>⚠️サポート対象外</B><P>
+Webオンラインのシステム操作以外<P>
+引受に関する相談、保険の内容、特約の内容や適用可否、<P>
+引き受ける保険種目の相談、各種選択項目の判断<P>
+数値入力についての判断、電話募集可否、手書き帳票の記入方法<P>
+作成した帳票の正誤判断<P></h3>
+
+
+    <li><a href="tel:0120324386">0120-567-325</a>平日9:00-18:00/土9:00-17:00(日祝・年末年始を除く)
+    <li><a href="tel:0368344743">03-6834-4743</a>
+       ※つながりにくい場合
+   </li>
+ <li><a href="tel:0120324386,1">＃1　自動車</a><P>
+試算、見積書、申込書の作成操作、変更依頼書の作成操作、計上・変更計上の操作
+   </li>
+<li><a href="tel:0120324386,2">＃2　自動車(明細付き)</a><P>
+明細付試算、見積書・申込書の作成操作、明細付変更依頼書の作成操作<P>
+明細付計上、明細付変更計上操作<P>
+   </li>
+<li><a href="tel:0120324386,3">＃3　火災・その他</a><P>
+火災、新種、積立、労災、傷害
+試算、見積書・申込書の作成操作(明細含)
+計上、変更依頼計上操作(明細含)   </li>
+  </ul>
+</li>
+</body>
+</html>
