@@ -1,0 +1,248 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>資産形成・保険・老後資金の個別相談｜FP・IFAに相談する</title>
+<style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f8fc;
+      color: #333;
+    }
+    header {
+      background-color: #004080;
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+      position: relative;
+    }
+    .menu {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+    .menu > a {
+      background: #333;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    .popup-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: white;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .popup-menu a {
+      display: block;
+      padding: 10px 20px;
+      color: #333;
+      text-decoration: none;
+    }
+    .popup-menu a:hover {
+      background-color: #f0f0f0;
+    }
+    .container {
+      max-width: 880px;
+      margin: auto;
+      padding: 2rem 1rem;
+      background-color: white;
+    }
+    h2 {
+      margin-top: 2rem;
+      color: #004080;
+      text-align: center;
+    }
+    .accordion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .accordion {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .accordion-header {
+      padding: 1rem;
+      background-color: #e9f0fb;
+      cursor: pointer;
+      font-weight: bold;
+      position: relative;
+    }
+    .accordion-header::after {
+      content: '+';
+      position: absolute;
+      right: 1rem;
+      font-size: 1.2rem;
+    }
+    .accordion.active .accordion-header::after {
+      content: '-';
+    }
+    .accordion-content {
+      display: none;
+      padding: 1rem;
+      border-top: 1px solid #ccc;
+    }
+    .accordion.active .accordion-content {
+      display: block;
+    }
+    .cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+    .cta button {
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      background-color: #004080;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .cta button:hover {
+      background-color: #0066cc;
+    }
+  
+<style>
+.popup-form {
+  display: none;
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fff;
+  border: 2px solid #004080;
+  padding: 20px;
+  z-index: 1000;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+.popup-form .form-content {
+  position: relative;
+}
+.popup-form .close-btn {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  cursor: pointer;
+  font-size: 20px;
+  color: #004080;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>あなたに合った資産形成</h1>
+<p>老後の不安、投資のモヤモヤ、保険の見直し…まずはご相談ください</p>
+<div class="menu">
+<a href="#" onclick="togglePopup()">MENU</a>
+<div class="popup-menu" id="popupMenu">
+<a href="#free">無料相談</a>
+<a href="#seminar">セミナー</a>
+<a href="#backnumber">バックナンバー</a>
+<a href="#followup">アフターフォロー</a>
+<a href="#faq">よくある質問</a>
+</div>
+</div>
+</header>
+<div class="container">
+<h2>ライフリスクと資金準備のテーマ</h2>
+<!-- Accordion content remains unchanged (omitted for brevity) -->
+<div class="accordion-grid">
+<div class="accordion">
+<div class="accordion-header"> 入院・手術</div>
+<div class="accordion-content">
+<p>入院や手術に備える医療保険の検討、健康保険でカバーしきれない自己負担対策などをご案内します。</p>
+</div>
+</div>
+<div class="accordion">
+<div class="accordion-header"> がん・特定疾病</div>
+<div class="accordion-content">
+<p>三大疾病（がん・心疾患・脳卒中）に備える保障設計や、診断一時金などの制度を活用した対策をご提案します。</p>
+</div>
+</div>
+<div class="accordion">
+<div class="accordion-header"> 就業不能</div>
+<div class="accordion-content">
+<p>病気やケガで働けなくなったときの収入補填、就業不能保険の活用、生活維持のシミュレーションなど。</p>
+</div>
+</div>
+<div class="accordion">
+<div class="accordion-header"> 介護・認知症</div>
+<div class="accordion-content">
+<p>将来の介護リスクに備えた費用準備や、認知症対応型保険、介護施設選びのポイントも解説します。</p>
+</div>
+</div>
+<div class="accordion">
+<div class="accordion-header"> 死亡</div>
+<div class="accordion-content">
+<p>万一に備える生命保険の選び方、遺された家族への保障、葬儀や相続費用も含めたトータル設計。</p>
+</div>
+</div>
+<div class="accordion">
+<div class="accordion-header"> 年金</div>
+<div class="accordion-content">
+<p>公的年金に加えた私的年金（iDeCo・個人年金保険等）の活用、受取シミュレーション、老後資金の考え方。</p>
+</div>
+</div>
+</div>
+<div class="cta">
+ <button onclick="window.location.href='https://www.wize.uno/freeadvise-reserve.html'">無料相談を仮予約</button>
+</div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const headers = document.querySelectorAll('.accordion-header');
+
+  headers.forEach(header => {
+    const checkbox = header.querySelector('input[type=checkbox]');
+    const content = header.nextElementSibling;
+
+    // Toggle on header click
+    header.addEventListener('click', () => {
+      if (checkbox && checkbox.checked) {
+        content.style.display = 'block'; // stay open
+      } else {
+        content.style.display = (content.style.display === 'block') ? 'none' : 'block';
+      }
+    });
+
+    // Auto close when checkbox unchecked
+    if (checkbox) {
+      checkbox.addEventListener('change', () => {
+        if (!checkbox.checked) {
+          content.style.display = 'none';
+        } else {
+          content.style.display = 'block';
+        }
+      });
+    }
+  });
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  const setupBtn = document.getElementById('reserveBtn');
+  const formSection = document.getElementById('formContainer');
+  if (setupBtn && formSection) {
+    setupBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      formSection.style.display = 'block';
+      setupBtn.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+});
+</script>
