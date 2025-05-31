@@ -21,6 +21,43 @@
     .description { margin-top: 0.5em; font-size: 0.95em; color: #333; }
     .red-bold { color: red; font-weight: bold; }
   </style>
+    <style>
+.menu-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+.menu-button {
+  background-color: #333;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: white;
+  min-width: 180px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  display: block;
+  text-decoration: none;
+}
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+.menu-container:hover .dropdown-content {
+  display: block;
+}
+</style>
+
 </head>
 <body>
 
