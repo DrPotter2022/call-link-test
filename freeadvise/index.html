@@ -1,6 +1,5 @@
 
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
 <meta charset="utf-8"/>
@@ -21,35 +20,41 @@
       text-align: center;
       position: relative;
     }
-    .menu {
+    .menu-button {
       position: absolute;
-      top: 20px;
-      right: 30px;
-    }
-    .menu > a {
-      background: #333;
+      top: 1rem;
+      right: 1rem;
+      background-color: #333;
       color: white;
-      padding: 10px 20px;
-      text-decoration: none;
-      border-radius: 5px;
+      border: none;
+      padding: 0.7rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 1000;
     }
-    .popup-menu {
+    .menu-content {
       display: none;
       position: absolute;
-      right: 0;
+      top: 3.5rem;
+      right: 1rem;
       background-color: white;
       border: 1px solid #ccc;
-      margin-top: 5px;
-      border-radius: 5px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      z-index: 999;
+      min-width: 200px;
     }
-    .popup-menu a {
+    .menu-content a {
       display: block;
-      padding: 10px 20px;
-      color: #333;
+      padding: 0.75rem 1rem;
       text-decoration: none;
+      color: #333;
+      border-bottom: 1px solid #eee;
     }
-    .popup-menu a:hover {
+    .menu-content a:last-child {
+      border-bottom: none;
+    }
+    .menu-content a:hover {
       background-color: #f0f0f0;
     }
     .container {
@@ -114,51 +119,22 @@
     .cta button:hover {
       background-color: #0066cc;
     }
-  
-<style>
-.popup-form {
-  display: none;
-  position: fixed;
-  top: 10%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #fff;
-  border: 2px solid #004080;
-  padding: 20px;
-  z-index: 1000;
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
-}
-.popup-form .form-content {
-  position: relative;
-}
-.popup-form .close-btn {
-  position: absolute;
-  right: 10px;
-  top: 5px;
-  cursor: pointer;
-  font-size: 20px;
-  color: #004080;
-}
 </style>
 </head>
 <body>
 <header>
 <h1>あなたに合った資産形成</h1>
 <p>老後の不安、投資のモヤモヤ、保険の見直し…まずはご相談ください</p>
-<div class="menu">
-<a href="#" onclick="togglePopup()">MENU</a>
-<div class="popup-menu" id="popupMenu">
-<a href="#free">無料相談</a>
-<a href="#seminar">セミナー</a>
-<a href="#backnumber">バックナンバー</a>
-<a href="#followup">アフターフォロー</a>
-<a href="#faq">よくある質問</a>
-</div>
+<button class="menu-button" onclick="toggleMenu()">MENU</button>
+<div class="menu-content" id="menuDropdown">
+  <a href="https://www.wize.uno/advise">有料相談</a>
+  <a href="https://wize.uno/.note">バックナンバー</a>
+  <a href="https://wize.uno/seminar">セミナー</a>
 </div>
 </header>
+
 <div class="container">
 <h2>ライフリスクと資金準備のテーマ</h2>
-<!-- Accordion content remains unchanged (omitted for brevity) -->
 <div class="accordion-grid">
 <div class="accordion">
 <div class="accordion-header"> 入院・手術</div>
@@ -202,47 +178,27 @@
 </div>
 </div>
 
-
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const headers = document.querySelectorAll('.accordion-header');
-
-  headers.forEach(header => {
-    const checkbox = header.querySelector('input[type=checkbox]');
-    const content = header.nextElementSibling;
-
-    // Toggle on header click
-    header.addEventListener('click', () => {
-      if (checkbox && checkbox.checked) {
-        content.style.display = 'block'; // stay open
-      } else {
-        content.style.display = (content.style.display === 'block') ? 'none' : 'block';
-      }
-    });
-
-    // Auto close when checkbox unchecked
-    if (checkbox) {
-      checkbox.addEventListener('change', () => {
-        if (!checkbox.checked) {
-          content.style.display = 'none';
-        } else {
-          content.style.display = 'block';
-        }
-      });
-    }
-  });
-});
-
-
-document.addEventListener('DOMContentLoaded', function () {
-  const setupBtn = document.getElementById('reserveBtn');
-  const formSection = document.getElementById('formContainer');
-  if (setupBtn && formSection) {
-    setupBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      formSection.style.display = 'block';
-      setupBtn.scrollIntoView({ behavior: 'smooth' });
-    });
+function toggleMenu() {
+  const menu = document.getElementById('menuDropdown');
+  menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+}
+window.addEventListener('click', function(e) {
+  const button = document.querySelector('.menu-button');
+  const menu = document.getElementById('menuDropdown');
+  if (!button.contains(e.target) && !menu.contains(e.target)) {
+    menu.style.display = 'none';
   }
 });
+document.addEventListener('DOMContentLoaded', function () {
+  const headers = document.querySelectorAll('.accordion-header');
+  headers.forEach(header => {
+    header.addEventListener('click', () => {
+      const accordion = header.parentElement;
+      accordion.classList.toggle('active');
+    });
+  });
+});
 </script>
+</body>
+</html>
