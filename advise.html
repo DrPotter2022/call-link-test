@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -82,6 +83,48 @@
     .cta button:hover {
       background-color: #0066cc;
     }
+
+    .menu-button {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 0.7rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .menu-content {
+      display: none;
+      position: fixed;
+      top: 3.5rem;
+      right: 1rem;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      z-index: 999;
+      min-width: 200px;
+    }
+
+    .menu-content a {
+      display: block;
+      padding: 0.75rem 1rem;
+      text-decoration: none;
+      color: #333;
+      border-bottom: 1px solid #eee;
+    }
+
+    .menu-content a:last-child {
+      border-bottom: none;
+    }
+
+    .menu-content a:hover {
+      background-color: #f0f0f0;
+    }
   </style>
 </head>
 <body>
@@ -91,8 +134,14 @@
   <p>老後の不安、投資のモヤモヤ、保険の見直し…まずはご相談ください</p>
 </header>
 
-<div class="container">
+<button class="menu-button" onclick="toggleMenu()">MENU</button>
+<div class="menu-content" id="menuDropdown">
+  <a href="https://www.wize.uno/freeadvise">無料相談</a>
+  <a href="https://wize.uno/.note">バックナンバー</a>
+  <a href="https://wize.uno/seminar">セミナー</a>
+</div>
 
+<div class="container">
   <div class="section">
     <h2>20〜60代のあなた、こんな不安はありませんか？</h2>
     <ul>
@@ -112,7 +161,7 @@
       <div class="accordion-content">
         <p>地図もなく、目的も定めずに長い旅をするのは困難です。</p>
         <p>いざという時に困らないために将来必要なお金と、そのため優先順位を具体的にご提案。</p>
-             </div>
+      </div>
     </div>
 
     <div class="triangle">▼</div>
@@ -122,7 +171,7 @@
       <div class="accordion-content">
         <p>ライフステージとライフプランに合った保障の見直しと、</p>
         <p>必要に応じて資産性商品の活用も提案いたします。</p>
-              </div>
+      </div>
     </div>
 
     <div class="triangle">▼</div>
@@ -138,7 +187,6 @@
         <p>習い事、塾・予備校、家族旅行やホームステイ…無償化によって学外費に充てる家庭も増えています。</p>
         <p>また家族で一緒に過ごす家は「人生最大の買い物」。金利選択や保険見直しの最大のチャンスでもあります。</p>
         <p>引っ越し、将来のリフォーム、住宅売却のご相談も可能です。</p>
-        
       </div>
     </div>
 
@@ -150,7 +198,6 @@
         <p>投信協会の2024年度調査によると、まだ投資をしていない理由の最多は「投資の知識がない」。</p>
         <p>既に投資信託を利用している人でも「元本保証がない」ことを理解している割合は約50％です。</p>
         <p>ライフプランに合わせたNISA・iDeCoなどの税制優遇制度や投資戦略をアドバイスします。</p>
-       
       </div>
     </div>
 
@@ -174,7 +221,6 @@
     <p>オンライン・対面どちらも対応｜土日祝もご相談可能</p>
     <button onclick="window.location.href='https://www.wize.uno/reserve'">有料相談を申し込む</button>
   </div>
-
 </div>
 
 <script>
@@ -183,6 +229,19 @@
       const accordion = header.parentElement;
       accordion.classList.toggle('active');
     });
+  });
+
+  function toggleMenu() {
+    const menu = document.getElementById('menuDropdown');
+    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+  }
+
+  window.addEventListener('click', function(e) {
+    const button = document.querySelector('.menu-button');
+    const menu = document.getElementById('menuDropdown');
+    if (!button.contains(e.target) && !menu.contains(e.target)) {
+      menu.style.display = 'none';
+    }
   });
 </script>
 
