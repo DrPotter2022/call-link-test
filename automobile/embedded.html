@@ -2,18 +2,29 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>死亡逸失利益 計算ツール</title>
+  <title>逸失利益 計算ツール</title>
   <style>
     body { font-family: sans-serif; margin: 30px; }
-    label, select, input, button { margin: 8px 0; display: block; }
+    label, select, button { margin: 8px 0; display: block; }
+    input:not(.percent-input):not(#income) { margin: 8px 0; display: block; }
+    #income { display: inline-block; margin: 8px 0; }
     #result { margin-top: 20px; font-size: 1.2em; font-weight: bold; color: darkblue; }
+    .hidden { display: none; }
     table { width: 30%; font-size: 12px; margin-top: 10px; border-collapse: collapse; }
     th, td { border: 1px solid #999; padding: 6px; text-align: left; }
     th { background-color: #eee; }
+    .percent-input { width: 60px; text-align: right; display: inline-block; }
+    .unit-input, .percent-input + span { display: inline-block; margin-left: 4px; vertical-align: middle; }
   </style>
 </head>
 <body>
-  <h1>死亡逸失利益 計算ツール</h1>
+  <h1>逸失利益 計算ツール</h1>
+
+  <label for="calc-type">計算種別:</label>
+  <select id="calc-type">
+    <option value="death">死亡逸失利益</option>
+    <option value="disability">後遺障害逸失利益</option>
+  </select>
 
   <label for="age">年齢:</label>
   <select id="age"></select>
@@ -25,154 +36,221 @@
     <option value="平均">平均</option>
   </select>
 
-  <label for="income">基礎収入（円・編集可）:</label>
-  <input id="income" type="text" oninput="formatIncome()" onfocus="unformatIncome()" onblur="reformatIncome()" />
+  <label for="income">基礎収入(編集可):</label>
+  <input id="income" type="text" oninput="formatIncome()" onfocus="unformatIncome()" onblur="reformatIncome()">
+  <span class="unit-input">円</span>
 
   <button onclick="setHousewife()">専業主婦として設定（4,194,400円）</button>
-  <div id="student-buttons" style="display:none;">
+  <div id="student-buttons" class="hidden">
     <button id="btn-male-all" onclick="setStudentIncome('男性','全学歴')">男性 子どもと学生(全学歴)</button>
     <button id="btn-male-uni" onclick="setStudentIncome('男性','大卒')">男性 子どもと学生(大卒)</button>
     <button id="btn-female-all" onclick="setStudentIncome('女性','全学歴')">女性 子どもと学生(全学歴)</button>
     <button id="btn-female-uni" onclick="setStudentIncome('女性','大卒')">女性 子どもと学生(大卒)</button>
   </div>
 
-  <label for="deduction-select">生活費控除率:</label>
-  <select id="deduction-select" onchange="updateDeductionInput()">
-    <option value="0.3">30%</option>
-    <option value="0.4">40%</option>
-    <option value="0.5">50%</option>
-    <option value="0.6">60%</option>
-    <option value="0.7">70%</option>
-  </select>
-  <input id="deduction" type="text" readonly />
+  <div id="death-section">
+    <label for="deduction-select">生活費控除率:</label>
+    <select id="deduction-select">
+      <option value="30">30%</option>
+      <option value="40">40%</option>
+      <option value="50">50%</option>
+      <option value="60">60%</option>
+      <option value="70">70%</option>
+    </select>
+    <input id="deduction" type="number" min="0" max="100" step="1" class="percent-input">
+    <span>%</span>
+    <table>
+      <thead><tr><th>状況</th><th>控除率</th></tr></thead>
+      <tbody>
+        <tr><td>男性（独身・幼児等）</td><td>50%</td></tr>
+        <tr><td>女性（主婦・独身・幼児）</td><td>30%</td></tr>
+        <tr><td>既婚者（被扶養者1名）</td><td>40%</td></tr>
+        <tr><td>既婚者（被扶養者2名以上）</td><td>30%</td></tr>
+        <tr><td>年金生活者</td><td>50～70%</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-  <!-- 控除率表 -->
-  <table id="deduction-table">
-    <thead>
-      <tr><th>状況</th><th>控除率</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>男性（独身・幼児等）</td><td>50%</td></tr>
-      <tr><td>女性（主婦・独身・幼児）</td><td>30%</td></tr>
-      <tr><td>既婚者（被扶養者1名）</td><td>40%</td></tr>
-      <tr><td>既婚者（被扶養者2名以上）</td><td>30%</td></tr>
-      <tr><td>年金生活者</td><td>50～70%</td></tr>
-    </tbody>
-  </table>
+  <div id="disability-section" class="hidden">
+    <label for="grade">障害等級: <a href="https://kotsujiko.law/kouisyou/tokyusiraberu.php" target="_blank">（等級表）</a></label>
+    <select id="grade">
+      <option value="1">1級 (100%)</option>
+      <option value="2">2級 (100%)</option>
+      <option value="3">3級 (100%)</option>
+      <option value="4">4級 (92%)</option>
+      <option value="5">5級 (79%)</option>
+      <option value="6">6級 (67%)</option>
+      <option value="7">7級 (56%)</option>
+      <option value="8">8級 (45%)</option>
+      <option value="9">9級 (35%)</option>
+      <option value="10">10級 (27%)</option>
+      <option value="11">11級 (20%)</option>
+      <option value="12">12級 (14%)</option>
+      <option value="13">13級 (9%)</option>
+      <option value="14">14級 (5%)</option>
+    </select>
+    <label for="disability-rate">労働能力喪失率(編集可):</label>
+    <input id="disability-rate" class="percent-input" type="number" min="0" max="100" step="1">
+    <span>%</span>
+  </div>
 
-  <label for="coefficient">ライプニッツ係数:</label>
-  <input id="coefficient" type="text" readonly />
+  <label for="coefficient">ライプニッツ係数(編集可):</label>
+  <input id="coefficient" type="text">
 
-  <button onclick="calculate()">死亡逸失利益を計算</button>
+  <button onclick="calculate()">計算</button>
   <div id="result"></div>
 
-<script>
-  const incomeData = {
-    "19歳以下": {"平均給与（円）_男性":1328000,"平均給与（円）_女性":927000,"平均給与（円）_平均":1124000},
-    "20~24": {"平均給与（円）_男性":2792000,"平均給与（円）_女性":2532000,"平均給与（円）_平均":2668000},
-    "25~29": {"平均給与（円）_男性":4292000,"平均給与（円）_女性":3528000,"平均給与（円）_平均":3944000},
-    "30~34": {"平均給与（円）_男性":4924000,"平均給与（円）_女性":3450000,"平均給与（円）_平均":4313000},
-    "35~39": {"平均給与（円）_男性":5561000,"平均給与（円）_女性":3363000,"平均給与（円）_平均":4662000},
-    "40~44": {"平均給与（円）_男性":6122000,"平均給与（円）_女性":3434000,"平均給与（円）_平均":5005000},
-    "45~49": {"平均給与（円）_男性":6531000,"平均給与（円）_女性":3434000,"平均給与（円）_平均":5214000},
-    "50~54": {"平均給与（円）_男性":6891000,"平均給与（円）_女性":3432000,"平均給与（円）_平均":5396000},
-    "55~59": {"平均給与（円）_男性":7118000,"平均給与（円）_女性":3299000,"平均給与（円）_平均":5451000},
-    "60~64": {"平均給与（円）_男性":5725000,"平均給与（円）_女性":2782000,"平均給与（円）_平均":4451000},
-    "65~69": {"平均給与（円）_男性":4562000,"平均給与（円）_女性":2217000,"平均給与（円）_平均":3536000},
-    "70歳以上": {"平均給与（円）_男性":3676000,"平均給与（円）_女性":1967000,"平均給与（円）_平均":2930000}
-  };
-  const leibnizData = {"0":14.98,"1":15.429,"2":15.892,"3":16.369,"4":16.86,"5":17.365,"6":17.886,"7":18.423,"8":18.976,"9":19.545,
-    "10":20.131,"11":20.735,"12":21.357,"13":21.998,"14":22.658,"15":23.338,"16":24.038,"17":24.759,"18":25.502,"19":25.267,"20":25.025,
-    "21":24.775,"22":24.519,"23":24.254,"24":23.982,"25":23.701,"26":23.412,"27":23.115,"28":22.808,"29":22.492,"30":22.167};
+  <script>
+    let incomeData = {};
+    let leibnizData = {};
+    const disabilityRates = {"1":100,"2":100,"3":100,"4":92,"5":79,"6":67,"7":56,"8":45,"9":35,"10":27,"11":20,"12":14,"13":9,"14":5};
 
-  function populateAgeOptions() {
-    const ageSelect = document.getElementById('age');
-    for(let i=0; i<=102; i++){
-      const opt = document.createElement('option');
-      opt.value = i; opt.textContent = i + '歳';
-      ageSelect.appendChild(opt);
+    async function loadData() {
+      try {
+        const res1 = await fetch('data/average_income.json');
+        incomeData = await res1.json();
+      } catch(e) {
+        console.error('平均給与 JSON 読込失敗', e);
+      }
+      try {
+        const res2 = await fetch('data/leibniz_coeff.json');
+        leibnizData = await res2.json();
+      } catch(e) {
+        console.error('係数 JSON 読込失敗', e);
+      }
     }
-    ageSelect.addEventListener('change', () => {
-      updateIncome(); updateCoefficient(); updateStudentButtons();
-    });
-    document.getElementById('gender').addEventListener('change', () => {
-      updateIncome(); updateStudentButtons();
-    });
-  }
 
-  function getAgeClass(age){
-    if(age<=19) return '19歳以下';
-    if(age<=24) return '20~24';
-    if(age<=29) return '25~29';
-    if(age<=34) return '30~34';
-    if(age<=39) return '35~39';
-    if(age<=44) return '40~44';
-    if(age<=49) return '45~49';
-    if(age<=54) return '50~54';
-    if(age<=59) return '55~59';
-    if(age<=64) return '60~64';
-    if(age<=69) return '65~69';
-    return '70歳以上';
-  }
-
-  function updateIncome(){
-    const age = parseInt(document.getElementById('age').value);
-    const gender = document.getElementById('gender').value;
-    const cls = getAgeClass(age);
-    if(incomeData[cls]){
-      document.getElementById('income').value = formatNumber(incomeData[cls]['平均給与（円）_' + gender]);
+    function populateAgeOptions() {
+      const sel = document.getElementById('age');
+      sel.innerHTML = '';
+      for (let i = 0; i <= 102; i++) {
+        const o = document.createElement('option');
+        o.value = i;
+        o.textContent = i + '\u6B73';
+        sel.appendChild(o);
+      }
     }
-  }
 
-  function updateCoefficient(){
-    const age = parseInt(document.getElementById('age').value);
-    document.getElementById('coefficient').value = leibnizData[age] || '';
-  }
-
-  function setHousewife(){
-    document.getElementById('income').value = formatNumber(4194400);
-  }
-
-  function setStudentIncome(gender, edu){
-    let val=0;
-    if(gender==='男性'&&edu==='全学歴') val=5908100;
-    if(gender==='男性'&&edu==='大卒') val=6835500;
-    if(gender==='女性'&&edu==='全学歴') val=4194400;
-    if(gender==='女性'&&edu==='大卒') val=4700200;
-    document.getElementById('income').value = formatNumber(val);
-  }
-
-  function updateStudentButtons(){
-    const age=parseInt(document.getElementById('age').value), g=document.getElementById('gender').value;
-    const show= age<=30;
-    document.getElementById('student-buttons').style.display= show?'block':'none';
-    ['male-all','male-uni','female-all','female-uni'].forEach(id=>{
-      const btn=document.getElementById('btn-'+id);
-      btn.style.display = ((id.startsWith('male')&&g==='男性')||(id.startsWith('female')&&g==='女性'))&&show?'inline-block':'none';
-    });
-  }
-
-  function updateDeductionInput(){
-    document.getElementById('deduction').value = document.getElementById('deduction-select').value;
-  }
-
-  function calculate(){
-    const inc=parseFloat(document.getElementById('income').value.replace(/,/g,'')),
-          ded=parseFloat(document.getElementById('deduction').value),
-          coeff=parseFloat(document.getElementById('coefficient').value);
-    if(isNaN(inc)||isNaN(ded)||isNaN(coeff)){
-      document.getElementById('result').textContent='計算に必要な項目が不足しています。';
-      return;
+    function getAgeClass(a) {
+      if (a <= 19) return '19歳以下';
+      if (a <= 24) return '20~24';
+      if (a <= 29) return '25~29';
+      if (a <= 34) return '30~34';
+      if (a <= 39) return '35~39';
+      if (a <= 44) return '40~44';
+      if (a <= 49) return '45~49';
+      if (a <= 54) return '50~54';
+      if (a <= 59) return '55~59';
+      if (a <= 64) return '60~64';
+      if (a <= 69) return '65~69';
+      return '70歳以上';
     }
-    document.getElementById('result').textContent = '死亡逸失利益：'+Math.round(inc*(1-ded)*coeff).toLocaleString()+' 円';
-  }
 
-  function formatNumber(n){ return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,','); }
-  function unformatIncome(){ document.getElementById('income').value = document.getElementById('income').value.replace(/,/g,''); }
-  function formatIncome(){ const v=document.getElementById('income').value.replace(/,/g,''); if(!isNaN(v)) document.getElementById('income').value=formatNumber(v); }
-  function reformatIncome(){ formatIncome(); }
+    function updateIncome() {
+      const age = Number(document.getElementById('age').value);
+      const gender = document.getElementById('gender').value;
+      const cls = getAgeClass(age);
+      const key = '平均給与（円）_' + gender;
+      const val = (incomeData[cls] || {})[key] || 0;
+      document.getElementById('income').value = val.toLocaleString();
+    }
 
-  populateAgeOptions();
-</script>
+    function updateCoefficient() {
+      const age = document.getElementById('age').value;
+      document.getElementById('coefficient').value = leibnizData[age] ?? '';
+    }
+
+    function updateDisabilityRate() {
+      const r = disabilityRates[document.getElementById('grade').value];
+      document.getElementById('disability-rate').value = r != null ? r : '';
+    }
+
+    function setHousewife() {
+      document.getElementById('income').value = '4,194,400';
+    }
+
+    function setStudentIncome(g, e) {
+      let v = 0;
+      if (g === '男性' && e === '全学歴') v = 5908100;
+      if (g === '男性' && e === '大卒')   v = 6835500;
+      if (g === '女性' && e === '全学歴') v = 4194400;
+      if (g === '女性' && e === '大卒')   v = 4700200;
+      document.getElementById('income').value = v.toLocaleString();
+    }
+
+    function updateStudentButtons() {
+      const age = Number(document.getElementById('age').value);
+      const g   = document.getElementById('gender').value;
+      const show = age <= 30;
+      const container = document.getElementById('student-buttons');
+      container.classList.toggle('hidden', !show);
+      ['btn-male-all','btn-male-uni','btn-female-all','btn-female-uni'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.style.display = 'none';
+      });
+      if (show) {
+        if (g === '男性') {
+          document.getElementById('btn-male-all').style.display = 'inline-block';
+          document.getElementById('btn-male-uni').style.display = 'inline-block';
+        } else if (g === '女性') {
+          document.getElementById('btn-female-all').style.display = 'inline-block';
+          document.getElementById('btn-female-uni').style.display = 'inline-block';
+        }
+      }
+    }
+
+    function calculate() {
+      const inc  = parseFloat(document.getElementById('income').value.replace(/,/g,'')) || 0;
+      const coef = parseFloat(document.getElementById('coefficient').value) || 0;
+      let res = 0;
+      if (document.getElementById('calc-type').value === 'death') {
+        const d = (parseFloat(document.getElementById('deduction').value) || 0) / 100;
+        res = inc * (1 - d) * coef;
+      } else {
+        const d = (parseFloat(document.getElementById('disability-rate').value) || 0) / 100;
+        res = inc * d * coef;
+      }
+      document.getElementById('result').textContent = '逸失利益：' + Math.round(res).toLocaleString() + ' 円';
+    }
+
+    function formatIncome() {
+      const el = document.getElementById('income');
+      const v  = el.value.replace(/,/g,'');
+      if (!isNaN(v) && v !== '') {
+        el.value = v.replace(/\B(?=(\d{3})+(?!\d))/g,',');
+      }
+    }
+
+    function unformatIncome() {
+      document.getElementById('income').value = document.getElementById('income').value.replace(/,/g,'');
+    }
+
+    function reformatIncome() {
+      formatIncome();
+    }
+
+    function switchMode() {
+      const m = document.getElementById('calc-type').value;
+      document.getElementById('death-section').classList.toggle('hidden', m !== 'death');
+      document.getElementById('disability-section').classList.toggle('hidden', m !== 'disability');
+      updateIncome();
+      updateCoefficient();
+      updateDisabilityRate();
+      updateStudentButtons();
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadData();
+      populateAgeOptions();
+      document.getElementById('calc-type').addEventListener('change', switchMode);
+      document.getElementById('deduction-select').addEventListener('change', () => {
+        document.getElementById('deduction').value = parseFloat(document.getElementById('deduction-select').value);
+      });
+      document.getElementById('age').addEventListener('change', () => { updateIncome(); updateCoefficient(); updateStudentButtons(); });
+      document.getElementById('gender').addEventListener('change', () => { updateIncome(); updateCoefficient(); updateStudentButtons(); });
+      document.getElementById('grade').addEventListener('change', updateDisabilityRate);
+      switchMode();
+    });
+  </script>
 </body>
 </html>
