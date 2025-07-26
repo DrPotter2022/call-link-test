@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>用途車種別：人身傷害保険金額区分構成比（円グラフ）</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    #chart-container {
+      height: 400px;
+    }
+    .tooltip-icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      background-color: #ccc;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      font-size: 12px;
+      line-height: 16px;
+      cursor: pointer;
+      margin-left: 6px;
+    }
+    select {
+      font-size: 14px;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>用途車種別：人身傷害保険金額区分構成比（円グラフ）</h1>
+    <label for="vehicleType">用途車種を選択：
+      <select id="vehicleType"></select>
+      <span id="infoIcon" class="tooltip-icon" title="用途車種の詳細情報を表示します。">i</span>
+    </label>
+    <div id="chart-container">
+      <canvas id="insuranceChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const descriptionMap = {
+     "平均": "この14用途車種の平均。「自動車保険の概況2024年度　第23表より」",
+      "自家用乗用車(普通)": "車両総重量が3.5トン未満、最大積載量が2トン未満、乗員定員10人以下の四輪車。",
+      "自家用乗用車(小型)": "全長4.7メートル以内、全幅1.7メートル以下、全高2メートル以下の全てを満たす車両。",
+      "軽四輪自動車(乗用車)": "全長3.4メートル以下、全幅1.48メートル以下、全高2.0メートル以下、総排気量660cc以下の条件を満たす。",
+      "自家用貨物車(普通)": "貨物の運送に供するトラックやライトバンなど。ナンバーは1, 10～19, 100～199。",
+      "営業用乗用車": "運賃を受け取って貨物や旅客を運送する事業者の車両。緑地白文字など。",
+      "営業用貨物車(普通)": "貨物の運送に供するトラックやライトバン。ナンバーが1から始まる緑ナンバー。",
+      "営業用貨物車(小型)": "軽貨物でナンバーが4か6から始まる黒地に黄文字ナンバー。",
+      "バス(自家用)": "学校・企業・ホテルの無料送迎バスなど。",
+      "バス(営業用)": "路線バス・観光バス・送迎バスなど。",
+      "二輪車": "排気量50cc超～400ccが普通、400cc超が大型。",
+      "原動機付自転車": "50cc以下が第一種、125cc以下が第二種。",
+      "ダンプカー": "荷台が傾く仕組みを持つ土砂・産廃輸送車。",
+      "特殊用途自動車": "パトカー・消防車・救急車など。分類番号8から。",
+      "工作車": "工事現場や鉄道点検に使われる作業車両。",
+      "レンタカー": "「わ」や「れ」ナンバーで有料貸渡用の車両。"
+    };
+
+    let chart;
+
+    async function loadData() {
+      const response = await fetch('./data/insurance_amount_distribution.json');
+      return await response.json();
+    }
+
+    function updateChart(data) {
+      const labels = Object.keys(data);
+      const values = Object.values(data);
+      const colors = ['#4e79a7', '#f28e2c', '#e15759', '#76b7b2'];
+
+      const ctx = document.getElementById('insuranceChart').getContext('2d');
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '構成比',
+            data: values,
+            backgroundColor: colors
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  return `${context.label}: ${context.parsed}%`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    window.onload = async function () {
+      const rawData = await loadData();
+      const vehicleTypes = Object.keys(rawData);
+      const dropdown = document.getElementById('vehicleType');
+      const infoIcon = document.getElementById('infoIcon');
+
+      vehicleTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        dropdown.appendChild(option);
+      });
+
+      dropdown.addEventListener('change', () => {
+        const selected = dropdown.value;
+        updateChart(rawData[selected]);
+        infoIcon.title = descriptionMap[selected] || "情報がありません";
+      });
+
+      // 初期選択
+      dropdown.value = vehicleTypes[0];
+      updateChart(rawData[vehicleTypes[0]]);
+      infoIcon.title = descriptionMap[vehicleTypes[0]];
+    };
+  </script>
+</body>
+</html>
