@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>自動車保険の普及率</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 40px; }
+    h2 { margin-top: 2em; }
+    /* グラフ領域を50%サイズに */
+    .chart-container {
+      width: 90%;
+      height: 90%;
+      margin: 1em auto;
+      position: relative;
+    }
+    /* 複数選択リストのサイズ */
+    #compare-select {
+      width: 50%;
+      height: 8em;
+    }
+    label { margin-right: 1em; }
+  </style>
+</head>
+<body>
+  <h2>自動車保険の普及率（単一都道府県）</h2>
+
+  <label for="pref-select">都道府県を選択：</label>
+  <select id="pref-select">
+    <option value="">───</option>
+  </select>
+
+  <div id="checkboxes">
+    <label><input type="checkbox" value="対人賠償" checked> 対人賠償</label>
+    <label><input type="checkbox" value="対物賠償" checked> 対物賠償</label>
+    <label><input type="checkbox" value="人身傷害" checked> 人身傷害</label>
+    <label><input type="checkbox" value="搭乗者傷害" checked> 搭乗者傷害</label>
+    <label><input type="checkbox" value="車両保険" checked> 車両保険</label>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="singleChart"></canvas>
+  </div>
+
+  <h2>自動車保険の普及率（全国平均 ＋ 複数都道府県比較）</h2>
+
+  <label for="compare-select">比較する都道府県（複数選択Ctrl+クリック）:</label><br>
+  <select id="compare-select" multiple></select>
+
+  <!-- メトリック別の比較グラフを５つ並べる -->
+  <div class="chart-container"><canvas id="chart-tainin"></canvas></div>
+  <div class="chart-container"><canvas id="chart-taibutsu"></canvas></div>
+  <div class="chart-container"><canvas id="chart-jinshin"></canvas></div>
+  <div class="chart-container"><canvas id="chart-toujousha"></canvas></div>
+  <div class="chart-container"><canvas id="chart-sharyo"></canvas></div>
+
+<script>
+  const metrics = [
+    { key: '対人賠償',     id: 'chart-tainin'   },
+    { key: '対物賠償',     id: 'chart-taibutsu' },
+    { key: '人身傷害',     id: 'chart-jinshin'  },
+    { key: '搭乗者傷害',   id: 'chart-toujousha'},
+    { key: '車両保険',     id: 'chart-sharyo'   }
+  ];
+
+  const select     = document.getElementById('pref-select');
+  const compareSel = document.getElementById('compare-select');
+  const boxes      = document.getElementById('checkboxes');
+  const ctxSingle  = document.getElementById('singleChart').getContext('2d');
+
+  let allData, singleChart, compareCharts = {};
+
+  // JSONを読み込んで、セレクト類を初期化
+  fetch('data/insurance_data.json')
+    .then(res => {
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(json => {
+      allData = json;
+
+      // 単一選択セレクトに追加
+      Object.keys(allData).forEach(pref => {
+        const opt = new Option(pref, pref);
+        select.add(opt);
+      });
+      select.value = '全国平均';
+
+      // 複数選択セレクトに追加
+      Object.keys(allData).forEach(pref => {
+        const opt = new Option(pref, pref);
+        compareSel.add(opt);
+      });
+      // デフォルトで全国平均のみ
+      compareSel.value = [];
+
+      // Chart.js インスタンスを生成
+      singleChart = new Chart(ctxSingle, {
+        type: 'line',
+        data: { labels: [], datasets: [] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      metrics.forEach(m => {
+        const ctx = document.getElementById(m.id).getContext('2d');
+        compareCharts[m.key] = new Chart(ctx, {
+          type: 'line',
+          data: { labels: [], datasets: [] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { title: { display: true, text: m.key } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      });
+
+      // 初期描画
+      updateSingleChart();
+      updateCompareCharts();
+    })
+    .catch(err => {
+      alert('JSON読み込み失敗：' + err);
+    });
+
+  function updateSingleChart() {
+    const pref = select.value;
+    if (!allData[pref]) {
+      singleChart.data.labels = [];
+      singleChart.data.datasets = [];
+      singleChart.update();
+      return;
+    }
+    const raw = allData[pref];
+    // 配列形式 or オブジェクト内配列形式の両対応
+    const labels = Array.isArray(raw)
+      ? raw.map(r => r.年度)
+      : raw.年度;
+    const getArr = field => Array.isArray(raw)
+      ? raw.map(r => r[field])
+      : raw[field];
+
+    const datasets = Array.from(boxes.querySelectorAll('input[type=checkbox]'))
+      .filter(cb => cb.checked)
+      .map(cb => ({
+        label: cb.value,
+        data: getArr(cb.value),
+        borderWidth: 2,
+        fill: false
+      }));
+
+    singleChart.data.labels    = labels;
+    singleChart.data.datasets  = datasets;
+    singleChart.update();
+  }
+
+  function updateCompareCharts() {
+    // 選択された都道府県の配列（全国平均は必ず先頭に）
+    const selected = Array.from(compareSel.selectedOptions).map(o => o.value);
+    const prefs = ['全国平均', ...selected.filter(p => p!=='全国平均')];
+
+    // ラベル（年度）は全国平均のデータを使って取得すればOK
+    const raw0 = allData['全国平均'];
+    const labels = Array.isArray(raw0)
+      ? raw0.map(r => r.年度)
+      : raw0.年度;
+
+    metrics.forEach(m => {
+      const chart = compareCharts[m.key];
+      const datasets = prefs.map(pref => {
+        const raw = allData[pref];
+        const arr = Array.isArray(raw)
+          ? raw.map(r => r[m.key])
+          : raw[m.key];
+        return {
+          label: pref,
+          data: arr,
+          borderWidth: 2,
+          fill: false
+        };
+      });
+      chart.data.labels   = labels;
+      chart.data.datasets = datasets;
+      chart.update();
+    });
+  }
+
+  // イベント登録
+  select.addEventListener('change', updateSingleChart);
+  boxes.querySelectorAll('input[type=checkbox]')
+    .forEach(cb => cb.addEventListener('change', updateSingleChart));
+  compareSel.addEventListener('change', updateCompareCharts);
+</script>
+</body>
+</html>
