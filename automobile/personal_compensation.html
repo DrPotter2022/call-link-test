@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>自動車保険 加入割合グラフ（円グラフ・対人賠償）</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    html, body {
+      margin:0; padding:0;
+      width:100vw; height:100vh;
+      display:flex; flex-direction:column;
+      align-items:center;
+    }
+    #controls {
+      padding:8px;
+      display:flex; align-items:center; gap:12px;
+    }
+    #vehicleTypes {
+      display:flex; flex-wrap:wrap; gap:8px; max-width:70vw;
+    }
+    #chart-container {
+      width:50vw; height:50vh;
+      display:flex; align-items:center; justify-content:center;
+    }
+    canvas { width:100%; height:100%; }
+    label, select { font-size:14px; }
+    h1 { margin: 16px 0 8px; font-size: 1.5em; }
+  </style>
+</head>
+<body>
+  <!-- 新規追加タイトル -->
+  <h1>対人賠償の保険金額帯別加入割合</h1>
+
+  <div id="controls">
+    <label>年度:
+      <select id="year"></select>
+    </label>
+    <div>
+      <span>用途車種:</span>
+      <div id="vehicleTypes"></div>
+    </div>
+  </div>
+  <div id="chart-container">
+    <canvas id="chartCanvas"></canvas>
+  </div>
+
+<script>
+  let chart, rawData;
+
+  async function loadData() {
+    const res = await fetch('data/insurance_data_by_year_cleaned.json');
+    rawData = await res.json();
+    const yearSel = document.getElementById('year');
+    Object.keys(rawData).sort((a,b)=>b-a)
+      .forEach(y=>{
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y;
+        yearSel.append(opt);
+      });
+    yearSel.addEventListener('change', updateVehicleTypes);
+    updateVehicleTypes();
+  }
+
+  function updateVehicleTypes() {
+    const year = document.getElementById('year').value;
+    const vDiv = document.getElementById('vehicleTypes');
+    vDiv.innerHTML = '';
+    if (!rawData[year]) return;
+    Object.keys(rawData[year]).forEach(type=>{
+      const lbl = document.createElement('label');
+      const cb  = document.createElement('input');
+      cb.type  = 'checkbox';
+      cb.value = type;
+      cb.addEventListener('change', drawChart);
+      lbl.append(cb, document.createTextNode(' '+type));
+      vDiv.append(lbl);
+    });
+    drawChart();
+  }
+
+  function drawChart() {
+    const year = document.getElementById('year').value;
+    const checks = Array.from(document.querySelectorAll('#vehicleTypes input:checked'))
+                        .map(cb=>cb.value);
+    if (!year || !checks.length) {
+      if (chart) chart.destroy();
+      return;
+    }
+    const yearData = rawData[year];
+    const labels = Object.keys(yearData[checks[0]]);
+
+    const datasets = checks.map((type, idx) => ({
+      label: type,
+      data: labels.map(lbl => yearData[type][lbl] || 0),
+      backgroundColor: labels.map((_,i)=>`hsl(${i*60},70%,${60 - idx*10}%)`),
+      borderColor: '#fff', borderWidth: 1
+    }));
+
+    const ctx = document.getElementById('chartCanvas').getContext('2d');
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: 0 },
+        plugins: {
+          legend: { position: 'right', labels:{ boxWidth:12 } },
+          title: {
+            display: true,
+            text: `${year}年度 選択車種の保険金額帯別加入割合（%）`,
+            padding: { top:0, bottom:0 }
+          }
+        }
+      }
+    });
+  }
+
+  window.onload = loadData;
+</script>
+</body>
+</html>
