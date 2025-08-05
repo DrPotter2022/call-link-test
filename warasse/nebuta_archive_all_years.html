@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ワラッセ展示ねぶたアーカイブ</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; background: #f9f9f9; }
+    h1 { color: darkred; }
+    label { font-weight: bold; }
+    select { padding: 5px; margin-left: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #eee; }
+    a { color: darkblue; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>ワラッセ展示ねぶたアーカイブ</h1>
+  <label for="yearSelector">年度を選択:</label>
+  <select id="yearSelector"></select>
+
+  <table id="nebutaTable">
+    <thead>
+      <tr>
+        <th>団体名</th>
+        <th>題材</th>
+        <th>制作者</th>
+        <th>備考</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let data = [];
+
+    fetch('data/warasse_nebuta.json')
+      .then(response => response.json())
+      .then(json => {
+        data = json;
+        populateYearSelector();
+        displayDataForYear(document.getElementById("yearSelector").value);
+      });
+
+    function populateYearSelector() {
+      const years = [...new Set(data.map(item => item["年度"]))].sort();
+      const selector = document.getElementById("yearSelector");
+      selector.innerHTML = "";
+      selector.innerHTML = '<option value="all">すべて表示</option>';
+      years.forEach(year => {
+        const option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        selector.appendChild(option);
+      });
+      selector.addEventListener("change", () => displayDataForYear(selector.value));
+    }
+
+    function displayDataForYear(year) {
+      const tbody = document.querySelector("#nebutaTable tbody");
+      tbody.innerHTML = "";
+      year === "all" ? data : data.filter(item => item["年度"] == year).forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row["団体名"] || ""}</td>
+          <td><a href="${row["URL"]}" target="_blank">${row["題材"] || ""}</a></td>
+          <td>${row["制作者"] || ""}</td>
+          <td>${row["備考"] || ""}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+  <p>※本ページは誤りがある場合があります。気づかれた方は<a href="yasutaka.wada@wize.uno">サイト管理者</a>まで正しい情報と情報源をお知らせください。</p>
+  <p>2011-2019年までの展示情報は<a href="https://blog.goo.ne.jp/warasse/e/b611516d6f1383e40f1e7dfa856562c5">コチラ</a>a>を参照。</p>
+  <p><a href="https://aomori.goguynet.jp/2021/10/06/warasse-3/">2021</a>
+    　<a href="https://blog.goo.ne.jp/warasse/e/6d1ec9920f3a46498648f60a948200c1">2022</a>
+<a href="https://youtu.be/qXVDp_qxLj4?si=ryBPOaPJ3X6lLM0J">2023</a><a href="https://www.instagram.com/p/C-UC7KISR_p/">2024</a><a href="https://www.nebuta.jp/warasse/event/2025/08/6.html">2025</a></p>
+</body>
+</html>
