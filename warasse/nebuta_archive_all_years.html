@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -37,57 +36,59 @@
     let data = [];
 
     fetch('data/warasse_nebuta.json')
-      .then(response => response.json())
+      .then(r => r.json())
       .then(json => {
         data = json;
         populateYearSelector();
-        displayDataForYear(document.getElementById("yearSelector").value);
+        displayDataForYear('all');
       });
 
-    
     function populateYearSelector() {
       const selector = document.getElementById("yearSelector");
       selector.innerHTML = "";
-      // すべて表示オプション
-      const allOption = document.createElement("option");
-      allOption.value = "all";
-      allOption.textContent = "すべて表示";
-      selector.appendChild(allOption);
-      // 年度ごとのオプション追加
+      // 「すべて表示」オプション
+      const allOpt = document.createElement("option");
+      allOpt.value = "all";
+      allOpt.textContent = "すべて表示";
+      selector.appendChild(allOpt);
+      // 各年度オプション
       const years = [...new Set(data.map(item => item["年度"]))].sort();
       years.forEach(year => {
-        const option = document.createElement("option");
-        option.value = year;
-        option.textContent = year;
-        selector.appendChild(option);
+        const opt = document.createElement("option");
+        opt.value = year;
+        opt.textContent = year;
+        selector.appendChild(opt);
       });
-      // 初期選択はすべて表示
-      selector.value = "all";
-      selector.addEventListener("change", () => displayDataForYear(selector.value));
-    }
-);
       selector.addEventListener("change", () => displayDataForYear(selector.value));
     }
 
     function displayDataForYear(year) {
       const tbody = document.querySelector("#nebutaTable tbody");
       tbody.innerHTML = "";
-      year === "all" ? data : (year === "all" ? data : data.filter(item => item["年度"] === year)).forEach(row => {
+      const list = (year === 'all')
+        ? data
+        : data.filter(item => item["年度"] === year);
+      list.forEach(row => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${row["団体名"] || ""}</td>
-          <td><a href="${row["URL"]}" target="_blank">${row["題材"] || ""}</a></td>
-          <td>${row["制作者"] || ""}</td>
-          <td>${row["備考"] || ""}</td>
+          <td>${row["団体名"]||""}</td>
+          <td><a href="${row["URL"]}" target="_blank">${row["題材"]||""}</a></td>
+          <td>${row["制作者"]||""}</td>
+          <td>${row["備考"]||""}</td>
         `;
         tbody.appendChild(tr);
       });
     }
   </script>
-  <p>※本ページは誤りがある場合があります。気づかれた方は<a href="yasutaka.wada@wize.uno">サイト管理者</a>まで正しい情報と情報源をお知らせください。</p>
-  <p>2011-2019年までの展示情報は<a href="https://blog.goo.ne.jp/warasse/e/b611516d6f1383e40f1e7dfa856562c5">コチラ</a>a>を参照。</p>
-  <p><a href="https://aomori.goguynet.jp/2021/10/06/warasse-3/">2021</a>
-    　<a href="https://blog.goo.ne.jp/warasse/e/6d1ec9920f3a46498648f60a948200c1">2022</a>
-<a href="https://youtu.be/qXVDp_qxLj4?si=ryBPOaPJ3X6lLM0J">2023</a><a href="https://www.instagram.com/p/C-UC7KISR_p/">2024</a><a href="https://www.nebuta.jp/warasse/event/2025/08/6.html">2025</a></p>
+
+  <p>※本ページは誤りがある場合があります。気づかれた方は<a href="mailto:yasutaka.wada@wize.uno">サイト管理者</a>までお知らせください。</p>
+  <p>2011-2019年までの展示情報は<a href="https://blog.goo.ne.jp/warasse/e/b611516d6f1383e40f1e7dfa856562c5">コチラ</a>参照。</p>
+  <p>
+    <a href="https://aomori.goguynet.jp/2021/10/06/warasse-3/">2021</a>
+    <a href="https://blog.goo.ne.jp/warasse/e/6d1ec9920f3a46498648f60a948200c1">2022</a>
+    <a href="https://blog.goo.ne.jp/warasse/e/6b008dbf1c7a64dd4c7e0bb2adca58a4">2023</a>
+    <a href="https://www.instagram.com/p/C-UC7KISR_p/">2024</a>
+    <a href="https://www.nebuta.jp/warasse/event/2025/08/6.html">2025</a>
+  </p>
 </body>
 </html>
