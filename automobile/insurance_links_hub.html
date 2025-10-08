@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>保険・損害賠償 リンク集</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #111827;
+    --muted: #94a3b8;
+    --text: #e5e7eb;
+    --accent: #22d3ee;
+    --accent-2: #a78bfa;
+    --border: #1f2937;
+    --chip: #0b1324;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji"; }
+  .wrap { max-width: 1080px; margin: 32px auto; padding: 0 16px; }
+  header { display:flex; flex-direction:column; gap:12px; margin-bottom: 16px; }
+  header h1 { font-size: 24px; margin:0; letter-spacing: .02em;}
+  header p { margin:0; color:var(--muted); font-size:14px;}
+  .toolbar { display:flex; gap:12px; flex-wrap: wrap; margin-top: 8px;}
+  input[type="search"] {
+    flex: 1;
+    min-width: 260px;
+    background: #0b1220;
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--text);
+    outline: none;
+  }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; }
+  .chip {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--chip);
+    color: var(--muted);
+    cursor: pointer;
+    user-select:none;
+  }
+  .chip.active { border-color: var(--accent); color: var(--text); }
+  section { margin-top: 28px; }
+  .sec-head { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+  .sec-head h2 { font-size: 18px; margin:0; }
+  .sec-head .count { color: var(--muted); font-size: 12px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 960px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+    min-height: 120px;
+  }
+  .card .top {
+    display:flex; align-items:center; gap:10px;
+  }
+  .emoji { font-size: 18px; line-height:1; }
+  .title {
+    font-weight: 600; font-size: 14px;
+  }
+  .desc { color: var(--muted); font-size: 12px; line-height: 1.5; }
+  .tags { display:flex; gap:6px; flex-wrap: wrap; margin-top: 2px;}
+  .tag { font-size: 10px; padding: 4px 8px; border-radius: 999px; border:1px solid var(--border); color: var(--muted);}
+  .actions { display:flex; gap:8px; margin-top:auto; }
+  .btn {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: #0b1220;
+    color: var(--text);
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .url { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; color: var(--muted); }
+  footer { margin: 40px 0 16px; color: var(--muted); font-size: 12px; text-align:center; }
+  .muted { color: var(--muted); }
+  .empty { margin: 20px 0; padding: 14px; border:1px dashed var(--border); border-radius: 12px; color: var(--muted); }
+  a { color: inherit; text-decoration: none; }
+  a.external { text-decoration: underline dotted; text-underline-offset: 2px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>保険・損害賠償 リンク集</h1>
+      <p>以下のセクションに、関連リンクを整理しています。検索ボックスやタグで絞り込み可能。<span class="muted">（JSONを書き換えるだけで更新できます）</span></p>
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="キーワード検索（例：普及率、対人賠償、逸失利益…）" />
+        <div class="chips" id="chipRow"></div>
+      </div>
+    </header>
+
+    <!-- Sections mount here -->
+    <div id="sections"></div>
+
+    <footer>
+      <div>単一HTML・オフライン対応。JSONを編集して保存すればOK。</div>
+    </footer>
+  </div>
+
+<script>
+// ==== 設定用データ（ここを書き換えるだけで更新できます）====
+const DATA = [
+  {
+    id: "spread_auto_insurance_adoption",
+    title: "自動車保険の普及率",
+    emoji: "📈",
+    items: [
+        { title: "都道府県別 普及率（2013-2024）", url: "https://www.wize.uno/automobile/enroll-insurance.html", desc: "損害保険料算出機構「自動車保険の概況」より集計", tags: ["普及率","都道府県","自動車保険"] },
+    ]
+  },
+  {
+    id: "lost_profit_calc",
+    title: "逸失利益　簡易計算ツール",
+    emoji: "🧮",
+    items: [
+        { title: "逸失利益のざっくり試算", url: "https://www.wize.uno/automobile/embedded.html", desc: "基礎収入×労働能力喪失率×ライプニッツ係数などを手早く", tags: ["逸失利益","人損","交通事故","ライプニッツ係数","ライプニッツ"] },
+    ]
+  },
+  {
+    id: "claim_enrollment",
+    title: "自動車保険の「保険金」加入割合",
+    emoji: "🧾",
+    items: [
+      // セクション内の小分類はタグで管理します（対人賠償・対物賠償・人身傷害）
+       { title: "対人賠償の加入割合", url: "https://www.wize.uno/automobile/compensation.html", desc: "対人賠償の全国加入率", tags: ["加入割合","対人賠償","対人"] },
+       { title: "対物賠償の加入割合", url: "https://www.wize.uno/automobile/property.html", desc: "対物賠償の全国加入率", tags: ["加入割合","対物賠償","対物"] },
+       { title: "人身傷害の加入割合", url: "https://www.wize.uno/automobile/injury.html", desc: "人身傷害の全国加入率", tags: ["加入割合","人身傷害","人身"] },
+    ]
+  }
+];
+
+// 任意でよく使うタグ（クリックでフィルタ）
+const FAVORITE_TAGS = ["普及率","加入割合","対人賠償","対物賠償","人身傷害","都道府県","人損","交通事故","資料","ツール"];
+
+// ==== 以下はUIロジック（編集不要）====
+const qs = (sel, el=document) => el.querySelector(sel);
+const qsa = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+const chipRow = qs("#chipRow");
+const sectionsEl = qs("#sections");
+const searchInput = qs("#search");
+
+let activeTag = null;
+let keyword = "";
+
+function buildChips() {
+  chipRow.innerHTML = "";
+  FAVORITE_TAGS.forEach(tag => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = `#${tag}`;
+    b.onclick = () => {
+      if (activeTag === tag) { activeTag = null; }
+      else { activeTag = tag; }
+      updateChips();
+      render();
+    };
+    chipRow.appendChild(b);
+  });
+  updateChips();
+}
+function updateChips() {
+  qsa(".chip", chipRow).forEach(btn => {
+    const tag = btn.textContent.replace(/^#/, "");
+    btn.classList.toggle("active", tag === activeTag);
+  });
+}
+
+function matchItem(item) {
+  const kw = keyword.trim().toLowerCase();
+  const tagOk = !activeTag || (item.tags||[]).includes(activeTag);
+  const kwOk = !kw ||
+    (item.title && item.title.toLowerCase().includes(kw)) ||
+    (item.desc && item.desc.toLowerCase().includes(kw)) ||
+    (item.url && item.url.toLowerCase().includes(kw)) ||
+    (item.tags && item.tags.some(t => t.toLowerCase().includes(kw)));
+  return tagOk && kwOk;
+}
+
+function card(item) {
+  const el = document.createElement("div");
+  el.className = "card";
+  el.innerHTML = `
+    <div class="top">
+      <div class="emoji">🔗</div>
+      <div class="title">${escapeHtml(item.title || "(無題)")}</div>
+    </div>
+    <div class="desc">${escapeHtml(item.desc || "")}</div>
+    <div class="url" title="${escapeHtml(item.url||"")}">${escapeHtml(item.url || "")}</div>
+    <div class="tags">${(item.tags||[]).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
+    <div class="actions">
+      ${item.url ? `<a class="btn external" target="_blank" rel="noopener" href="${escapeAttr(item.url)}">開く</a>` : `<button class="btn" disabled>URL未設定</button>`}
+      ${item.url ? `<button class="btn" data-copy="${escapeAttr(item.url)}">URLコピー</button>` : ""}
+    </div>
+  `;
+  const copyBtn = el.querySelector('[data-copy]');
+  if (copyBtn) {
+    copyBtn.addEventListener("click", async (e) => {
+      const url = e.currentTarget.getAttribute("data-copy");
+      try {
+        await navigator.clipboard.writeText(url);
+        e.currentTarget.textContent = "コピーしました";
+        setTimeout(() => (e.currentTarget.textContent = "URLコピー"), 1200);
+      } catch {
+        prompt("コピーできない場合は手動でコピーしてください:", url);
+      }
+    });
+  }
+  return el;
+}
+
+function section(sec) {
+  const wrap = document.createElement("section");
+  const items = (sec.items||[]).filter(matchItem);
+  wrap.innerHTML = `
+    <div class="sec-head">
+      <h2>${sec.emoji || "📚"} ${escapeHtml(sec.title)}</h2>
+      <div class="count">${items.length} 件</div>
+    </div>
+  `;
+  if (items.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.innerHTML = "該当するリンクがありません。<br>右上の検索・タグを変更するか、下記のJSONにURLを追加してください。";
+    wrap.appendChild(empty);
+    return wrap;
+  }
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  items.forEach(it => grid.appendChild(card(it)));
+  wrap.appendChild(grid);
+  return wrap;
+}
+
+function render() {
+  sectionsEl.innerHTML = "";
+  DATA.forEach(s => sectionsEl.appendChild(section(s)));
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+  }[m]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+searchInput.addEventListener("input", (e) => {
+  keyword = e.target.value || "";
+  render();
+});
+
+buildChips();
+render();
+
+</script>
+
+<!-- 使い方（ヘルプ））
+1) 上の<script>ブロック内の const DATA = [...] を開き、各 items: [] に {title, url, desc, tags[]} を追記します。
+2) 例：
+   {
+     title: "都道府県別 普及率（2013-2023）",
+     url: "https://example.com/auto-insurance-adoption",
+     desc: "損害保険料算出機構資料から独自集計",
+     tags: ["普及率","都道府県","自動車保険"]
+   }
+3) 保存後、ブラウザで開くと自動反映されます（オフラインOK）。
+4) タグをよく使う場合は FAVORITE_TAGS に追加してください。
+-->
+</body>
+</html>
