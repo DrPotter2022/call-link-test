@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>生命保険料控除シミュレーター（レイアウト微調整）</title>
+<title>生命保険料控除シミュレーター（リセット＆配色連動・中列拡張）</title>
 <style>
 :root{
   --line:#d9dee8;--ink:#111;--muted:#667085;--accent:#c00;--bg:#f7f8fb;
@@ -24,60 +24,62 @@ input[type=text]{width:220px;padding:8px;border:1px solid var(--line);border-rad
 .small{color:var(--muted);font-size:.9em}
 .mono{font-variant-numeric:tabular-nums}
 
+/* 入力ステッパー（±＋リセット） */
+.rowwrap{display:flex;align-items:center;gap:8px}
+.stepbox{display:flex;gap:4px;flex-wrap:wrap}
+.step{border:1px solid var(--line);background:#f6f7fb;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:.85rem}
+.step:hover{background:#eef1f8}
+.step.strong{font-weight:700}
+.step.reset{background:#fff;border-style:dashed}
+.del{margin-left:4px}
+
+/* 入力ボックスの配色連動 */
+.tint-new-blue input{background:var(--new-blue)}
+.tint-old-blue input{background:var(--old-blue)}
+.tint-green    input{background:var(--green)}
+.tint-new-pink input{background:var(--new-pink)}
+.tint-old-pink input{background:var(--old-pink)}
+
 /* ①と②の間の計算ボタン */
 .calc-bar{display:flex;justify-content:center;align-items:center;gap:12px;margin:6px 0 12px}
 .calc-main{font-size:1rem;padding:12px 22px;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .calc-note{color:#667085;font-size:.92em}
 
-/* ②結果テーブル：横バンドで揃える（可変高さ） */
+/* ②結果テーブル（横バンド・可変高さ） */
 #strict table.rt{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff;border:1px solid var(--line)}
 #strict td{border:1px solid var(--line);padding:0;vertical-align:middle}
 #strict .sec{background:#eaf0ff;font-weight:800;padding:8px 12px}
+/* ← 中列幅を拡張（28% → 36%）、右列は 22%へ */
 #strict col.sys{width:9rem}
 #strict col.l{width:42%}
-#strict col.m{width:28%}
-#strict col.r{width:30%}
+#strict col.m{width:36%}
+#strict col.r{width:22%}
 #strict .syscell{background:#fbfcff;text-align:center;font-weight:700}
-
-/* 新制度・旧制度のラベル（枠なし・赤文字） */
 .sysTag{color:#c00;font-weight:800}
 
-/* 横バンド（高さは可変・自動） */
+/* 横バンド */
 .band{position:relative}
 .band::before{content:"";position:absolute;inset:0;border-radius:4px}
 .band .cell{
-  position:relative;
-  display:grid;
-  grid-template-columns:auto 1fr 160px; /* 左:ラベル 中:説明 右:数値 */
-  gap:10px;
-  align-items:flex-start;             /* 説明文の先頭を揃える */
-  padding:12px 12px;
-  line-height:1.35;                   /* 行間を少し広く */
-  word-break:keep-all;                /* 数字の分断を避ける */
+  position:relative;display:grid;grid-template-columns:auto 1fr 200px; /* ← 数値領域を 200px に拡大 */
+  gap:10px;align-items:flex-start;padding:12px 12px;line-height:1.35;word-break:keep-all;
 }
 .badge{display:inline-block;border:2px solid var(--accent);border-radius:6px;padding:2px 6px;font-weight:700;color:#c00}
 .lab{display:flex;align-items:center;gap:8px;white-space:nowrap}
-.val{
-  text-align:right;font-variant-numeric:tabular-nums;cursor:pointer;
-  align-self:center;                  /* 数値は中央寄せに見せる */
-}
-.val.hint::after{content:"（クリックで入力）";color:#999;font-size:.8em;margin-left:8px}
+.val{text-align:right;font-variant-numeric:tabular-nums;cursor:pointer;align-self:center}
 
-/* バンド色（列で同色が繋がる） */
+/* バンド色 */
 .band-blue-n::before{background:var(--new-blue)}
 .band-blue-o::before{background:var(--old-blue)}
 .band-green::before{background:var(--green)}
 .band-pink-n::before{background:var(--new-pink)}
 .band-pink-o::before{background:var(--old-pink)}
 
-/* 合計行（ラベル左／金額右へ移動・太枠） */
+/* 合計行（ラベル左／金額右） */
 .totalRow td{border-width:2px}
 .totalBand{position:relative}
 .totalBand::before{content:"";position:absolute;inset:0;border:3px solid #111;border-radius:10px;background:#fff}
-.totalWrap{
-  position:relative;display:grid;grid-template-columns:1fr auto; /* ← 金額を右端へ */
-  align-items:center;gap:12px;padding:14px 18px
-}
+.totalWrap{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:14px 18px}
 .totalWrap .label{font-weight:800}
 .totalWrap .sum{font-size:1.4rem;font-weight:900;text-align:right}
 
@@ -92,26 +94,60 @@ tr.highlight td:nth-child(5),tr.highlight td:nth-child(6),tr.highlight td:nth-ch
 </head>
 <body>
 <div class="wrap">
-  <h1>◆ 給与所得者の保険料控除申告書（レイアウト微調整版）</h1>
+  <h1>◆ 給与所得者の保険料控除申告書（リセット＆配色連動・中列拡張）</h1>
 
   <!-- ① 入力 -->
   <fieldset>
     <legend>① 入力（複数の控除証明書を合算）</legend>
     <div class="card"><b>年収</b>
-      <div class="grid2"><input id="income" type="text" class="mono" value="6,000,000"><span>円</span></div>
+      <div class="grid2">
+        <div class="rowwrap">
+          <input id="income" type="text" class="mono" value="6,000,000">
+          <div class="stepbox">
+            <button class="step" data-target="income" data-delta="-10000">−10,000</button>
+            <button class="step" data-target="income" data-delta="-1000">−1,000</button>
+            <button class="step reset" data-target="income" data-reset="true">0</button>
+            <button class="step strong" data-target="income" data-delta="1000">＋1,000</button>
+            <button class="step strong" data-target="income" data-delta="10000">＋10,000</button>
+          </div>
+        </div>
+        <span>円</span>
+      </div>
     </div>
-    <div class="card"><b>【新】一般（A）</b><div id="list-genNew"></div><button class="btn-ghost" data-add="genNew">＋証明書を追加</button></div>
-    <div class="card"><b>【旧】一般（B）</b><div id="list-genOld"></div><button class="btn-ghost" data-add="genOld">＋証明書を追加</button></div>
-    <div class="card"><b>介護医療（C｜新のみ）</b><div id="list-medNew"></div><button class="btn-ghost" data-add="medNew">＋証明書を追加</button></div>
-    <div class="card"><b>【新】個人年金（D）</b><div id="list-annNew"></div><button class="btn-ghost" data-add="annNew">＋証明書を追加</button></div>
-    <div class="card"><b>【旧】個人年金（E）</b><div id="list-annOld"></div><button class="btn-ghost" data-add="annOld">＋証明書を追加</button></div>
-    <div class="small">※結果側の合計セルもクリックだけで入力できます。</div>
+
+    <!-- A～E：入力ボックスを配色連動でラップ -->
+    <div class="card"><b>【新】一般（A）</b>
+      <div id="list-genNew" class="tint-new-blue"></div>
+      <button class="btn-ghost" data-add="genNew">＋証明書を追加</button>
+    </div>
+
+    <div class="card"><b>【旧】一般（B）</b>
+      <div id="list-genOld" class="tint-old-blue"></div>
+      <button class="btn-ghost" data-add="genOld">＋証明書を追加</button>
+    </div>
+
+    <div class="card"><b>介護医療（C｜新のみ）</b>
+      <div id="list-medNew" class="tint-green"></div>
+      <button class="btn-ghost" data-add="medNew">＋証明書を追加</button>
+    </div>
+
+    <div class="card"><b>【新】個人年金（D）</b>
+      <div id="list-annNew" class="tint-new-pink"></div>
+      <button class="btn-ghost" data-add="annNew">＋証明書を追加</button>
+    </div>
+
+    <div class="card"><b>【旧】個人年金（E）</b>
+      <div id="list-annOld" class="tint-old-pink"></div>
+      <button class="btn-ghost" data-add="annOld">＋証明書を追加</button>
+    </div>
+
+    <div class="small">※各行の「−10,000 / −1,000 / 0 / ＋1,000 / ＋10,000」ボタンでクリックだけで調整できます。</div>
   </fieldset>
 
   <!-- ①と②の間の「計算」 -->
   <div class="calc-bar">
     <button id="calc" class="btn calc-main">計算</button>
-    <div class="calc-note">（横バンドで A→①→③ / B→②→㋑ / … が一直線）</div>
+    <div class="calc-note">（結果の合計セルもクリックで直接入力できます）</div>
   </div>
 
   <!-- ② 結果 -->
@@ -122,17 +158,15 @@ tr.highlight td:nth-child(5),tr.highlight td:nth-child(6),tr.highlight td:nth-ch
       <tbody>
         <!-- 一般生命保険料 -->
         <tr><td class="sec" colspan="4">一般生命保険料</td></tr>
-
         <tr>
           <td class="syscell band band-blue-n"><div class="cell"><div class="lab"><span class="sysTag">新制度</span></div><div></div><div></div></div></td>
-          <td class="band band-blue-n"><div class="cell"><div class="lab"><span class="badge">A</span>A 合計</div><div id="A" class="val hint" data-edit="genNew">0</div></div></td>
+          <td class="band band-blue-n"><div class="cell"><div class="lab"><span class="badge">A</span>A 合計</div><div id="A" class="val" data-edit="genNew">0</div></div></td>
           <td class="band band-blue-n"><div class="cell"><div class="lab"><span class="badge">①</span>控除（新・上限40,000）</div><div id="one" class="val">0</div></div></td>
           <td class="band band-blue-n"><div class="cell"><div class="lab"><span class="badge">③</span>①＋②（上限40,000）</div><div id="three" class="val">0</div></div></td>
         </tr>
-
         <tr>
           <td class="syscell band band-blue-o"><div class="cell"><div class="lab"><span class="sysTag">旧制度</span></div><div></div><div></div></div></td>
-          <td class="band band-blue-o"><div class="cell"><div class="lab"><span class="badge">B</span>B 合計</div><div id="B" class="val hint" data-edit="genOld">0</div></div></td>
+          <td class="band band-blue-o"><div class="cell"><div class="lab"><span class="badge">B</span>B 合計</div><div id="B" class="val" data-edit="genOld">0</div></div></td>
           <td class="band band-blue-o"><div class="cell"><div class="lab"><span class="badge">②</span>控除（旧・上限50,000）</div><div id="two" class="val">0</div></div></td>
           <td class="band band-blue-o"><div class="cell"><div class="lab"><span class="badge">㋑</span>②と③の大きい方</div><div id="ina" class="val">0</div></div></td>
         </tr>
@@ -141,7 +175,7 @@ tr.highlight td:nth-child(5),tr.highlight td:nth-child(6),tr.highlight td:nth-ch
         <tr><td class="sec" colspan="4">介護医療保険料</td></tr>
         <tr>
           <td class="syscell band band-green"><div class="cell"><div class="lab"><span class="sysTag">新制度</span></div><div></div><div></div></div></td>
-          <td class="band band-green"><div class="cell"><div class="lab"><span class="badge">C</span>C 合計</div><div id="C" class="val hint" data-edit="medNew">0</div></div></td>
+          <td class="band band-green"><div class="cell"><div class="lab"><span class="badge">C</span>C 合計</div><div id="C" class="val" data-edit="medNew">0</div></div></td>
           <td class="band"><div class="cell"><div class="lab"></div><div class="val"></div></div></td>
           <td class="band band-green"><div class="cell"><div class="lab"><span class="badge">㋺</span>控除（上限40,000）</div><div id="inu" class="val">0</div></div></td>
         </tr>
@@ -150,18 +184,18 @@ tr.highlight td:nth-child(5),tr.highlight td:nth-child(6),tr.highlight td:nth-ch
         <tr><td class="sec" colspan="4">個人年金保険料</td></tr>
         <tr>
           <td class="syscell band band-pink-n"><div class="cell"><div class="lab"><span class="sysTag">新制度</span></div><div></div><div></div></div></td>
-          <td class="band band-pink-n"><div class="cell"><div class="lab"><span class="badge">D</span>D 合計</div><div id="D" class="val hint" data-edit="annNew">0</div></div></td>
+          <td class="band band-pink-n"><div class="cell"><div class="lab"><span class="badge">D</span>D 合計</div><div id="D" class="val" data-edit="annNew">0</div></div></td>
           <td class="band band-pink-n"><div class="cell"><div class="lab"><span class="badge">④</span>控除（新・上限40,000）</div><div id="four" class="val">0</div></div></td>
           <td class="band band-pink-n"><div class="cell"><div class="lab"><span class="badge">⑥</span>④＋⑤（上限40,000）</div><div id="six" class="val">0</div></div></td>
         </tr>
         <tr>
           <td class="syscell band band-pink-o"><div class="cell"><div class="lab"><span class="sysTag">旧制度</span></div><div></div><div></div></div></td>
-          <td class="band band-pink-o"><div class="cell"><div class="lab"><span class="badge">E</span>E 合計</div><div id="E" class="val hint" data-edit="annOld">0</div></div></td>
+          <td class="band band-pink-o"><div class="cell"><div class="lab"><span class="badge">E</span>E 合計</div><div id="E" class="val" data-edit="annOld">0</div></div></td>
           <td class="band band-pink-o"><div class="cell"><div class="lab"><span class="badge">⑤</span>控除（旧・上限50,000）</div><div id="five" class="val">0</div></div></td>
           <td class="band band-pink-o"><div class="cell"><div class="lab"><span class="badge">㋩</span>⑤と⑥の大きい方</div><div id="ino" class="val">0</div></div></td>
         </tr>
 
-        <!-- 合計（ラベル左／金額右） -->
+        <!-- 合計 -->
         <tr class="totalRow">
           <td class="totalBand" colspan="4">
             <div class="totalWrap">
@@ -174,7 +208,7 @@ tr.highlight td:nth-child(5),tr.highlight td:nth-child(6),tr.highlight td:nth-ch
     </table>
   </fieldset>
 
-  <!-- ③ 年収レンジ別の控除効果（省略せず従来どおり） -->
+  <!-- ③ 年収レンジ別の控除効果 -->
   <fieldset>
     <legend>③ 年収レンジ別の控除効果（入力年収の行をハイライト）</legend>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px">
@@ -194,23 +228,61 @@ tr.highlight td:nth-child(5),tr.highlight td:nth-child(6),tr.highlight td:nth-ch
 </div>
 
 <script>
-/* ユーティリティ */
+/* 数値フォーマット */
 const fmt=n=>(Math.round(n||0)).toLocaleString('ja-JP');
 const yen=s=>{if(typeof s==='number')return s;if(!s)return 0;return +String(s).replace(/,/g,'').replace(/[^\d.-]/g,'')||0};
 document.addEventListener('input',e=>{if(e.target.matches('input[type=text]'))e.target.value=fmt(yen(e.target.value))});
 
-/* 入力の行追加/削除 */
+/* ステッパー（±＋リセット） */
+function adjustInputById(id,delta,reset=false){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const v = reset ? 0 : Math.max(0,yen(el.value)+delta);
+  el.value=fmt(v);
+}
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('.step'); if(!btn) return;
+  const targetId=btn.dataset.target;
+  if(targetId){
+    adjustInputById(targetId, +(btn.dataset.delta||0), !!btn.dataset.reset);
+    return;
+  }
+  // 行内ステッパー
+  const input=e.target.closest('.rowwrap')?.querySelector('input[type=text]');
+  if(!input) return;
+  if(btn.dataset.reset){ input.value='0'; return; }
+  const v=Math.max(0,yen(input.value)+(+btn.dataset.delta||0));
+  input.value=fmt(v);
+});
+
+/* 入力行の追加/削除（各行にステッパーを付与） */
 document.addEventListener('click',e=>{
   if(e.target.dataset.add) addRow(e.target.dataset.add);
   if(e.target.classList.contains('del')) e.target.closest('.grid2')?.remove();
 });
+function stepGroupHTML(){
+  return `
+    <div class="stepbox">
+      <button class="step" data-delta="-10000">−10,000</button>
+      <button class="step" data-delta="-1000">−1,000</button>
+      <button class="step reset" data-reset="true">0</button>
+      <button class="step strong" data-delta="1000">＋1,000</button>
+      <button class="step strong" data-delta="10000">＋10,000</button>
+    </div>`;
+}
 function addRow(bucket){
   const host=document.getElementById('list-'+bucket);
   const row=document.createElement('div');
   row.className='grid2';
-  row.innerHTML=`<input type="text" class="mono" value="0"><button class="del" type="button">✕</button>`;
+  row.innerHTML=`
+    <div class="rowwrap">
+      <input type="text" class="mono" value="0">
+      ${stepGroupHTML()}
+    </div>
+    <button class="del" type="button">✕</button>`;
   host.appendChild(row);
 }
+/* 初期行 */
 ['genNew','genOld','medNew','annNew','annOld'].forEach(addRow);
 
 /* 新旧の計算式 */
@@ -245,7 +317,7 @@ function fill(){
 }
 document.getElementById('calc').addEventListener('click',fill);
 
-/* クリックだけで入力（A/B/C/D/Eセル） */
+/* クリックだけで入力（A/B/C/D/E 合計セル） */
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-edit]'); if(!t) return;
   const bucket=t.getAttribute('data-edit');
@@ -253,8 +325,8 @@ document.addEventListener('click',e=>{
   const v=window.prompt('この区分の合計額を入力してください（半角数字・3桁区切り可）',fmt(current));
   if(v===null) return;
   const n=yen(v);
-  const inputs=[...document.querySelectorAll('#list-'+bucket+' input')];
-  if(inputs.length===0) addRow(bucket);
+  const rows=[...document.querySelectorAll('#list-'+bucket+' input')];
+  if(rows.length===0) addRow(bucket);
   const all=[...document.querySelectorAll('#list-'+bucket+' input')];
   if(all.length){all[0].value=fmt(n); for(let i=1;i<all.length;i++) all[i].value='0';}
   fill();
@@ -284,8 +356,8 @@ function currentRates(inc){
   return {it:marginalIT(taxable),inh:.10};
 }
 function renderRange(r){
-  const itDed = r.three + r.inu + r.four; // 所得税側に効く控除合計
-  const inhDed = r.ina + r.inu + r.ino;   // 住民税側に効く控除合計
+  const itDed = r.three + r.inu + r.four;
+  const inhDed = r.ina + r.inu + r.ino;
   const s=yen(document.getElementById('rStart').value)||3000000;
   const e=yen(document.getElementById('rEnd').value)||12000000;
   const st=Math.max(1,yen(document.getElementById('rStep').value)||1000000);
