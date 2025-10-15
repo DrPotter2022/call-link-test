@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>生命保険料控除シミュレーター（手動計算＋白カード＋CTA）</title>
+<title>生命保険料控除シミュレーター（同意・クリック入力・手動計算）</title>
 <style>
 :root{
   --line:#d9dee8;--ink:#111;--accent:#c00;
@@ -13,51 +13,53 @@
 *{box-sizing:border-box}
 body{margin:0;background:#f7f8fb;color:var(--ink);font-family:"Noto Sans JP",system-ui,sans-serif}
 .wrap{max-width:1100px;margin:20px auto;padding:0 16px}
-h1{font-size:1.2rem;margin:0 0 12px}
+h1{font-size:1.6rem;margin:0 0 12px}
 fieldset{border:1px solid var(--line);border-radius:10px;background:#fff;padding:12px;margin:12px 0}
 legend{font-weight:700}
 .hidden{display:none}
 
+/* 入力UI */
 input[type=text]{width:200px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-variant-numeric:tabular-nums}
 .btn{padding:10px 18px;border-radius:10px;border:1px solid #111;background:#111;color:#fff;cursor:pointer}
 .btn-ghost{padding:5px 10px;border:1px dashed #bbb;border-radius:8px;background:#fff;cursor:pointer}
-.step{border:1px solid var(--line);background:#f6f7fb;border-radius:8px;padding:5px 8px;cursor:pointer}
-.step:hover{background:#eef1f8}
+.step{border:1px solid var(--line);background:#f0f2f8;border-radius:8px;padding:5px 8px;cursor:pointer}
+.step:hover{background:#e7ebf6}
 .stepbox{display:flex;gap:4px;flex-wrap:wrap}
 .rowwrap{display:flex;align-items:center;gap:6px}
-.grid2{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin:6px 0}
 .del{border:none;background:transparent;color:#b00;cursor:pointer;font-weight:700}
 
+/* 入力欄の色 */
 .tint-new-blue input{background:var(--new-blue)}
 .tint-old-blue input{background:var(--old-blue)}
 .tint-green input{background:var(--green)}
 .tint-new-pink input{background:var(--new-pink)}
 .tint-old-pink input{background:var(--old-pink)}
 
-.calc-bar{display:flex;justify-content:center;gap:10px;margin:8px 0}
-.calc-note{color:#666;font-size:.9em}
-
-/* ②結果テーブル */
+/* ② 結果テーブル */
 .res-wrap{overflow-x:auto}
 table.res{width:100%;border-collapse:collapse;table-layout:fixed}
-table.res col.sys{width:78px}
-table.res col.main{width:auto}
-table.res td{border:1px solid var(--line);padding:0;vertical-align:middle}
-table.res .sec{background:#eaf0ff;font-weight:700;padding:6px 10px}
-.band{border-radius:6px}
+table.res col.sys{width:84px}
+table.res col.band{width:auto}
+table.res col.calc{width:33%}
+table.res td,table.res th{border:1px solid var(--line);padding:0;vertical-align:middle}
+.sec{background:#eef2ff;font-weight:800;padding:6px 10px}
+.cell{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:10px 8px}
+.lab{display:flex;align-items:center;gap:8px;min-width:0}
+.badge{border:2px solid var(--accent);border-radius:6px;padding:1px 6px;color:#c00;background:#fff;font-weight:700}
+.val{font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;font-weight:800;min-width:92px}
+.sysTag{display:flex;align-items:center;justify-content:center;font-weight:900;color:#000}
+
+/* 帯色 */
 .band-blue-n{background:var(--new-blue)}
 .band-blue-o{background:var(--old-blue)}
 .band-green{background:var(--green)}
 .band-pink-n{background:var(--new-pink)}
 .band-pink-o{background:var(--old-pink)}
-.cell{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:10px 8px;overflow:hidden}
-.lab{display:flex;align-items:center;gap:6px;white-space:normal;word-break:keep-all;flex:1 1 auto;min-width:0}
-.badge{border:2px solid var(--accent);border-radius:6px;padding:1px 6px;color:#c00;font-weight:700;background:#fff}
-.val{font-variant-numeric:tabular-nums;font-weight:800;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;flex:0 0 auto;min-width:84px}
-.sysTag{display:flex;align-items:center;justify-content:center;font-weight:800;color:#000}
-/* ② 指定セルだけ白いカードに */
-.whitebox .cell{background:#fff;border-radius:10px;padding:10px 10px}
-.whitebox .lab{gap:8px}
+
+/* A/B/C/D/E の白箱＋✏️ */
+.whitebox .cell{background:#fff;border-radius:10px;padding:10px}
+.pencil{margin-right:4px}
 
 /* 合計帯 */
 .totalBand{position:relative}
@@ -80,8 +82,11 @@ table.unused th{background:#f3f5fb;text-align:left}
 table.unused td:last-child{text-align:right}
 .badge-new{display:inline-block;border-radius:6px;background:#111;color:#fff;padding:1px 6px;font-size:.8rem}
 
-/* ⑤ CTA（きらり） */
-.cta-wrap{position:fixed;right:16px;bottom:16px;z-index:20}
+/* CTA */
+.cta-wrap{position:fixed;z-index:20;bottom:16px;right:16px}
+@media (min-width:1168px){
+  .cta-wrap{right:calc((100vw - 1100px)/2 + 8px);bottom:20px}
+}
 .cta{
   position:relative;display:inline-flex;align-items:center;gap:8px;
   padding:12px 18px;border-radius:999px;border:none;
@@ -93,19 +98,49 @@ table.unused td:last-child{text-align:right}
   transform:rotate(25deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);
   animation:shine 3.6s ease-in-out infinite;
 }
-@keyframes shine{
-  0%{left:-30%} 40%{left:140%} 100%{left:140%}
-}
+@keyframes shine{0%{left:-30%}40%{left:140%}100%{left:140%}}
 .cta:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(255,90,0,.45)}
+@media (max-width:1167px){ .wrap{padding-right:110px;padding-bottom:110px} }
+
+/* 同意ゲート */
+.gate{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.gate-card{max-width:720px;width:100%;background:#fff;border-radius:14px;border:1px solid var(--line);box-shadow:0 18px 60px rgba(0,0,0,.25);padding:20px}
+.gate-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+.ghost{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 16px;cursor:pointer}
+
+/* フッター注意文 */
+.footer-note{margin:22px auto 28px;max-width:1100px;padding:10px 14px;color:#333;background:#fff;border:1px solid var(--line);border-radius:10px;line-height:1.75}
+.footer-note a{color:#0645ad}
 </style>
 </head>
 <body>
+
+<!-- 同意ゲート -->
+<div id="consentGate" class="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <div class="gate-card">
+    <h2 id="gateTitle">ご利用前の注意</h2>
+    <div class="gate-msg" style="white-space:pre-line">
+このシミュレーターはChatGPT5を利用して、作成しました。
+様々なパターンで計算をしてみて誤差がなく計算できているようなの公開していますが、
+不備がある場合もございます。 最終的な確認は利用者自身で行ってください。
+また不備・不具合の連絡は<a href="mailto:seminar.wize@gmail.com">こちら</a>までお願いします。
+    </div>
+    <div class="gate-actions">
+      <button id="decline" class="ghost">同意しない</button>
+      <button id="agree" class="btn">同意する</button>
+    </div>
+  </div>
+</div>
+
+<!-- 本体 -->
+<div id="app" class="hidden">
 <div class="wrap">
-  <h1>◆ 給与所得者の保険料控除申告書</h1>
+  <h1>◆ 生命保険料控除シミュレーター</h1>
 
   <!-- ① 入力 -->
   <fieldset>
     <legend>① 入力</legend>
+
     <div class="grid2" style="margin-bottom:10px">
       <div class="rowwrap">
         <b style="margin-right:8px">年収</b>
@@ -121,35 +156,59 @@ table.unused td:last-child{text-align:right}
       <span>円</span>
     </div>
 
-    <div><b>【新】一般（A）</b><div id="list-genNew" class="tint-new-blue"></div><button class="btn-ghost" data-add="genNew">＋証明書を追加</button></div><hr>
-    <div><b>【旧】一般（B）</b><div id="list-genOld" class="tint-old-blue"></div><button class="btn-ghost" data-add="genOld">＋証明書を追加</button></div><hr>
-    <div><b>介護医療（C｜新のみ）</b><div id="list-medNew" class="tint-green"></div><button class="btn-ghost" data-add="medNew">＋証明書を追加</button></div><hr>
-    <div><b>【新】個人年金（D）</b><div id="list-annNew" class="tint-new-pink"></div><button class="btn-ghost" data-add="annNew">＋証明書を追加</button></div><hr>
-    <div><b>【旧】個人年金（E）</b><div id="list-annOld" class="tint-old-pink"></div><button class="btn-ghost" data-add="annOld">＋証明書を追加</button></div>
-  </fieldset>
+    <!-- A〜E -->
+    <div style="margin-top:6px">
+      <b>【新】一般（A）</b>
+      <div id="list-genNew" class="tint-new-blue"></div>
+      <button class="btn-ghost" data-add="genNew">＋証明書を追加</button>
+    </div><hr>
 
-  <div class="calc-bar">
-    <button id="calc" class="btn">計算</button>
-    <div class="calc-note">※入力・変更後も、【計算】を押すまで②〜④は更新されません。</div>
-  </div>
+    <div>
+      <b>【旧】一般（B）</b>
+      <div id="list-genOld" class="tint-old-blue"></div>
+      <button class="btn-ghost" data-add="genOld">＋証明書を追加</button>
+    </div><hr>
+
+    <div>
+      <b>介護医療（C｜新のみ）</b>
+      <div id="list-medNew" class="tint-green"></div>
+      <button class="btn-ghost" data-add="medNew">＋証明書を追加</button>
+    </div><hr>
+
+    <div>
+      <b>【新】個人年金（D）</b>
+      <div id="list-annNew" class="tint-new-pink"></div>
+      <button class="btn-ghost" data-add="annNew">＋証明書を追加</button>
+    </div><hr>
+
+    <div>
+      <b>【旧】個人年金（E）</b>
+      <div id="list-annOld" class="tint-old-pink"></div>
+      <button class="btn-ghost" data-add="annOld">＋証明書を追加</button>
+    </div>
+
+    <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
+      <button id="calc" class="btn">計算</button>
+      <span class="small">※入力・変更後も、【計算】を押すまで②〜④は更新されません。</span>
+    </div>
+  </fieldset>
 
   <!-- ② 結果 -->
   <fieldset id="fs-res" class="hidden">
-    <legend>② 結果</legend>
+    <legend>② 結果（クリックでA〜E合計編集可）</legend>
     <div class="res-wrap">
       <table class="res">
         <colgroup>
-          <col class="sys"><col class="main"><col class="main"><col class="main">
+          <col class="sys"><col class="band"><col class="calc"><col class="calc">
         </colgroup>
         <tbody>
-          <!-- 一般 -->
           <tr><td class="sec" colspan="4">一般生命保険料</td></tr>
           <tr>
             <td class="band-blue-n"><div class="cell"><div class="sysTag">新制度</div><span></span></div></td>
             <td class="band band-blue-n whitebox">
               <div class="cell">
-                <div class="lab"><span class="badge">A</span> A合計</div>
-                <div class="val"><span class="pencil">✏️</span> <span id="A" data-edit="genNew">0</span></div>
+                <div class="lab"><span class="badge">A</span> <b>A合計</b></div>
+                <div class="val"><span class="pencil">✏️</span><span id="A" data-edit="genNew">0</span></div>
               </div>
             </td>
             <td class="band band-blue-n"><div class="cell"><div class="lab"><span class="badge">①</span> 控除（新・上限40,000）</div><span id="one" class="val">0</span></div></td>
@@ -159,36 +218,34 @@ table.unused td:last-child{text-align:right}
             <td class="band-blue-o"><div class="cell"><div class="sysTag">旧制度</div><span></span></div></td>
             <td class="band band-blue-o whitebox">
               <div class="cell">
-                <div class="lab"><span class="badge">B</span> B合計</div>
-                <div class="val"><span class="pencil">✏️</span> <span id="B" data-edit="genOld">0</span></div>
+                <div class="lab"><span class="badge">B</span> <b>B合計</b></div>
+                <div class="val"><span class="pencil">✏️</span><span id="B" data-edit="genOld">0</span></div>
               </div>
             </td>
             <td class="band band-blue-o"><div class="cell"><div class="lab"><span class="badge">②</span> 控除（旧・上限50,000）</div><span id="two" class="val">0</span></div></td>
             <td class="band band-blue-o"><div class="cell"><div class="lab"><span class="badge">㋑</span> ②と③の大きい方</div><span id="ina" class="val">0</span></div></td>
           </tr>
 
-          <!-- 介護医療 -->
           <tr><td class="sec" colspan="4">介護医療保険料</td></tr>
           <tr>
             <td class="band-green"><div class="cell"><div class="sysTag">新制度</div><span></span></div></td>
             <td class="band band-green whitebox">
               <div class="cell">
-                <div class="lab"><span class="badge">C</span> C合計</div>
-                <div class="val"><span class="pencil">✏️</span> <span id="C" data-edit="medNew">0</span></div>
+                <div class="lab"><span class="badge">C</span> <b>C合計</b></div>
+                <div class="val"><span class="pencil">✏️</span><span id="C" data-edit="medNew">0</span></div>
               </div>
             </td>
             <td class="band"><div class="cell"><span></span><span></span></div></td>
             <td class="band band-green"><div class="cell"><div class="lab"><span class="badge">㋺</span> 控除（上限40,000）</div><span id="inu" class="val">0</span></div></td>
           </tr>
 
-          <!-- 個人年金 -->
           <tr><td class="sec" colspan="4">個人年金保険料</td></tr>
           <tr>
             <td class="band-pink-n"><div class="cell"><div class="sysTag">新制度</div><span></span></div></td>
             <td class="band band-pink-n whitebox">
               <div class="cell">
-                <div class="lab"><span class="badge">D</span> D合計</div>
-                <div class="val"><span class="pencil">✏️</span> <span id="D" data-edit="annNew">0</span></div>
+                <div class="lab"><span class="badge">D</span> <b>D合計</b></div>
+                <div class="val"><span class="pencil">✏️</span><span id="D" data-edit="annNew">0</span></div>
               </div>
             </td>
             <td class="band band-pink-n"><div class="cell"><div class="lab"><span class="badge">④</span> 控除（新・上限40,000）</div><span id="four" class="val">0</span></div></td>
@@ -198,15 +255,14 @@ table.unused td:last-child{text-align:right}
             <td class="band-pink-o"><div class="cell"><div class="sysTag">旧制度</div><span></span></div></td>
             <td class="band band-pink-o whitebox">
               <div class="cell">
-                <div class="lab"><span class="badge">E</span> E合計</div>
-                <div class="val"><span class="pencil">✏️</span> <span id="E" data-edit="annOld">0</span></div>
+                <div class="lab"><span class="badge">E</span> <b>E合計</b></div>
+                <div class="val"><span class="pencil">✏️</span><span id="E" data-edit="annOld">0</span></div>
               </div>
             </td>
             <td class="band band-pink-o"><div class="cell"><div class="lab"><span class="badge">⑤</span> 控除（旧・上限50,000）</div><span id="five" class="val">0</span></div></td>
             <td class="band band-pink-o"><div class="cell"><div class="lab"><span class="badge">㋩</span> ⑤と⑥の大きい方</div><span id="ino" class="val">0</span></div></td>
           </tr>
 
-          <!-- 合計 -->
           <tr>
             <td class="totalBand" colspan="4">
               <div class="totalWrap">
@@ -223,11 +279,11 @@ table.unused td:last-child{text-align:right}
   <!-- ③ 年収レンジ別の控除効果 -->
   <fieldset id="fs-inc" class="hidden">
     <legend>③ 年収レンジ別の控除効果</legend>
-    <div class="small">※限界税率は国税の速算表の目安、住民税は一律10%として概算します。</div>
+    <div class="small">※限界税率は国税の速算表の目安、住民税は一律10%として概算します。現在の年収を中心に表示レンジを自動調整します。</div>
     <table id="incTable" class="inc"></table>
   </fieldset>
 
-  <!-- ④ 未使用控除枠内訳（新制度のみ・旧制度控除を考慮） -->
+  <!-- ④ 未使用枠 -->
   <fieldset id="fs-unused" class="hidden">
     <legend>④ 未使用控除枠内訳（旧制度控除を考慮）</legend>
     <div class="small">
@@ -238,96 +294,110 @@ table.unused td:last-child{text-align:right}
   </fieldset>
 </div>
 
-<!-- ⑤ 相談予約CTA -->
+<div class="footer-note">
+このシミュレーターはChatGPT5を利用して、作成しました。<br>
+様々なパターンで計算をしてみて誤差がなく計算できているの公開していますが、万が一不備がある場合もございます。<br>
+最終的な確認は利用者自身で行ってください。<br>
+また不備・不具合の連絡は<a href="mailto:seminar.wize@gmail.com">こちら</a>までお願いします。
+</div>
+</div>
+
+<!-- CTA -->
 <div class="cta-wrap">
   <a class="cta" href="https://www.wize.uno/reserve" target="_blank" rel="noopener">✨ 相談予約をする</a>
 </div>
 
 <script>
-/* ▼フォーマット */
-const fmt = n => (Math.round(n||0)).toLocaleString('ja-JP');
-const yen = s => { if(typeof s==='number') return s; return +String(s||'0').replace(/,/g,'').replace(/[^\d.-]/g,'')||0; };
+/* ===== 同意ゲート ===== */
+(function(){
+  const gate=document.getElementById('consentGate');
+  const app=document.getElementById('app');
+  const KEY='lifeDeductionSim.consent';
+  if(localStorage.getItem(KEY)==='yes'){ gate.style.display='none'; app.classList.remove('hidden'); }
+  document.getElementById('agree').onclick=()=>{ localStorage.setItem(KEY,'yes'); gate.style.display='none'; app.classList.remove('hidden'); };
+  document.getElementById('decline').onclick=()=>alert('同意いただけない場合はご利用いただけません。');
+})();
+
+/* ===== ユーティリティ ===== */
+const fmt=n=>(Math.round(n||0)).toLocaleString('ja-JP');
+const yen=s=>{ if(typeof s==='number')return s; return +String(s||'0').replace(/,/g,'').replace(/[^\d.-]/g,'')||0; };
 document.addEventListener('input',e=>{
-  if(e.target.matches('input[type=text]')) e.target.value = fmt(yen(e.target.value));
+  if(e.target.matches('input[type=text]')) e.target.value=fmt(yen(e.target.value));
 });
 
-/* 行追加・ステップ・削除（← 計算はしない） */
-function stepGroup(){return `
-  <div class="stepbox">
+/* ===== 入力行 追加・削除・ステップ ===== */
+function stepButtons(){
+  return `<div class="stepbox">
     <button class="step" data-delta="-10000">−10,000</button>
     <button class="step" data-delta="-1000">−1,000</button>
     <button class="step reset" data-reset="true">0</button>
     <button class="step" data-delta="1000">＋1,000</button>
     <button class="step" data-delta="10000">＋10,000</button>
-  </div>`;}
+  </div>`;
+}
 function addRow(bucket){
   const host=document.getElementById('list-'+bucket);
   const row=document.createElement('div');
   row.className='grid2';
-  row.innerHTML=`<div class="rowwrap"><input type="text" value="0">${stepGroup()}</div><button class="del">✕</button>`;
+  row.innerHTML=`<div class="rowwrap"><input type="text" value="0">${stepButtons()}</div><button class="del">✕</button>`;
   host.appendChild(row);
 }
 ['genNew','genOld','medNew','annNew','annOld'].forEach(addRow);
 
+/* ▼ 汎用ステップ（A〜E用）— 年収用（data-targetあり）は除外してバグ回避 */
 document.addEventListener('click',e=>{
-  if(e.target.dataset.add){ addRow(e.target.dataset.add); return; }
-  if(e.target.classList.contains('del')){ e.target.closest('.grid2')?.remove(); return; }
   const btn=e.target.closest('.step'); if(!btn) return;
-  const inp=e.target.closest('.rowwrap')?.querySelector('input'); if(!inp) return;
+  if(btn.dataset.target) return;                 // ← これが重要（年収ハンドラとの二重発火を防止）
+  const wrap=e.target.closest('.rowwrap'), inp=wrap?.querySelector('input'); if(!inp) return;
   if(btn.dataset.reset){ inp.value='0'; return; }
   inp.value=fmt(Math.max(0, yen(inp.value)+(+btn.dataset.delta||0)));
 });
 
-/* A〜E 合計セルをクリックで直接入力（← 計算はボタンまで保留） */
+/* ▼ 年収ステップ（専用） */
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('.step'); if(!btn||!btn.dataset.target) return;
+  const inp=document.getElementById(btn.dataset.target);
+  if(btn.dataset.reset){ inp.value='0'; return; }
+  inp.value=fmt(Math.max(0, yen(inp.value)+(+btn.dataset.delta||0)));
+});
+
+/* A〜E 合計セルクリックで合計を直接上書き */
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-edit]'); if(!t) return;
   const bucket=t.dataset.edit;
-  const cur=sum(bucket);
-  const v=window.prompt('この区分の合計額を入力', fmt(cur));
+  const current=sum(bucket);
+  const v=window.prompt('この区分の合計額を入力', fmt(current));
   if(v==null) return;
   const n=yen(v);
   const inputs=[...document.querySelectorAll('#list-'+bucket+' input')];
   if(inputs.length===0) addRow(bucket);
   const all=[...document.querySelectorAll('#list-'+bucket+' input')];
-  all[0].value=fmt(n);
-  for(let i=1;i<all.length;i++) all[i].value='0';
+  all[0].value=fmt(n); for(let i=1;i<all.length;i++) all[i].value='0';
 });
 
-/* ▼控除計算式（新旧） */
+/* ===== 計算式 ===== */
 function newSys(x){ if(x<=20000)return x; if(x<=40000)return x/2+10000; if(x<=80000)return x/4+20000; return 40000; }
 function oldSys(x){ if(x<=25000)return x; if(x<=50000)return x/2+12500; if(x<=100000)return x/4+25000; return 50000; }
-/* 新制度の逆関数（必要控除→必要保険料の最小値） */
-function invNewSys(d){
-  if(d<=0) return 0;
-  if(d<=20000) return d;
-  if(d<=30000) return 2*(d-10000);
-  if(d<=40000) return 4*(d-20000);
-  return 80000; // 満額
-}
+function invNewSys(d){ if(d<=0)return 0; if(d<=20000)return d; if(d<=30000)return 2*(d-10000); if(d<=40000)return 4*(d-20000); return 80000; }
 function sum(bucket){ let t=0; document.querySelectorAll('#list-'+bucket+' input').forEach(i=>t+=yen(i.value)); return t; }
 
-/* 計算本体 */
+/* ===== ②計算本体（ボタン押下） ===== */
 function compute(){
   const A=sum('genNew'), B=sum('genOld'), C=sum('medNew'), D=sum('annNew'), E=sum('annOld');
-
-  const one   = Math.min(40000, newSys(A));     // ①
-  const two   = Math.min(50000, oldSys(B));     // ②
-  const three = Math.min(40000, one+two);       // ③
-  const medI  = Math.min(40000, newSys(C));     // 介護医療（所得税）
-  const four  = Math.min(40000, newSys(D));     // ④
-  const five  = Math.min(50000, oldSys(E));     // ⑤
-  const six   = Math.min(40000, four+five);     // ⑥
-
-  const ina   = Math.max(two, three);           // ㋑
-  const inu   = medI;                           // ㋺
-  const ino   = Math.max(five, six);            // ㋩
-
-  const totalResident = ina + inu + ino;        // 住民税控除合計
-  const totalIncome   = three + medI + six;     // 所得税控除合計
+  const one=Math.min(40000,newSys(A));
+  const two=Math.min(50000,oldSys(B));
+  const three=Math.min(40000, one+two);
+  const medI=Math.min(40000,newSys(C));
+  const four=Math.min(40000,newSys(D));
+  const five=Math.min(50000,oldSys(E));
+  const six=Math.min(40000, four+five);
+  const ina=Math.max(two,three);
+  const inu=medI;
+  const ino=Math.max(five,six);
+  const totalResident=ina+inu+ino;
+  const totalIncome  =three+medI+six;
   return {A,B,C,D,E,one,two,three,medI,four,five,six,ina,inu,ino,totalResident,totalIncome};
 }
-
-/* ②反映 */
 function fill(){
   const r=compute(), set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=fmt(v);};
   set('A',r.A); set('B',r.B); set('C',r.C); set('D',r.D); set('E',r.E);
@@ -336,88 +406,86 @@ function fill(){
   document.getElementById('ina').textContent=fmt(r.ina);
   document.getElementById('ino').textContent=fmt(r.ino);
   document.getElementById('kanaTotal').textContent=fmt(r.totalResident);
-  buildIncomeTable(r);     // ③
-  buildUnusedTable(r);     // ④
-  // ②〜④を表示
+
+  buildIncomeTable(r);
+  buildUnusedTable(r);
+
   document.getElementById('fs-res').classList.remove('hidden');
   document.getElementById('fs-inc').classList.remove('hidden');
   document.getElementById('fs-unused').classList.remove('hidden');
 }
+document.getElementById('calc').addEventListener('click', fill);
 
-/* ▼③ 年収レンジ別の控除効果 */
+/* ===== ③ 年収レンジ表（現在の年収を中心にレンジを自動調整） ===== */
 function marginalRate(annual){
-  const y = annual;
-  if(y <= 1950000) return 0.05;
-  if(y <= 3300000) return 0.10;
-  if(y <= 6950000) return 0.20;
-  if(y <= 9000000) return 0.23;
-  if(y <= 18000000) return 0.33;
-  if(y <= 40000000) return 0.40;
+  const y=annual;
+  if(y<=1950000) return 0.05;
+  if(y<=3300000) return 0.10;
+  if(y<=6950000) return 0.20;
+  if(y<=9000000) return 0.23;
+  if(y<=18000000) return 0.33;
+  if(y<=40000000) return 0.40;
   return 0.45;
 }
 function buildIncomeTable(r){
   const host=document.getElementById('incTable');
   const base=yen(document.getElementById('income').value)||0;
-  const incomes=[]; for(let v=2000000; v<=12000000; v+=1000000) incomes.push(v);
-  let html = '<tr><th>年収</th><th>限界税率</th><th>控除額（所得税）</th><th>控除額（住民税）</th><th>合計軽減額</th></tr>';
+
+  // 表示レンジ：2,000,000〜12,000,000の範囲で、現在の年収を中心に±4〜5百万円を表示
+  const STEP=1000000, MIN=2000000, MAX=12000000;
+  let start=Math.floor(base/STEP)*STEP - 4000000;
+  start=Math.max(MIN, Math.min(start, MAX-10*STEP)); // 11行分出したいので-10STEPクランプ
+  const incomes=[];
+  for(let v=start; v<=Math.min(MAX,start+10*STEP); v+=STEP) incomes.push(v);
+
+  let html='<tr><th>年収</th><th>限界税率</th><th>控除額（所得税）</th><th>控除額（住民税）</th><th>合計軽減額</th></tr>';
   incomes.forEach(v=>{
-    const rate = marginalRate(v);
-    const incomeSave   = r.totalIncome   * rate;
-    const residentSave = r.totalResident * 0.10;
-    const total = incomeSave + residentSave;
-    const hit = (Math.abs(v - base) < 500000) ? ' class="hit"' : '';
-    html += `<tr${hit}>
-      <td>${fmt(v)}</td>
-      <td>${Math.round(rate*100)}%</td>
-      <td>${fmt(incomeSave)}</td>
-      <td>${fmt(residentSave)}</td>
-      <td>${fmt(total)}</td>
-    </tr>`;
+    const rate=marginalRate(v);
+    const incomeSave=r.totalIncome*rate;
+    const residentSave=r.totalResident*0.10;
+    const total=incomeSave+residentSave;
+    const hit=(v===Math.floor(base/STEP)*STEP)?' class="hit"':'';
+    html+=`<tr${hit}><td>${fmt(v)}</td><td>${Math.round(rate*100)}%</td><td>${fmt(incomeSave)}</td><td>${fmt(residentSave)}</td><td>${fmt(total)}</td></tr>`;
   });
-  host.innerHTML = html;
+  host.innerHTML=html;
 }
 
-/* ▼④ 未使用控除枠（旧制度控除を考慮した新制度側の必要保険料） */
+/* ===== ④ 未使用枠（旧制度控除を考慮） ===== */
+function invNewSys(d){
+  if(d<=0) return 0;
+  if(d<=20000) return d;
+  if(d<=30000) return 2*(d-10000);
+  if(d<=40000) return 4*(d-20000);
+  return 80000;
+}
 function remainForNew(currentNewPremium, oldDeduction){
-  // 新旧合算の控除上限は40,000。旧制度で既に確保した控除（②/⑤、ただし40,000で頭打ち）を差し引く。
-  const targetDed = Math.max(0, 40000 - Math.min(40000, oldDeduction||0));
-  // すでに新制度の控除が目標を満たしていれば残りは0
-  const currentNewDed = newSys(currentNewPremium);
-  if(currentNewDed >= targetDed) return 0;
-  // 目標控除を満たす最小の新制度保険料を逆算し、現在との差分を返す
-  const neededPremium = invNewSys(targetDed);
+  const targetDed=Math.max(0, 40000 - Math.min(40000, oldDeduction||0));
+  const curDed=newSys(currentNewPremium);
+  if(curDed>=targetDed) return 0;
+  const neededPremium=invNewSys(targetDed);
   return Math.max(0, neededPremium - currentNewPremium);
 }
 function buildUnusedTable(r){
-  const remainA = remainForNew(r.A, r.two);  // 一般：旧制度②を考慮
-  const remainC = Math.max(0, 80000 - r.C);  // 介護医療：新のみ
-  const remainD = remainForNew(r.D, r.five); // 年金：旧制度⑤を考慮
+  const remainA=remainForNew(r.A, r.two);
+  const remainC=Math.max(0, 80000 - r.C);
+  const remainD=remainForNew(r.D, r.five);
 
-  const rows = [
+  const rows=[
     {label:'一般生命保険料（新制度）', amt:r.A, remain:remainA},
     {label:'介護医療保険料（新制度）', amt:r.C, remain:remainC},
-    {label:'個人年金保険料（新制度）', amt:r.D, remain:remainD}
+    {label:'個人年金保険料（新制度）', amt:r.D, remain:remainD},
   ];
-  let html = '<tr><th>区分</th><th>現在の年額</th><th>未使用枠（年額）</th><th>未使用枠（月額目安）</th></tr>';
+  let html='<tr><th>区分</th><th>現在の年額</th><th>未使用枠（年額）</th><th>未使用枠（月額目安）</th></tr>';
   rows.forEach(x=>{
-    html += `<tr>
+    html+=`<tr>
       <td><span class="badge-new">新</span> ${x.label}</td>
       <td>${fmt(x.amt)}</td>
       <td>${fmt(x.remain)}</td>
       <td>${fmt(x.remain/12)}</td>
     </tr>`;
   });
-  document.getElementById('unusedTable').innerHTML = html;
+  document.getElementById('unusedTable').innerHTML=html;
 }
-
-/* 計算ボタン */
-document.getElementById('calc').addEventListener('click', fill);
 </script>
-  
-
 </body>
 </html>
-
-
-
-
