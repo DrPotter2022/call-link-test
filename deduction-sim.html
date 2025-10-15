@@ -3,20 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>生命保険料控除シミュレーター（列幅最適化＋未使用枠）</title>
+<title>生命保険料控除シミュレーター（手動計算＋白カード＋CTA）</title>
 <style>
 :root{
   --line:#d9dee8;--ink:#111;--accent:#c00;
   --new-blue:#d8e9ff;--old-blue:#b7d1f1;
   --green:#dcf7e1;--new-pink:#ffe2eb;--old-pink:#f7c6d4;
 }
+*{box-sizing:border-box}
 body{margin:0;background:#f7f8fb;color:var(--ink);font-family:"Noto Sans JP",system-ui,sans-serif}
 .wrap{max-width:1100px;margin:20px auto;padding:0 16px}
 h1{font-size:1.2rem;margin:0 0 12px}
 fieldset{border:1px solid var(--line);border-radius:10px;background:#fff;padding:12px;margin:12px 0}
 legend{font-weight:700}
+.hidden{display:none}
+
 input[type=text]{width:200px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-variant-numeric:tabular-nums}
-.btn{padding:8px 14px;border-radius:8px;border:1px solid #111;background:#111;color:#fff;cursor:pointer}
+.btn{padding:10px 18px;border-radius:10px;border:1px solid #111;background:#111;color:#fff;cursor:pointer}
 .btn-ghost{padding:5px 10px;border:1px dashed #bbb;border-radius:8px;background:#fff;cursor:pointer}
 .step{border:1px solid var(--line);background:#f6f7fb;border-radius:8px;padding:5px 8px;cursor:pointer}
 .step:hover{background:#eef1f8}
@@ -35,9 +38,9 @@ input[type=text]{width:200px;padding:6px 8px;border:1px solid var(--line);border
 .calc-note{color:#666;font-size:.9em}
 
 /* ②結果テーブル */
-.res-wrap{overflow-x:auto} /* 念のため横スクロール保険 */
+.res-wrap{overflow-x:auto}
 table.res{width:100%;border-collapse:collapse;table-layout:fixed}
-table.res col.sys{width:78px}  /* 1列目をギュッと詰める */
+table.res col.sys{width:78px}
 table.res col.main{width:auto}
 table.res td{border:1px solid var(--line);padding:0;vertical-align:middle}
 table.res .sec{background:#eaf0ff;font-weight:700;padding:6px 10px}
@@ -47,18 +50,22 @@ table.res .sec{background:#eaf0ff;font-weight:700;padding:6px 10px}
 .band-green{background:var(--green)}
 .band-pink-n{background:var(--new-pink)}
 .band-pink-o{background:var(--old-pink)}
-/* セル：左ラベルを伸縮、数値は右に固定。右端切れ防止 */
 .cell{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:10px 8px;overflow:hidden}
 .lab{display:flex;align-items:center;gap:6px;white-space:normal;word-break:keep-all;flex:1 1 auto;min-width:0}
 .badge{border:2px solid var(--accent);border-radius:6px;padding:1px 6px;color:#c00;font-weight:700;background:#fff}
 .val{font-variant-numeric:tabular-nums;font-weight:800;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;flex:0 0 auto;min-width:84px}
 .sysTag{display:flex;align-items:center;justify-content:center;font-weight:800;color:#000}
+/* ② 指定セルだけ白いカードに */
+.whitebox .cell{background:#fff;border-radius:10px;padding:10px 10px}
+.whitebox .lab{gap:8px}
+
+/* 合計帯 */
 .totalBand{position:relative}
 .totalBand::before{content:"";position:absolute;inset:0;border:3px solid #111;border-radius:10px;background:#fff}
 .totalWrap{position:relative;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;gap:12px}
 .totalWrap .sum{font-size:1.3rem;font-weight:900}
 
-/* ③年収レンジ表 */
+/* ③ 年収レンジ表 */
 table.inc{width:100%;border-collapse:collapse;background:#fff;margin-top:6px}
 table.inc th,table.inc td{border:1px solid var(--line);padding:8px 10px;text-align:right}
 table.inc th{background:#f3f5fb;font-weight:800}
@@ -72,6 +79,24 @@ table.unused th,table.unused td{border:1px solid var(--line);padding:8px 10px}
 table.unused th{background:#f3f5fb;text-align:left}
 table.unused td:last-child{text-align:right}
 .badge-new{display:inline-block;border-radius:6px;background:#111;color:#fff;padding:1px 6px;font-size:.8rem}
+
+/* ⑤ CTA（きらり） */
+.cta-wrap{position:fixed;right:16px;bottom:16px;z-index:20}
+.cta{
+  position:relative;display:inline-flex;align-items:center;gap:8px;
+  padding:12px 18px;border-radius:999px;border:none;
+  color:#fff;background:linear-gradient(135deg,#ff4d6d,#ff7a00);
+  box-shadow:0 6px 20px rgba(255,90,0,.35);text-decoration:none;font-weight:900;
+}
+.cta::after{
+  content:"";position:absolute;top:-30%;left:-30%;width:60%;height:160%;
+  transform:rotate(25deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);
+  animation:shine 3.6s ease-in-out infinite;
+}
+@keyframes shine{
+  0%{left:-30%} 40%{left:140%} 100%{left:140%}
+}
+.cta:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(255,90,0,.45)}
 </style>
 </head>
 <body>
@@ -105,11 +130,11 @@ table.unused td:last-child{text-align:right}
 
   <div class="calc-bar">
     <button id="calc" class="btn">計算</button>
-    <div class="calc-note">（A〜E合計セルもクリックで直接入力できます）</div>
+    <div class="calc-note">※入力・変更後も、【計算】を押すまで②〜④は更新されません。</div>
   </div>
 
   <!-- ② 結果 -->
-  <fieldset>
+  <fieldset id="fs-res" class="hidden">
     <legend>② 結果</legend>
     <div class="res-wrap">
       <table class="res">
@@ -121,13 +146,23 @@ table.unused td:last-child{text-align:right}
           <tr><td class="sec" colspan="4">一般生命保険料</td></tr>
           <tr>
             <td class="band-blue-n"><div class="cell"><div class="sysTag">新制度</div><span></span></div></td>
-            <td class="band band-blue-n"><div class="cell"><div class="lab"><span class="badge">A</span> A合計</div><span id="A" class="val" data-edit="genNew">0</span></div></td>
+            <td class="band band-blue-n whitebox">
+              <div class="cell">
+                <div class="lab"><span class="badge">A</span> A合計</div>
+                <div class="val"><span class="pencil">✏️</span> <span id="A" data-edit="genNew">0</span></div>
+              </div>
+            </td>
             <td class="band band-blue-n"><div class="cell"><div class="lab"><span class="badge">①</span> 控除（新・上限40,000）</div><span id="one" class="val">0</span></div></td>
             <td class="band band-blue-n"><div class="cell"><div class="lab"><span class="badge">③</span> ①＋②（上限40,000）</div><span id="three" class="val">0</span></div></td>
           </tr>
           <tr>
             <td class="band-blue-o"><div class="cell"><div class="sysTag">旧制度</div><span></span></div></td>
-            <td class="band band-blue-o"><div class="cell"><div class="lab"><span class="badge">B</span> B合計</div><span id="B" class="val" data-edit="genOld">0</span></div></td>
+            <td class="band band-blue-o whitebox">
+              <div class="cell">
+                <div class="lab"><span class="badge">B</span> B合計</div>
+                <div class="val"><span class="pencil">✏️</span> <span id="B" data-edit="genOld">0</span></div>
+              </div>
+            </td>
             <td class="band band-blue-o"><div class="cell"><div class="lab"><span class="badge">②</span> 控除（旧・上限50,000）</div><span id="two" class="val">0</span></div></td>
             <td class="band band-blue-o"><div class="cell"><div class="lab"><span class="badge">㋑</span> ②と③の大きい方</div><span id="ina" class="val">0</span></div></td>
           </tr>
@@ -136,7 +171,12 @@ table.unused td:last-child{text-align:right}
           <tr><td class="sec" colspan="4">介護医療保険料</td></tr>
           <tr>
             <td class="band-green"><div class="cell"><div class="sysTag">新制度</div><span></span></div></td>
-            <td class="band band-green"><div class="cell"><div class="lab"><span class="badge">C</span> C合計</div><span id="C" class="val" data-edit="medNew">0</span></div></td>
+            <td class="band band-green whitebox">
+              <div class="cell">
+                <div class="lab"><span class="badge">C</span> C合計</div>
+                <div class="val"><span class="pencil">✏️</span> <span id="C" data-edit="medNew">0</span></div>
+              </div>
+            </td>
             <td class="band"><div class="cell"><span></span><span></span></div></td>
             <td class="band band-green"><div class="cell"><div class="lab"><span class="badge">㋺</span> 控除（上限40,000）</div><span id="inu" class="val">0</span></div></td>
           </tr>
@@ -145,13 +185,23 @@ table.unused td:last-child{text-align:right}
           <tr><td class="sec" colspan="4">個人年金保険料</td></tr>
           <tr>
             <td class="band-pink-n"><div class="cell"><div class="sysTag">新制度</div><span></span></div></td>
-            <td class="band band-pink-n"><div class="cell"><div class="lab"><span class="badge">D</span> D合計</div><span id="D" class="val" data-edit="annNew">0</span></div></td>
+            <td class="band band-pink-n whitebox">
+              <div class="cell">
+                <div class="lab"><span class="badge">D</span> D合計</div>
+                <div class="val"><span class="pencil">✏️</span> <span id="D" data-edit="annNew">0</span></div>
+              </div>
+            </td>
             <td class="band band-pink-n"><div class="cell"><div class="lab"><span class="badge">④</span> 控除（新・上限40,000）</div><span id="four" class="val">0</span></div></td>
             <td class="band band-pink-n"><div class="cell"><div class="lab"><span class="badge">⑥</span> ④＋⑤（上限40,000）</div><span id="six" class="val">0</span></div></td>
           </tr>
           <tr>
             <td class="band-pink-o"><div class="cell"><div class="sysTag">旧制度</div><span></span></div></td>
-            <td class="band band-pink-o"><div class="cell"><div class="lab"><span class="badge">E</span> E合計</div><span id="E" class="val" data-edit="annOld">0</span></div></td>
+            <td class="band band-pink-o whitebox">
+              <div class="cell">
+                <div class="lab"><span class="badge">E</span> E合計</div>
+                <div class="val"><span class="pencil">✏️</span> <span id="E" data-edit="annOld">0</span></div>
+              </div>
+            </td>
             <td class="band band-pink-o"><div class="cell"><div class="lab"><span class="badge">⑤</span> 控除（旧・上限50,000）</div><span id="five" class="val">0</span></div></td>
             <td class="band band-pink-o"><div class="cell"><div class="lab"><span class="badge">㋩</span> ⑤と⑥の大きい方</div><span id="ino" class="val">0</span></div></td>
           </tr>
@@ -171,29 +221,37 @@ table.unused td:last-child{text-align:right}
   </fieldset>
 
   <!-- ③ 年収レンジ別の控除効果 -->
-  <fieldset>
+  <fieldset id="fs-inc" class="hidden">
     <legend>③ 年収レンジ別の控除効果</legend>
     <div class="small">※限界税率は国税の速算表の目安、住民税は一律10%として概算します。</div>
     <table id="incTable" class="inc"></table>
   </fieldset>
 
-  <!-- ④ 未使用控除枠内訳（新制度のみ） -->
-  <fieldset>
-    <legend>④ 未使用控除枠内訳（新制度のみ）</legend>
-    <div class="small">※新制度は保険料80,000円で控除40,000円に達します。残り年額＝max(0, 80,000 − 現在の年額)。</div>
+  <!-- ④ 未使用控除枠内訳（新制度のみ・旧制度控除を考慮） -->
+  <fieldset id="fs-unused" class="hidden">
+    <legend>④ 未使用控除枠内訳（旧制度控除を考慮）</legend>
+    <div class="small">
+      ※一般・年金は「新旧合算の控除上限40,000円」を基準に、旧制度で既に確保済みの控除額（②・⑤）を差し引いて、
+      新制度で追加が必要な保険料（年額）を逆算しています。介護医療は新制度のみ対象です。
+    </div>
     <table id="unusedTable" class="unused"></table>
   </fieldset>
 </div>
 
+<!-- ⑤ 相談予約CTA -->
+<div class="cta-wrap">
+  <a class="cta" href="https://www.wize.uno/reserve" target="_blank" rel="noopener">✨ 相談予約をする</a>
+</div>
+
 <script>
-/* ▼ユーティリティ */
+/* ▼フォーマット */
 const fmt = n => (Math.round(n||0)).toLocaleString('ja-JP');
 const yen = s => { if(typeof s==='number') return s; return +String(s||'0').replace(/,/g,'').replace(/[^\d.-]/g,'')||0; };
 document.addEventListener('input',e=>{
   if(e.target.matches('input[type=text]')) e.target.value = fmt(yen(e.target.value));
 });
 
-/* 行追加・ステップ・削除 */
+/* 行追加・ステップ・削除（← 計算はしない） */
 function stepGroup(){return `
   <div class="stepbox">
     <button class="step" data-delta="-10000">−10,000</button>
@@ -212,15 +270,15 @@ function addRow(bucket){
 ['genNew','genOld','medNew','annNew','annOld'].forEach(addRow);
 
 document.addEventListener('click',e=>{
-  if(e.target.dataset.add){ addRow(e.target.dataset.add); fill(); return; }
-  if(e.target.classList.contains('del')){ e.target.closest('.grid2')?.remove(); fill(); return; }
+  if(e.target.dataset.add){ addRow(e.target.dataset.add); return; }
+  if(e.target.classList.contains('del')){ e.target.closest('.grid2')?.remove(); return; }
   const btn=e.target.closest('.step'); if(!btn) return;
   const inp=e.target.closest('.rowwrap')?.querySelector('input'); if(!inp) return;
-  if(btn.dataset.reset){ inp.value='0'; fill(); return; }
-  inp.value=fmt(Math.max(0, yen(inp.value)+(+btn.dataset.delta||0))); fill();
+  if(btn.dataset.reset){ inp.value='0'; return; }
+  inp.value=fmt(Math.max(0, yen(inp.value)+(+btn.dataset.delta||0)));
 });
 
-/* A〜E合計セルをクリックで直接入力 */
+/* A〜E 合計セルをクリックで直接入力（← 計算はボタンまで保留） */
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-edit]'); if(!t) return;
   const bucket=t.dataset.edit;
@@ -233,35 +291,39 @@ document.addEventListener('click',e=>{
   const all=[...document.querySelectorAll('#list-'+bucket+' input')];
   all[0].value=fmt(n);
   for(let i=1;i<all.length;i++) all[i].value='0';
-  fill();
 });
 
-/* ▼控除計算式 */
+/* ▼控除計算式（新旧） */
 function newSys(x){ if(x<=20000)return x; if(x<=40000)return x/2+10000; if(x<=80000)return x/4+20000; return 40000; }
 function oldSys(x){ if(x<=25000)return x; if(x<=50000)return x/2+12500; if(x<=100000)return x/4+25000; return 50000; }
+/* 新制度の逆関数（必要控除→必要保険料の最小値） */
+function invNewSys(d){
+  if(d<=0) return 0;
+  if(d<=20000) return d;
+  if(d<=30000) return 2*(d-10000);
+  if(d<=40000) return 4*(d-20000);
+  return 80000; // 満額
+}
 function sum(bucket){ let t=0; document.querySelectorAll('#list-'+bucket+' input').forEach(i=>t+=yen(i.value)); return t; }
 
 /* 計算本体 */
 function compute(){
   const A=sum('genNew'), B=sum('genOld'), C=sum('medNew'), D=sum('annNew'), E=sum('annOld');
 
-  // 所得税側（国税）控除額
-  const one   = Math.min(40000, newSys(A));     // ①（新 一般）
-  const two   = Math.min(50000, oldSys(B));     // ②（旧 一般）
+  const one   = Math.min(40000, newSys(A));     // ①
+  const two   = Math.min(50000, oldSys(B));     // ②
   const three = Math.min(40000, one+two);       // ③
   const medI  = Math.min(40000, newSys(C));     // 介護医療（所得税）
-  const four  = Math.min(40000, newSys(D));     // ④（新 年金）
-  const five  = Math.min(50000, oldSys(E));     // ⑤（旧 年金）
+  const four  = Math.min(40000, newSys(D));     // ④
+  const five  = Math.min(50000, oldSys(E));     // ⑤
   const six   = Math.min(40000, four+five);     // ⑥
 
-  // 住民税側
   const ina   = Math.max(two, three);           // ㋑
   const inu   = medI;                           // ㋺
   const ino   = Math.max(five, six);            // ㋩
 
-  const totalResident = ina + inu + ino;        // 住民税控除合計（黒枠）
-  const totalIncome   = three + medI + six;     // 所得税控除合計（レンジ表用）
-
+  const totalResident = ina + inu + ino;        // 住民税控除合計
+  const totalIncome   = three + medI + six;     // 所得税控除合計
   return {A,B,C,D,E,one,two,three,medI,four,five,six,ina,inu,ino,totalResident,totalIncome};
 }
 
@@ -271,10 +333,15 @@ function fill(){
   set('A',r.A); set('B',r.B); set('C',r.C); set('D',r.D); set('E',r.E);
   set('one',r.one); set('two',r.two); set('three',r.three);
   set('inu',r.inu); set('four',r.four); set('five',r.five); set('six',r.six);
-  set('ina',r.ina); set('ino',r.ino);
+  document.getElementById('ina').textContent=fmt(r.ina);
+  document.getElementById('ino').textContent=fmt(r.ino);
   document.getElementById('kanaTotal').textContent=fmt(r.totalResident);
   buildIncomeTable(r);     // ③
   buildUnusedTable(r);     // ④
+  // ②〜④を表示
+  document.getElementById('fs-res').classList.remove('hidden');
+  document.getElementById('fs-inc').classList.remove('hidden');
+  document.getElementById('fs-unused').classList.remove('hidden');
 }
 
 /* ▼③ 年収レンジ別の控除効果 */
@@ -310,35 +377,41 @@ function buildIncomeTable(r){
   host.innerHTML = html;
 }
 
-/* ▼④ 未使用控除枠（新制度のみ：A,C,D） */
-function unusedPremiumRemain(currentAnnual){
-  // 新制度で控除満額(40,000)になるのは保険料80,000円。そこまでの残り年額。
-  return Math.max(0, 80000 - currentAnnual);
+/* ▼④ 未使用控除枠（旧制度控除を考慮した新制度側の必要保険料） */
+function remainForNew(currentNewPremium, oldDeduction){
+  // 新旧合算の控除上限は40,000。旧制度で既に確保した控除（②/⑤、ただし40,000で頭打ち）を差し引く。
+  const targetDed = Math.max(0, 40000 - Math.min(40000, oldDeduction||0));
+  // すでに新制度の控除が目標を満たしていれば残りは0
+  const currentNewDed = newSys(currentNewPremium);
+  if(currentNewDed >= targetDed) return 0;
+  // 目標控除を満たす最小の新制度保険料を逆算し、現在との差分を返す
+  const neededPremium = invNewSys(targetDed);
+  return Math.max(0, neededPremium - currentNewPremium);
 }
 function buildUnusedTable(r){
+  const remainA = remainForNew(r.A, r.two);  // 一般：旧制度②を考慮
+  const remainC = Math.max(0, 80000 - r.C);  // 介護医療：新のみ
+  const remainD = remainForNew(r.D, r.five); // 年金：旧制度⑤を考慮
+
   const rows = [
-    {label:'一般生命保険料（新制度）', amt:r.A,  color:'var(--new-blue)'},
-    {label:'介護医療保険料（新制度）', amt:r.C,  color:'var(--green)'},
-    {label:'個人年金保険料（新制度）', amt:r.D,  color:'var(--new-pink)'}
+    {label:'一般生命保険料（新制度）', amt:r.A, remain:remainA},
+    {label:'介護医療保険料（新制度）', amt:r.C, remain:remainC},
+    {label:'個人年金保険料（新制度）', amt:r.D, remain:remainD}
   ];
   let html = '<tr><th>区分</th><th>現在の年額</th><th>未使用枠（年額）</th><th>未使用枠（月額目安）</th></tr>';
   rows.forEach(x=>{
-    const remain = unusedPremiumRemain(x.amt);
     html += `<tr>
       <td><span class="badge-new">新</span> ${x.label}</td>
       <td>${fmt(x.amt)}</td>
-      <td>${fmt(remain)}</td>
-      <td>${fmt(remain/12)}</td>
+      <td>${fmt(x.remain)}</td>
+      <td>${fmt(x.remain/12)}</td>
     </tr>`;
   });
   document.getElementById('unusedTable').innerHTML = html;
 }
 
-/* ボタン */
-document.getElementById('calc').addEventListener('click',fill);
-
-/* 初期描画 */
-fill();
+/* 計算ボタン */
+document.getElementById('calc').addEventListener('click', fill);
 </script>
 </body>
 </html>
