@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>生命保険料控除シミュレーター（2026年特例対応）</title>
+<style>
+  :root{
+    --blue:#e8f1ff; --blue-deep:#cfe2ff;
+    --green:#e9f8ea; --pink:#ffe9ef; --rose:#ffd7e0;
+    --ink:#1f2937; --muted:#6b7280;
+  }
+  body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",meiryo,sans-serif;background:#f6f7fb;color:#1f2937;line-height:1.65}
+  h1{font-size:26px;margin:20px 12px 8px}
+  .card{background:#fff;border-radius:12px;padding:14px 16px;margin:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .mono{font-feature-settings:"tnum";font-variant-numeric:tabular-nums}
+  input[type="text"]{height:38px;border:1px solid #d1d5db;border-radius:10px;padding:0 10px;width:170px;font-size:15px;background:#fff}
+  .btn{height:38px;border-radius:10px;border:1px solid #d1d5db;padding:0 12px;background:#fff;cursor:pointer}
+  .btn:hover{background:#fafafa}
+  .btn.primary{background:#111827;color:#fff;border-color:#111827}
+  .badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;border:1px solid #ef4444;color:#b91c1c;background:#fff;font-weight:700;margin-right:6px}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid #e5e7eb}
+  .grid-line{padding:10px;border-radius:12px}
+  .bg-new{background:var(--blue)}
+  .bg-old{background:var(--blue-deep)}
+  .bg-care{background:var(--green)}
+  .bg-dnew{background:var(--pink)}
+  .bg-eold{background:var(--rose)}
+  .res-row{display:grid;grid-template-columns:220px 1.5fr 90px 1.6fr 110px;gap:10px;align-items:center}
+  .res-card{border-radius:12px;padding:10px}
+  .capnote{color:#444}
+  .num{font-weight:700;text-align:right}
+  .sumbar{border-radius:12px;border:3px solid #111827;padding:12px;background:#fff}
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{border:1px solid #e5e7eb;padding:8px}
+  .table th{background:#f3f4f6}
+  .small{font-size:12px;color:#6b7280}
+  .cta{position:fixed;right:22px;bottom:22px;background:linear-gradient(135deg,#ff9966,#ff5e62);color:#fff;border:0;border-radius:999px;padding:14px 20px;font-weight:700;box-shadow:0 8px 20px rgba(255,94,98,.35);cursor:pointer}
+  .cta::after{content:"✨";margin-left:6px;animation:shine 2.2s infinite}
+  @keyframes shine{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+  .agree{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:99}
+  .agree .modal{background:#fff;border-radius:16px;padding:20px;max-width:760px}
+  .ok{background:#111827;color:#fff;border:0;border-radius:10px;padding:10px 16px;margin-top:10px;cursor:pointer}
+</style>
+</head>
+<body>
+<h1>◆ 生命保険料控除シミュレーター（2026年特例対応）</h1>
+
+<!-- ① 入力 -->
+<div class="card">
+  <div class="row" style="gap:6px;flex-wrap:wrap"><b>① 入力</b></div>
+  <div class="row" style="gap:6px;flex-wrap:wrap">
+    <div>年収：</div>
+    <input id="income" class="mono" type="text" value="4,520,000" />
+    <span>円</span>
+    <button class="btn" data-inc="-1000000">-1,000,000</button>
+    <button class="btn" data-inc="-100000">-100,000</button>
+    <button class="btn" data-inc="0">0</button>
+    <button class="btn" data-inc="100000">+100,000</button>
+    <button class="btn" data-inc="1000000">+1,000,000</button>
+  </div>
+  <div class="small" style="margin:6px 0 12px">※A〜Eは0初期値。＋証明書を追加で明細行を増やせます。</div>
+  <div id="inputs"></div>
+  <label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+    <input id="sp2026" type="checkbox" />
+    <span>2026年特例（23歳未満扶養親族あり）を適用</span>
+  </label>
+  <div class="small">※適用時は「新・一般（所得税）」上限 <b>60,000円</b>・計算式もしきいを 30/60/120 千円基準に変更。</div>
+  <div style="margin-top:12px"><button id="calc" class="btn primary">計算</button></div>
+</div>
+
+<!-- ② 結果 -->
+<div class="card" id="resultsCard" style="display:none">
+  <b>② 結果（クリックでA〜Eは上の入力を編集）</b>
+
+  <!-- 一般生命保険料 -->
+  <div class="grid-line bg-new" style="margin-top:8px">
+    <div class="res-row res-card bg-new">
+      <div>
+        <div class="chip">✏️ A合計 <span class="mono" id="aTotal">0</span></div>
+        <div class="small">（新制度・一般生命保険料の合計）</div>
+      </div>
+      <div><span class="badge">①</span><span class="capnote">控除（新・上限 <span id="capA"></span>）</span></div>
+      <div class="num mono" id="v1">0</div>
+      <div><span class="badge">③</span><span class="capnote">①＋②（上限 <span id="capAB"></span>）</span></div>
+      <div class="num mono" id="v3">0</div>
+    </div>
+
+    <div class="res-row res-card bg-old" style="margin-top:6px">
+      <div>
+        <div class="chip">✏️ B合計 <span class="mono" id="bTotal">0</span></div>
+        <div class="small">（旧制度・一般生命保険料の合計）</div>
+      </div>
+      <div><span class="badge">②</span><span class="capnote">控除（旧・上限50,000）</span></div>
+      <div class="num mono" id="v2">0</div>
+      <div><span class="badge">㋑</span><span class="capnote">② と ③ の大きい方</span></div>
+      <div class="num mono" id="vI">0</div>
+    </div>
+  </div>
+
+  <!-- 介護医療 -->
+  <div class="grid-line bg-care" style="margin-top:10px">
+    <div class="res-row res-card bg-care">
+      <div>
+        <div class="chip">✏️ C合計 <span class="mono" id="cTotal">0</span></div>
+        <div class="small">（介護医療保険料の合計）</div>
+      </div>
+      <div><span class="badge">④</span><span class="capnote">控除（上限40,000）</span></div>
+      <div class="num mono" id="v4">0</div>
+      <div></div>
+      <div class="num mono">25,000</div>
+    </div>
+  </div>
+
+  <!-- 個人年金 -->
+  <div class="grid-line" style="background:linear-gradient(0deg,var(--pink),var(--pink));margin-top:10px">
+    <div class="res-row res-card bg-dnew">
+      <div>
+        <div class="chip">✏️ D合計 <span class="mono" id="dTotal">0</span></div>
+        <div class="small">（新制度・個人年金の合計）</div>
+      </div>
+      <div><span class="badge">④</span><span class="capnote">控除（新・上限40,000）</span></div>
+      <div class="num mono" id="v4d">0</div>
+      <div><span class="badge">⑥</span><span class="capnote">④＋⑤（上限40,000）</span></div>
+      <div class="num mono" id="v6">0</div>
+    </div>
+
+    <div class="res-row res-card bg-eold" style="margin-top:6px">
+      <div>
+        <div class="chip">✏️ E合計 <span class="mono" id="eTotal">0</span></div>
+        <div class="small">（旧制度・個人年金の合計）</div>
+      </div>
+      <div><span class="badge">⑤</span><span class="capnote">控除（旧・上限50,000）</span></div>
+      <div class="num mono" id="v5">0</div>
+      <div><span class="badge">㋩</span><span class="capnote">⑤ と ⑥ の大きい方</span></div>
+      <div class="num mono" id="vP">0</div>
+    </div>
+  </div>
+
+  <div class="sumbar row" style="justify-content:space-between;margin-top:10px">
+    <div><span class="badge">計</span>生命保険料控除額（㋑＋㋺＋㋩）</div>
+    <div class="mono" style="font-weight:700" id="grand">0</div>
+  </div>
+</div>
+
+<!-- ③ 年収レンジ別 -->
+<div class="card" id="rangeCard" style="display:none">
+  <b>③ 年収レンジ別の控除効果（簡易）</b>
+  <table class="table mono small" id="rangeTable">
+    <thead><tr><th>年収レンジ</th><th>限界税率（目安）</th><th>所得税 減税</th><th>住民税 減税（概算）</th><th>合計 減税</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- ④ 未使用枠 -->
+<div class="card" id="unusedCard" style="display:none">
+  <b>④ 未使用控除枠内訳（旧制度控除を考慮）</b>
+  <div class="small">一般・年金は新制度の所得税上限を基準に、②・⑤の確保分を差し引いて逆算（介護医療は新のみ）。</div>
+  <table class="table mono small" id="unusedTable">
+    <thead><tr><th>区分</th><th>現在の年額</th><th>未使用枠（年額）</th><th>未使用枠（月額目安）</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- フッタ注記 -->
+<div class="card small">
+  このシミュレーターはChatGPT5を利用して作成しました。<br />
+  様々なパターンで計算をしてみて誤差がなく計算できているようなの公開していますが、不備がある場合もございます。最終的な確認は利用者自身で行ってください。<br />
+  また不備・不具合の連絡は <a href="mailto:seminar.wize@gmail.com">こちら</a> までお願いします。
+</div>
+
+<a class="cta" href="https://www.wize.uno/reserve" target="_blank" rel="noopener">相談予約をする</a>
+
+<!-- 同意 -->
+<div class="agree" id="agree">
+  <div class="modal">
+    <h3>ご利用前のご確認</h3>
+    <p class="small">
+      このシミュレーターはChatGPT5を利用して作成しました。最終確認はご自身でお願いします。
+      不備・不具合は <a href="mailto:seminar.wize@gmail.com">こちら</a> へ。
+    </p>
+    <button class="ok" id="agreeOk">同意してはじめる</button>
+  </div>
+</div>
+
+<script>
+const fmt = n => (isNaN(n)?0:n).toLocaleString();
+const unfmt = s => (s+"").replace(/[^\d\-]/g,"")*1;
+function bindCommaInput(el){ el.addEventListener('blur',()=> el.value = fmt(unfmt(el.value))); el.addEventListener('focus',()=> el.select()); }
+
+const buckets = [
+  { key:'A', label:'新・一般（A）', color:'bg-new'   },
+  { key:'B', label:'旧・一般（B）', color:'bg-old'   },
+  { key:'C', label:'介護医療（C｜新のみ）', color:'bg-care' },
+  { key:'D', label:'新・個人年金（D）', color:'bg-dnew'},
+  { key:'E', label:'旧・個人年金（E）', color:'bg-eold'}
+];
+
+const state = { A:[0], B:[0], C:[0], D:[0], E:[0], income:4520000, special2026:false };
+
+function renderInputs(){
+  const wrap = document.getElementById('inputs');
+  wrap.innerHTML='';
+  buckets.forEach(b=>{
+    const box = document.createElement('div');
+    box.className='card '+b.color; box.style.margin='10px 0';
+    box.innerHTML = state[b.key].map((v,i)=>`
+      <div class="row" style="margin:6px 0;gap:8px">
+        <span class="chip">✏️ ${b.label}${state[b.key].length>1?`・${i+1}`:''}</span>
+        <input class="mono" data-k="${b.key}" data-idx="${i}" type="text" value="${fmt(v)}" />
+        <button class="btn" data-step="-10000" data-k="${b.key}" data-idx="${i}">-10,000</button>
+        <button class="btn" data-step="-1000" data-k="${b.key}" data-idx="${i}">-1,000</button>
+        <button class="btn" data-step="0" data-k="${b.key}" data-idx="${i}">0</button>
+        <button class="btn" data-step="1000" data-k="${b.key}" data-idx="${i}">+1,000</button>
+        <button class="btn" data-step="10000" data-k="${b.key}" data-idx="${i}">+10,000</button>
+        ${state[b.key].length>1?`<button class="btn" data-del="${b.key}" data-idx="${i}">×</button>`:''}
+      </div>
+    `).join('') + `<div><button class="btn" data-add="${b.key}">＋証明書を追加</button></div>`;
+    wrap.appendChild(box);
+  });
+  wrap.querySelectorAll('input[type="text"]').forEach(el=>{
+    bindCommaInput(el);
+    el.addEventListener('input',()=>{ state[el.dataset.k][el.dataset.idx*1] = unfmt(el.value); });
+  });
+  wrap.querySelectorAll('button[data-step]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const k=b.dataset.k, idx=b.dataset.idx*1, step=b.dataset.step*1;
+      state[k][idx] = step===0?0:Math.max(0,(state[k][idx]||0)+step); renderInputs();
+    });
+  });
+  wrap.querySelectorAll('button[data-add]').forEach(b=> b.addEventListener('click',()=>{ state[b.dataset.add].push(0); renderInputs(); }));
+  wrap.querySelectorAll('button[data-del]').forEach(b=> b.addEventListener('click',()=>{ const k=b.dataset.del, i=b.dataset.idx*1; state[k].splice(i,1); if(state[k].length===0) state[k]=[0]; renderInputs(); }));
+}
+document.querySelectorAll('.btn[data-inc]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const val = btn.dataset.inc*1;
+    state.income = val===0?0:Math.max(0,state.income+val);
+    document.getElementById('income').value = fmt(state.income);
+  });
+});
+
+function dedNew(a){a=Math.max(0,a); if(a<=20000)return a; if(a<=40000)return Math.floor(a/2)+10000; if(a<=80000)return Math.floor(a/4)+20000; return 40000;}
+function dedOld(a){a=Math.max(0,a); if(a<=25000)return a; if(a<=50000)return Math.floor(a/2)+12500; if(a<=100000)return Math.floor(a/4)+25000; return 50000;}
+function dedNew2026(a){a=Math.max(0,a); if(a<=30000)return a; if(a<=60000)return Math.floor(a/2)+15000; if(a<=120000)return Math.floor(a/4)+30000; return 60000;}
+const sum = arr => arr.reduce((s,v)=>s+Math.max(0,v|0),0);
+
+function calculate(){
+  state.income = unfmt(document.getElementById('income').value);
+  state.special2026 = document.getElementById('sp2026').checked;
+
+  const A=sum(state.A), B=sum(state.B), C=sum(state.C), D=sum(state.D), E=sum(state.E);
+
+  // ①〜⑥・㋑㋩
+  const d1 = state.special2026? dedNew2026(A) : dedNew(A);
+  const d2 = dedOld(B);
+  const capGeneral = state.special2026? 60000:40000;
+  const d3 = Math.min(d1+d2, capGeneral);
+  const vI = Math.max(d2,d3);
+
+  const d4C = dedNew(C);
+  const d4D = dedNew(D);
+  const d5 = dedOld(E);
+  const d6 = Math.min(d4D+d5,40000);
+  const vP = Math.max(d5,d6);
+
+  const grand = vI + d4C + vP;
+
+  // ② 表示
+  document.getElementById('resultsCard').style.display='block';
+  document.getElementById('capA').textContent = state.special2026? '60,000':'40,000';
+  document.getElementById('capAB').textContent = state.special2026? '60,000':'40,000';
+  document.getElementById('aTotal').textContent = fmt(A);
+  document.getElementById('bTotal').textContent = fmt(B);
+  document.getElementById('cTotal').textContent = fmt(C);
+  document.getElementById('dTotal').textContent = fmt(D);
+  document.getElementById('eTotal').textContent = fmt(E);
+
+  document.getElementById('v1').textContent = fmt(d1);
+  document.getElementById('v2').textContent = fmt(d2);
+  document.getElementById('v3').textContent = fmt(d3);
+  document.getElementById('vI').textContent = fmt(vI);
+  document.getElementById('v4').textContent = fmt(d4C);
+  document.getElementById('v4d').textContent = fmt(d4D);
+  document.getElementById('v5').textContent = fmt(d5);
+  document.getElementById('v6').textContent = fmt(d6);
+  document.getElementById('vP').textContent = fmt(vP);
+  document.getElementById('grand').textContent = fmt(grand);
+
+  // ③ 年収レンジ
+  document.getElementById('rangeCard').style.display='block';
+  const ranges=[{label:'〜4,000,000',rate:0.05},{label:'4,000,001〜6,000,000',rate:0.10},{label:'6,000,001〜9,000,000',rate:0.20},{label:'9,000,001〜10,000,000',rate:0.23},{label:'10,000,001〜',rate:0.33}];
+  const tb=document.querySelector('#rangeTable tbody'); tb.innerHTML='';
+  ranges.forEach(r=>{
+    const it=Math.round(grand*r.rate), lt=7000;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.label}</td><td class="mono" style="text-align:right">${Math.round(r.rate*100)}%</td>
+                  <td class="mono" style="text-align:right">${fmt(it)}</td>
+                  <td class="mono" style="text-align:right">${fmt(lt)}</td>
+                  <td class="mono" style="text-align:right;font-weight:700">${fmt(it+lt)}</td>`;
+    if(state.income>=4520000 && r.label.indexOf('4,000,001')>=0) tr.style.background='#fff7f0';
+    tb.appendChild(tr);
+  });
+
+  // ④ 未使用枠
+  document.getElementById('unusedCard').style.display='block';
+  const capA2 = state.special2026?60000:40000, capD=40000, capC=40000;
+  const unusedA = Math.max(0, capA2 - Math.min(capA2, d1 + d2));
+  const unusedD = Math.max(0, capD  - Math.min(capD , d4D + d5));
+  const unusedC = Math.max(0, capC  - d4C);
+  const utb=document.querySelector('#unusedTable tbody'); utb.innerHTML='';
+  [{nm:'一般生命保険料（新制度）',now:A,rest:unusedA},
+   {nm:'介護医療保険料（新制度）',now:C,rest:unusedC},
+   {nm:'個人年金保険料（新制度）',now:D,rest:unusedD}]
+   .forEach(r=>{
+     const tr=document.createElement('tr');
+     tr.innerHTML=`<td>${r.nm}</td><td class="mono" style="text-align:right">${fmt(r.now)}</td>
+                   <td class="mono" style="text-align:right">${fmt(r.rest)}</td>
+                   <td class="mono" style="text-align:right">${fmt(Math.ceil(r.rest/12))}</td>`;
+     utb.appendChild(tr);
+   });
+}
+
+/* 初期セット */
+document.getElementById('income').value=fmt(state.income); bindCommaInput(document.getElementById('income')); renderInputs();
+document.getElementById('calc').addEventListener('click',calculate);
+document.getElementById('agreeOk').addEventListener('click',()=>document.getElementById('agree').style.display='none');
+document.addEventListener('keydown',e=>{ if(e.key==='Enter') calculate(); });
+</script>
+</body>
+</html>
