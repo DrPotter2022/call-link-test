@@ -65,7 +65,7 @@ b{font-weight:600}
   color:#1a1f36;
 }
 
-/* フォーム内の段ズレ対策：縦積み */
+/* 縦揃え（段ズレ防止） */
 .rowFlex{
   display:flex;
   flex-direction:column;
@@ -82,7 +82,7 @@ b{font-weight:600}
   row-gap:6px;
 }
 
-/* 2段目：証明書一式を縦で並べる */
+/* 2段目：証明書一式 */
 .certGroup{
   width:100%;
   display:flex;
@@ -293,8 +293,10 @@ input[type="text"]{
 }
 .right-box b{font-size:16px}
 
-/* ③/⑤のハイライト */
-.rangeHighlight{
+/* ③/⑤の年収帯ハイライト */
+.rangeHighlight{}
+.rangeHighlight td,
+.rangeHighlight th{
   background:var(--hl) !important;
 }
 
@@ -310,7 +312,7 @@ input[type="text"]{
   gap:8px
 }
 
-/* mailtoのクリックを阻害しないように前面に */
+/* mailtoクリックを前面にして死なせない */
 .mailLink {
   position:relative;
   z-index:3001;
@@ -624,7 +626,7 @@ input[type="text"]{
     <div class="muted" style="margin:6px 0 10px">
       ※限界税率は国税庁の目安。<br>
       <b>住民税は練馬区の計算方法に基づき各区分の控除額を算出し（合計上限7万円）、一律10%で概算</b>します。<br>
-      現在の年収を中心に表示レンジを自動調整します。
+      現在の年収に該当する行はハイライト表示します。
     </div>
     <table class="tbl mono" id="rangeTable">
       <thead>
@@ -644,9 +646,9 @@ input[type="text"]{
   <div class="card" id="sec4">
     <b>④ 未使用控除枠内訳（旧制度控除を考慮）</b>
     <div class="muted">
-      ※一般・年金は「新旧合算の控除上限40,000円（特例60,000）」を基準に、旧制度で既に確保済みの控除額（②・⑤）を差し引いて、
-      新制度で追加が必要な保険料（年額）を逆算しています。介護医療は新制度のみが対象です。<br>
-      チェックが入っている区分だけ ⑤ の「未使用枠を適用」に反映します。
+      ※「未使用枠」は、新制度でまだ上限まで使い切っていない部分を年額ベースで示します。<br>
+      旧制度（B, E）については未使用枠を算出しません。<br>
+      チェックが入っている区分だけ、⑤の「未使用枠を適用」の計算に使います。
     </div>
     <table class="tbl mono" id="unusedTable" style="margin-top:10px">
       <thead>
@@ -665,9 +667,8 @@ input[type="text"]{
   <div class="card" id="recalcCard" style="display:none">
     <b>⑤ 再計算（未使用枠を適用）</b>
     <div class="muted" style="margin-top:4px">
-      ④で算出した未使用枠を A・C・D に充当した場合（＝控除額を上限まで使い切った場合）に、
-      <b>所得税・住民税</b>の年収レンジ別の軽減額がどう変わるかを比較表示します。<br>
-      ※④のチェックが入っている区分だけ反映します。<br>
+      ④で算出した未使用枠を A（新一般）・C（介護医療）・D（新個人年金）に充当した場合の効果を試算します。<br>
+      チェックを外した区分は旧制度分を除外し、新制度のみで控除上限を取りに行く前提で再計算します。<br>
       現在の年収に該当する行はハイライト表示します。
     </div>
     <div style="margin:8px 0 12px">
@@ -877,10 +878,7 @@ function oldSchemeII(p){
   return 50000;
 }
 
-/* === 住民税側ロジック（練馬区式） ===
-   一般/年金は新旧どちらが有利か、合算上限あり。
-   合計の控除上限は7万円。
-   その控除額に対し10%を住民税の軽減額目安として③・⑤で出す。 */
+/* === 住民税側ロジック（練馬区式） === */
 function newSchemeLT(p){
   if(p<=0) return 0;
   if(p<=12000) return p;
@@ -923,20 +921,19 @@ function buildRangeRows(tbody, income, grandIT, grandLT){
   ];
   tbody.innerHTML='';
 
-  // 住民税分の軽減額(概算)→ 住民税控除額(上限7万円)×10%
+  // 住民税の軽減額(目安)＝住民税控除額(上限7万円)×10%
   const ltTax=Math.round(Math.min(70000,grandLT)*0.10);
 
   ranges.forEach(r=>{
     const it=Math.round(grandIT*r.rate);
     const tr=document.createElement('tr');
     tr.innerHTML=`
-      <td>${r.label}</td>
+      <th>${r.label}</th>
       <td class="r">${(r.rate*100).toFixed(0)}%</td>
       <td class="r">${withComma(it)}</td>
       <td class="r">${withComma(ltTax)}</td>
       <td class="r sum">${withComma(it+ltTax)}</td>
     `;
-    // 現在の年収帯をハイライト
     if(r.match(income)){
       tr.classList.add('rangeHighlight');
     }
@@ -944,18 +941,53 @@ function buildRangeRows(tbody, income, grandIT, grandLT){
   });
 }
 
-/* ④ 未使用枠テーブル表示
-   reuseFlags.[a,b,c,d,e] にチェックボックスの状態を反映する */
+/* ④ 未使用枠テーブル
+   - A(新一般): aNeed
+   - B(旧一般): 未使用枠は算出しない →0 / "-"
+   - C(介護医療): cNeed
+   - D(新年金): deNeed
+   - E(旧年金): 未使用枠は算出しない →0 / "-"
+*/
 function fillUnusedTable(unused){
   const tb=$('#unusedTable tbody');
   tb.innerHTML='';
 
   const rows=[
-    {cat:'a', label:'一般生命保険料（新制度）', now:unused.aNow, year:unused.aNeed, mon:Math.ceil(unused.aNeed/12)},
-    {cat:'b', label:'一般生命保険料（旧制度）', now:unused.bNow, year:0,          mon:0},
-    {cat:'c', label:'介護医療保険料（新のみ）', now:unused.cNow, year:unused.cNeed, mon:Math.ceil(unused.cNeed/12)},
-    {cat:'d', label:'新 個人年金保険料',       now:unused.dNow, year:0,          mon:0},
-    {cat:'e', label:'旧 個人年金保険料',       now:unused.eNow, year:unused.deNeed, mon:Math.ceil(unused.deNeed/12)},
+    {
+      cat:'a',
+      label:'一般生命保険料（新制度）',
+      now:unused.aNow,
+      year:unused.aNeed,
+      mon:Math.ceil(unused.aNeed/12)
+    },
+    {
+      cat:'b',
+      label:'一般生命保険料（旧制度）',
+      now:unused.bNow,
+      year:0,
+      mon:0
+    },
+    {
+      cat:'c',
+      label:'介護医療保険料（新のみ）',
+      now:unused.cNow,
+      year:unused.cNeed,
+      mon:Math.ceil(unused.cNeed/12)
+    },
+    {
+      cat:'d',
+      label:'新 個人年金保険料',
+      now:unused.dNow,
+      year:unused.deNeed, // 年金側の未使用枠は「新」のほうに表示
+      mon:Math.ceil(unused.deNeed/12)
+    },
+    {
+      cat:'e',
+      label:'旧 個人年金保険料',
+      now:unused.eNow,
+      year:0,
+      mon:0
+    },
   ];
 
   rows.forEach(r=>{
@@ -991,18 +1023,19 @@ function inverseNewSchemeI(d, cap=40000){
   return 80000;
 }
 
-/* ⑤の After(未使用枠を使い切った場合) の所得税側控除合計
-   ここでreuseFlagsを反映：b(旧一般)やe(旧年金)がOFFなら旧制度分も0扱いにする */
+/* ⑤ After (未使用枠で上限まで積んだ場合) の所得税側控除合計
+   - 旧制度分(B,E)は reuseFlags.b / reuseFlags.e がfalseなら0扱い
+   - 新制度(A,C,D)は reuseFlags.a / c / d を見て未使用枠を足す
+*/
 function computeGrandAfterUsingUnused_IT(ctx){
   const capGeneral = ctx.special2026 ? 60000 : 40000;
 
   // 一般（A 新 / B 旧）
-  const d1_newPart = ctx.d1; // 新制度Aからの控除
-  const d2_oldPart = reuseFlags.b ? ctx.d2 : 0; // 旧制度BはOFFなら0
-  const extraA     = reuseFlags.a ? ctx.unusedA : 0; // A側未使用枠を入れるか
-
+  const d1_newPart = ctx.d1; // A(新)由来
+  const d2_oldPart = reuseFlags.b ? ctx.d2 : 0; // B(旧)はフラグで殺す
+  const extraA     = reuseFlags.a ? ctx.unusedA : 0; // Aの未使用枠
   const d3_after   = Math.min(capGeneral, d1_newPart + d2_oldPart + extraA);
-  const vI_after   = Math.max(d2_oldPart, d3_after); // ㋑相当
+  const vI_after   = Math.max(d2_oldPart, d3_after); // ㋑
 
   // 介護医療（C）
   const d4C_base   = ctx.d4C;
@@ -1011,30 +1044,31 @@ function computeGrandAfterUsingUnused_IT(ctx){
 
   // 個人年金（D 新 / E 旧）
   const d4D_newPart= ctx.d4D;
-  const d5_oldPart = reuseFlags.e ? ctx.d5 : 0; // 旧制度EはOFFなら0
-  const extraD     = reuseFlags.d ? ctx.unusedD : 0;
-
+  const d5_oldPart = reuseFlags.e ? ctx.d5 : 0; // E(旧)はフラグで殺す
+  const extraD     = reuseFlags.d ? ctx.unusedD : 0; // Dの未使用枠(deNeed)
   const d6_after   = Math.min(40000, d4D_newPart + d5_oldPart + extraD);
-  const vP_after   = Math.max(d5_oldPart, d6_after); // ㋩相当
+  const vP_after   = Math.max(d5_oldPart, d6_after); // ㋩
 
   return vI_after + d4C_after + vP_after;
 }
 
-/* ⑤の After(未使用枠を使い切った場合) の住民税側控除合計
-   住民税は支払額ベースで再構築するので、旧制度分もフラグで殺す必要がある */
+/* ⑤ After の住民税側控除合計
+   住民税は支払額ベース。旧制度の支払額 bP/eP も reuseFlags.b/e false なら0扱い。
+   さらに、新制度側A/C/Dに未使用枠を投入した状態を逆算する。
+*/
 function computeGrandAfterUsingUnused_LT(ctx,aP,bP,cP,dP,eP){
   const capGeneral = ctx.special2026 ? 60000 : 40000;
 
   // 旧一般Bの保険料そのものをON/OFF
   const bP_after = reuseFlags.b ? bP : 0;
 
-  // 一般枠A(新)をどこまで使うか
+  // 一般枠A：旧制度Bも含めるが、BがOFFなら0扱い
   const d1_newPart = ctx.d1;
   const d2_oldPart = reuseFlags.b ? ctx.d2 : 0;
   const extraA     = reuseFlags.a ? ctx.unusedA : 0;
   const d3_target  = Math.min(capGeneral, d1_newPart + d2_oldPart + extraA);
 
-  // 「Aとしてこの控除額を達成するなら必要な保険料はどれくらいか」逆算
+  // Aとしてこの控除額を達成するのに必要な支払額（新制度側）
   const aP_after = Math.max(
     aP,
     inverseNewSchemeI(d3_target, capGeneral)
@@ -1069,8 +1103,7 @@ function computeGrandAfterUsingUnused_LT(ctx,aP,bP,cP,dP,eP){
   return computeResidentGrand(aP_after,bP_after,cP_after,dP_after,eP_after);
 }
 
-/* ⑤ 比較テーブル（Before / After）
-   ここでも現在の年収帯をハイライトする */
+/* ⑤ 比較テーブル（Before / After） */
 function buildCompareRangeRows(
   tbody,
   income,
@@ -1096,7 +1129,7 @@ function buildCompareRangeRows(
     const itA=Math.round(afterGrandIT *r.rate);
     const tr=document.createElement('tr');
     tr.innerHTML=`
-      <td>${r.label}</td>
+      <th>${r.label}</th>
       <td class="r">${withComma(itB)}</td>
       <td class="r">${withComma(ltB)}</td>
       <td class="r sum">${withComma(itB+ltB)}</td>
@@ -1104,7 +1137,6 @@ function buildCompareRangeRows(
       <td class="r">${withComma(ltA)}</td>
       <td class="r sum">${withComma(itA+ltA)}</td>
     `;
-    // 現在の年収帯をハイライト
     if(r.match(income)){
       tr.classList.add('rangeHighlight');
     }
@@ -1131,20 +1163,20 @@ function calculate(){
   $('#capGenSide').textContent =withComma(capGeneral);
 
   // 所得税側の控除
-  const d1=newSchemeI(a,capGeneral);     //①
-  const d2=oldSchemeII(b);               //②
+  const d1=newSchemeI(a,capGeneral);     //①(新一般A)
+  const d2=oldSchemeII(b);               //②(旧一般B)
   const d3=Math.min(capGeneral,d1+d2);   //③
   const vI=Math.max(d2,d3);              //㋑
 
-  const d4C=newSchemeI(c,40000);         //㋺
-  const d4D=newSchemeI(d,40000);         //④
-  const d5 =oldSchemeII(e);              //⑤
+  const d4C=newSchemeI(c,40000);         //㋺(介護医療C)
+  const d4D=newSchemeI(d,40000);         //④(新年金D)
+  const d5 =oldSchemeII(e);              //⑤(旧年金E)
   const d6 =Math.min(40000,d4D+d5);      //⑥
   const vP =Math.max(d5,d6);             //㋩
 
   const grandIT=vI+d4C+vP;               // 所得税側の合計控除額
 
-  // 住民税側（合計7万円上限を考慮）
+  // 住民税側（控除合計は7万円上限）
   const grandLT=computeResidentGrand(a,b,c,d,e);
 
   // ② 表示更新
@@ -1163,20 +1195,24 @@ function calculate(){
   // ③ 年収レンジ別テーブル（Before）
   buildRangeRows($('#rangeTable tbody'),income,grandIT,grandLT);
 
-  // ④ 未使用枠
-  // 一般（新）：capGeneralに対し d1+d2 で取り切れてない分
+  // ④ 未使用枠の算出
+  // 一般（新A）：capGeneralに対して d1+d2 を使っているが、
+  // 「未使用枠」は“新制度でこれ以上いける余地”なので、capGeneralから(現状のd1+d2)を引いた残りをaNeedとして扱う
   const aNeed =Math.max(0,capGeneral - Math.min(capGeneral,d1+d2));
-  // 介護医療(C)：40,000に対して d4C
-  const cNeed =Math.max(0,40000     - d4C);
+
+  // 介護医療(C)：40,000に対してd4C
+  const cNeed =Math.max(0,40000 - d4C);
+
   // 年金(D/E)：40,000に対して d4D+d5
-  const deNeed=Math.max(0,40000     - Math.min(40000,d4D+d5));
+  // こちらも「新制度で上限まで行く余地」はD側に持たせるので deNeed としてD行に表示する
+  const deNeed=Math.max(0,40000 - Math.min(40000,d4D+d5));
 
   fillUnusedTable({
     aNow:a,bNow:b,cNow:c,dNow:d,eNow:e,
     aNeed,cNeed,deNeed
   });
 
-  // ⑤ 再計算ボタンの挙動セット
+  // ⑤ 再計算ボタン
   $('#recalcCard').style.display='block';
   $('#recalcBtn').onclick=()=>{
     const ctx={
@@ -1223,7 +1259,7 @@ window.addEventListener('load',()=>{
   openConsent();   // 初回に同意ダイアログを表示
   syncAllMoney();  // カンマ整形
   sumLines();      // A〜E合計の同期
-  calculate();     // 初回計算・ハイライト反映まで実行
+  calculate();     // 初回計算＋ハイライト反映
 });
 </script>
 </body>
