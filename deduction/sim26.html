@@ -6,359 +6,66 @@
 <title>生命保険料控除シミュレーター（2026年特例対応）</title>
 <style>
 :root{
-  --bg:#f7f8fb;
-  --ink:#1a1f36;
-  --muted:#67728a;
-  --card:#ffffff;
-  --bdr:#e6e9f0;
-  --blue:#e9f2ff;
-  --blue-old:#eaf2ff90;
-  --green:#ebf7ee;
-  --pink:#ffeef3;
-  --pink-old:#ffeef3b8;
-  --hl:#fff7f0;
-  --btn:#0f62fe;
-  --btn2:#ff7b5a;
+  --bg:#f7f8fb; --ink:#1a1f36; --muted:#67728a; --card:#ffffff; --bdr:#e6e9f0;
+  --blue:#e9f2ff; --blue-old:#eaf2ff90; --green:#ebf7ee; --pink:#ffeef3; --pink-old:#ffeef3b8;
+  --hl:#fff7f0; --btn:#0f62fe; --btn2:#ff7b5a;
 }
-
-/* ベース */
-html,body{
-  margin:0;
-  padding:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","ヒラギノ角ゴ ProN W3","Noto Sans JP",Meiryo,Arial,sans-serif;
-  line-height:1.45;
-  font-size:14px;
-}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","ヒラギノ角ゴ ProN W3","Noto Sans JP",Meiryo,Arial,sans-serif;font-size:14px;line-height:1.45}
 .wrap{max-width:1200px;margin:24px auto;padding:0 16px}
 h1{margin:0 0 12px;font-size:22px;font-weight:600;color:#0d1220}
-.card{
-  background:var(--card);
-  border:1px solid var(--bdr);
-  border-radius:10px;
-  padding:14px 16px;
-  margin:12px 0;
-}
-b{font-weight:600}
-
-/* 入力行レイアウト */
-.rowBlock{
-  padding:10px 0;
-}
-.rowBlock + .rowBlock{
-  border-top:1px solid var(--bdr);
-}
-.rowBlock.k-a{background:var(--blue)}
-.rowBlock.k-a.old{background:var(--blue-old)}
-.rowBlock.k-c{background:var(--green)}
-.rowBlock.k-d{background:var(--pink)}
-.rowBlock.k-d.old{background:var(--pink-old)}
-
-.rowHeader{
-  font-size:14px;
-  font-weight:500;
-  margin-bottom:6px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  color:#1a1f36;
-}
-
-/* 縦揃え（段ズレ防止） */
-.rowFlex{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  row-gap:8px;
-}
-
-/* 1段目：基本入力＋±ボタン群 */
-.baseGroup{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  column-gap:6px;
-  row-gap:6px;
-}
-
-/* 2段目：証明書一式 */
-.certGroup{
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  row-gap:6px;
-}
-.certWrapInline{
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  row-gap:6px;
-}
-.certRow{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:6px;
-  background:#fff;
-  border:1px solid var(--bdr);
-  border-radius:8px;
-  padding:6px 8px;
-}
-.certInput{width:120px;}
-
-input[type="text"]{
-  width:120px;
-  padding:10px;
-  border:1px solid var(--bdr);
-  border-radius:8px;
-  font-size:14px;
-  text-align:right;
-  background:#fff;
-}
-#income{width:160px}
-.mono{font-variant-numeric:tabular-nums}
-
-/* ±ボタン */
-.pill{
-  border:1px solid var(--bdr);
-  border-radius:999px;
-  background:#fff;
-  cursor:pointer;
-  line-height:1.2;
-  padding:6px 10px;
-  font-size:13px;
-  white-space:nowrap;
-}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:14px 16px;margin:12px 0}
+.rowBlock{padding:10px 0}.rowBlock+.rowBlock{border-top:1px solid var(--bdr)}
+.rowBlock.k-a{background:var(--blue)} .rowBlock.k-a.old{background:var(--blue-old)}
+.rowBlock.k-c{background:var(--green)} .rowBlock.k-d{background:var(--pink)} .rowBlock.k-d.old{background:var(--pink-old)}
+.rowHeader{font-size:14px;font-weight:500;margin-bottom:6px;display:flex;align-items:center;gap:8px;color:#1a1f36}
+.rowFlex{display:flex;flex-direction:column;align-items:flex-start;row-gap:8px}
+.baseGroup{display:flex;flex-wrap:wrap;align-items:center;column-gap:6px;row-gap:6px}
+.certGroup{width:100%;display:flex;flex-direction:column;align-items:flex-start;row-gap:6px}
+.certWrapInline{width:100%;display:flex;flex-direction:column;row-gap:6px}
+.certRow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:#fff;border:1px solid var(--bdr);border-radius:8px;padding:6px 8px}
+.certInput{width:120px}
+input[type="text"]{width:120px;padding:10px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;text-align:right;background:#fff}
+#income{width:160px}.mono{font-variant-numeric:tabular-nums}
+.pill{border:1px solid var(--bdr);border-radius:999px;background:#fff;cursor:pointer;line-height:1.2;padding:6px 10px;font-size:13px;white-space:nowrap}
 .pill:active{transform:translateY(1px)}
-
-/* 証明書追加ボタン */
-.addBtn{
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid #00000040;
-  background:#fff;
-  font-size:13px;
-  line-height:1.2;
-  cursor:pointer;
-  white-space:nowrap;
-  align-self:flex-start;
-}
+.addBtn{padding:6px 10px;border-radius:999px;border:1px solid #00000040;background:#fff;font-size:13px;line-height:1.2;cursor:pointer;white-space:nowrap;align-self:flex-start}
 .addBtn:active{transform:translateY(1px)}
-
-/* 区切り線・注記 */
+.btn{background:var(--btn);color:#fff;border:none;border-radius:999px;padding:10px 14px;cursor:pointer;font-size:14px;white-space:nowrap;line-height:1.3}
+.btn:active{transform:translateY(1px)}
+.btn2{position:relative;background:var(--btn2);color:#fff;border:none;border-radius:999px;padding:10px 14px;font-size:14px;line-height:1.3;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:6px;overflow:hidden}
+.cta{position:fixed;right:24px;bottom:22px;z-index:2000}
+.twinkleShake{animation:glowPulse 3s ease-in-out infinite,shakeY 4.6s ease-in-out infinite;box-shadow:0 8px 24px rgb(255 111 97 / 45%)}
+.twinkleShake::before{content:"";position:absolute;inset:0;border-radius:999px;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.35) 50%,transparent 100%);transform:translateX(-160%);animation:shimmerSweep 5.2s ease-in-out infinite;pointer-events:none}
+.twinkleShake::after{content:"✨";position:absolute;left:10px;top:50%;transform:translateY(-50%) scale(.75);opacity:0;filter:drop-shadow(0 0 6px rgba(255,255,255,.6));animation:starBlink 3.4s ease-in-out infinite;pointer-events:none}
+@keyframes glowPulse{0%{box-shadow:0 8px 24px rgba(255,111,97,.25)}50%{box-shadow:0 14px 36px rgba(255,111,97,.55)}100%{box-shadow:0 8px 24px rgba(255,111,97,.25)}}
+@keyframes shimmerSweep{0%,70%{transform:translateX(-160%)}85%{transform:translateX(160%)}100%{transform:translateX(160%)}}
+@keyframes shakeY{0%,92%,100%{transform:translateY(0)}94%{transform:translateY(-1px) rotate(-.6deg)}96%{transform:translateY(1px) rotate(.6deg)}98%{transform:translateY(-1px) rotate(-.4deg)}}
+@keyframes starBlink{0%,80%{opacity:0;transform:translateY(-50%) scale(.6) rotate(0)}88%{opacity:1;transform:translateY(-50%) scale(1) rotate(12deg)}96%{opacity:0;transform:translateY(-50%) scale(.6) rotate(0)}100%{opacity:0}}
 .line{height:1px;background:var(--bdr);margin:16px 0 10px 0}
 .muted{color:var(--muted);font-size:12px;line-height:1.5}
-
-/* ボタン類 */
-.btn{
-  background:var(--btn);
-  color:#fff;
-  border:none;
-  border-radius:999px;
-  padding:10px 14px;
-  cursor:pointer;
-  font-size:14px;
-  white-space:nowrap;
-  line-height:1.3;
-}
-.btn:active{transform:translateY(1px)}
-
-.btn2{
-  background:var(--btn2);
-  color:#fff;
-  border:none;
-  border-radius:999px;
-  padding:10px 14px;
-  font-size:14px;
-  line-height:1.3;
-  cursor:pointer;
-  white-space:nowrap;
-  text-decoration:none;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-}
-.btn2:active{transform:translateY(1px)}
-
-/* 相談予約ボタンの発光 */
-.glowPulse{
-  animation:glowPulseAnim 2.8s infinite;
-  box-shadow:0 8px 24px rgb(255 111 97 / 45%);
-}
-@keyframes glowPulseAnim{
-  0%{box-shadow:0 8px 24px rgba(255,111,97,.25)}
-  50%{box-shadow:0 14px 36px rgba(255,111,97,.55)}
-  100%{box-shadow:0 8px 24px rgba(255,111,97,.25)}
-}
-.cta{
-  position:fixed;
-  right:24px;
-  bottom:22px;
-  z-index:2000;
-}
-
-/* 2026年特例などの説明 */
-.execRow{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:flex-start;
-  row-gap:8px;
-  column-gap:12px;
-}
-.execExplain{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:flex-start;
-  column-gap:8px;
-  row-gap:4px;
-  font-size:13px;
-  color:var(--ink);
-}
-.execExplain label{
-  display:flex;
-  flex-direction:row;
-  align-items:flex-start;
-  gap:6px;
-  font-size:13px;
-  line-height:1.4;
-}
-.execExplainText{
-  display:flex;
-  flex-direction:column;
-  line-height:1.4;
-}
-.execExplainSmall{
-  font-size:12px;
-  color:var(--muted);
-}
-
-/* 結果テーブル ② */
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th,.tbl td{
-  border:1px solid var(--bdr);
-  padding:8px;
-  vertical-align:top;
-  background:#fff
-}
+.tbl th,.tbl td{border:1px solid var(--bdr);padding:8px;vertical-align:top;background:#fff}
 .tbl th{background:#fafbfe;text-align:left}
 .tbl td.r{text-align:right}
 .sum{font-weight:700}
-.k-a-row th,.k-a-row td{background:var(--blue)}
-.k-a-row.old th,.k-a-row.old td{background:var(--blue-old)}
+.k-a-row th,.k-a-row td{background:var(--blue)} .k-a-row.old th,.k-a-row.old td{background:var(--blue-old)}
 .k-c-row th,.k-c-row td{background:var(--green)}
-.k-d-row th,.k-d-row td{background:var(--pink)}
-.k-d-row.old th,.k-d-row.old td{background:var(--pink-old)}
-
-.tag{
-  display:inline-block;
-  background:#00000008;
-  border:1px solid var(--bdr);
-  border-radius:6px;
-  padding:3px 8px;
-  margin-left:6px;
-  font-size:12px;
-  line-height:1.2;
-}
-.chip{
-  display:inline-block;
-  border:1px solid var(--bdr);
-  background:#fff;
-  border-radius:7px;
-  padding:3px 8px;
-  font-size:12px;
-  line-height:1.2;
-}
-
-/* ②の右サマリー */
-.grid2{
-  display:grid;
-  grid-template-columns:1fr 360px;
-  gap:12px;
-}
-.right-col{
-  display:grid;
-  grid-template-rows:repeat(5,auto);
-  gap:8px;
-}
-.right-box{
-  border:1px dashed var(--bdr);
-  background:#fff;
-  border-radius:10px;
-  padding:10px 12px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
+.k-d-row th,.k-d-row td{background:var(--pink)} .k-d-row.old th,.k-d-row.old td{background:var(--pink-old)}
+.tag{display:inline-block;background:#00000008;border:1px solid var(--bdr);border-radius:6px;padding:3px 8px;margin-left:6px;font-size:12px;line-height:1.2}
+.chip{display:inline-block;border:1px solid var(--bdr);background:#fff;border-radius:7px;padding:3px 8px;font-size:12px;line-height:1.2}
+.grid2{display:grid;grid-template-columns:1fr 360px;gap:12px}
+.right-col{display:grid;grid-template-rows:repeat(5,auto);gap:8px}
+.right-box{border:1px dashed var(--bdr);background:#fff;border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between}
 .right-box b{font-size:16px}
-
-/* ③/⑤の年収帯ハイライト */
-.rangeHighlight{}
-.rangeHighlight td,
-.rangeHighlight th{
-  background:var(--hl) !important;
-}
-
-/* 注意・問い合わせなど */
+.rangeHighlight td,.rangeHighlight th{background:var(--hl)!important}
 .warn{color:#ff8e00;font-weight:500}
-.footnote{
-  font-size:12px;
-  color:var(--muted);
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  flex-wrap:wrap;
-  gap:8px
-}
-
-/* mailtoクリックを前面にして死なせない */
-.mailLink {
-  position:relative;
-  z-index:3001;
-  color:#0066cc;
-  text-decoration:underline;
-}
-
-/* 同意モーダル */
-#agreeMask{
-  position:fixed;
-  inset:0;
-  background:rgba(7,10,25,.55);
-  backdrop-filter:blur(2px);
-  display:none;
-  z-index:999;
-}
-#agreePanel{
-  position:fixed;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:min(720px,92vw);
-  background:#0e1326;
-  color:#fff;
-  border-radius:16px;
-  padding:18px 20px 16px;
-  border:1px solid #2a3358;
-  display:none;
-  z-index:1000;
-  line-height:1.5;
-  font-size:14px;
-}
-#agreePanel h3{
-  margin:2px 0 12px;
-  font-size:16px;
-  font-weight:600;
-  color:#fff;
-}
-#agreePanel p{
-  margin:0 0 10px;
-  color:#cfd7ff;
-}
-#agreePanel .btn{
-  background:#27ae60;
-  color:#fff;
-}
+.footnote{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+.mailLink{position:relative;z-index:3001;color:#0066cc;text-decoration:underline;cursor:pointer}
+#agreeMask{position:fixed;inset:0;background:rgba(7,10,25,.55);backdrop-filter:blur(2px);display:none;z-index:999}
+#agreePanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(720px,92vw);background:#0e1326;color:#fff;border-radius:16px;padding:18px 20px 16px;border:1px solid #2a3358;display:none;z-index:1000;line-height:1.5;font-size:14px}
+#agreePanel h3{margin:2px 0 12px;font-size:16px;font-weight:600;color:#fff}
+#agreePanel p{margin:0 0 10px;color:#cfd7ff}
+#agreePanel .btn{background:#27ae60;color:#fff}
 </style>
 </head>
 <body>
@@ -369,8 +76,6 @@ input[type="text"]{
   <!-- ① 入力 -->
   <div class="card" id="sec1">
     <b>① 入力</b>
-
-    <!-- 年収 -->
     <div class="rowBlock" data-cat="inc">
       <div class="rowHeader"><span>年収（目安）</span></div>
       <div class="rowFlex" id="incRowFlex">
@@ -409,7 +114,6 @@ input[type="text"]{
           <button class="pill adjBtn" data-target="aSum" data-diff="1000">+1,000</button>
           <button class="pill adjBtn" data-target="aSum" data-diff="10000">+10,000</button>
         </div>
-
         <div class="certGroup">
           <div class="certWrapInline" id="aCertWrap"></div>
           <button class="addBtn" data-add-cat="a">＋証明書を追加</button>
@@ -435,7 +139,6 @@ input[type="text"]{
           <button class="pill adjBtn" data-target="bSum" data-diff="1000">+1,000</button>
           <button class="pill adjBtn" data-target="bSum" data-diff="10000">+10,000</button>
         </div>
-
         <div class="certGroup">
           <div class="certWrapInline" id="bCertWrap"></div>
           <button class="addBtn" data-add-cat="b">＋証明書を追加</button>
@@ -461,7 +164,6 @@ input[type="text"]{
           <button class="pill adjBtn" data-target="cSum" data-diff="1000">+1,000</button>
           <button class="pill adjBtn" data-target="cSum" data-diff="10000">+10,000</button>
         </div>
-
         <div class="certGroup">
           <div class="certWrapInline" id="cCertWrap"></div>
           <button class="addBtn" data-add-cat="c">＋証明書を追加</button>
@@ -487,7 +189,6 @@ input[type="text"]{
           <button class="pill adjBtn" data-target="dSum" data-diff="1000">+1,000</button>
           <button class="pill adjBtn" data-target="dSum" data-diff="10000">+10,000</button>
         </div>
-
         <div class="certGroup">
           <div class="certWrapInline" id="dCertWrap"></div>
           <button class="addBtn" data-add-cat="d">＋証明書を追加</button>
@@ -513,7 +214,6 @@ input[type="text"]{
           <button class="pill adjBtn" data-target="eSum" data-diff="1000">+1,000</button>
           <button class="pill adjBtn" data-target="eSum" data-diff="10000">+10,000</button>
         </div>
-
         <div class="certGroup">
           <div class="certWrapInline" id="eCertWrap"></div>
           <button class="addBtn" data-add-cat="e">＋証明書を追加</button>
@@ -522,18 +222,16 @@ input[type="text"]{
     </div>
 
     <div class="line"></div>
-
     <div class="rowBlock">
       <div class="rowHeader" style="visibility:hidden"><span>実行</span></div>
       <div class="execRow">
         <button class="btn" id="calcBtn">計算</button>
-
-        <div class="execExplain">
-          <label>
+        <div class="execExplain" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start">
+          <label style="display:flex;gap:6px;align-items:flex-start">
             <input type="checkbox" id="sp2026" />
-            <span class="execExplainText">
-              <span>2026年特例（23歳未満扶養親族あり）を適用</span>
-              <span class="execExplainSmall">※2026年分のみ、新一般（所得税）の上限が40,000→60,000円に。</span>
+            <span>
+              <span>2026年特例（23歳未満扶養親族あり）を適用</span><br>
+              <span style="font-size:12px;color:#67728a">※2026年分のみ、新一般（所得税）の上限が40,000→60,000円に。</span>
             </span>
           </label>
         </div>
@@ -561,14 +259,12 @@ input[type="text"]{
               <td class="r sum" id="d2">0</td>
             </tr>
             <tr>
-              <th></th>
-              <td></td>
+              <th></th><td></td>
               <td><span class="chip">③ ①＋②（上限 <span id="capGenLbl2">40,000</span>）</span></td>
               <td class="r sum" id="d3">0</td>
             </tr>
             <tr>
-              <th></th>
-              <td></td>
+              <th></th><td></td>
               <td><span class="chip">㋑ ② と ③ の大きい方</span></td>
               <td class="r sum" id="vI">0</td>
             </tr>
@@ -591,14 +287,12 @@ input[type="text"]{
               <td class="r sum" id="d5">0</td>
             </tr>
             <tr>
-              <th></th>
-              <td></td>
+              <th></th><td></td>
               <td><span class="chip">⑥ ④＋⑤（上限40,000）</span></td>
               <td class="r sum" id="d6">0</td>
             </tr>
             <tr>
-              <th></th>
-              <td></td>
+              <th></th><td></td>
               <td><span class="chip">㋩ ⑤ と ⑥ の大きい方</span></td>
               <td class="r sum" id="vP">0</td>
             </tr>
@@ -624,39 +318,33 @@ input[type="text"]{
   <div class="card" id="sec3">
     <b>③ 年収レンジ別の控除効果（簡易）</b>
     <div class="muted" style="margin:6px 0 10px">
-      ※限界税率は国税庁の目安。<br>
-      <b>住民税は練馬区の計算方法に基づき各区分の控除額を算出し（合計上限7万円）、一律10%で概算</b>します。<br>
-      現在の年収に該当する行はハイライト表示します。
+      ※限界税率は国税庁の目安。住民税は新制度の計算式（上限7万円・一律10%）で概算。現在の年収に該当する行はハイライト表示します。
     </div>
     <table class="tbl mono" id="rangeTable">
       <thead>
         <tr>
-          <th>年収レンジ</th>
-          <th>限界税率（目安）</th>
-          <th>控除額（所得税）</th>
-          <th>控除額（住民税）</th>
-          <th>合計 軽減額</th>
+          <th>年収レンジ</th><th>限界税率（目安）</th><th>控除額（所得税）</th><th>控除額（住民税）</th><th>合計 軽減額</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
 
-  <!-- ④ 未使用控除枠内訳 -->
+  <!-- ④ 未使用控除枠内訳（新制度のみ） -->
   <div class="card" id="sec4">
-    <b>④ 未使用控除枠内訳（旧制度控除を考慮）</b>
+    <b>④ 未使用控除枠内訳（新制度のみ）</b>
     <div class="muted">
-      ※「未使用枠」は、新制度でまだ上限まで使い切っていない部分を年額ベースで示します。<br>
-      旧制度（B, E）については未使用枠を算出しません。<br>
-      チェックが入っている区分だけ、⑤の「未使用枠を適用」の計算に使います。
+      「未使用枠」は新制度でまだ使い切っていない<strong>控除額</strong>ベース。旧制度（B・E）は対象外。⑤に組み入れる区分へチェック。<br>
+      c は <b>b（未使用控除額）を使い切るために必要な月額保険料</b>の目安、d はその年換算です。
     </div>
     <table class="tbl mono" id="unusedTable" style="margin-top:10px">
       <thead>
         <tr>
-          <th>区分</th>
-          <th>現在の年額</th>
-          <th>未使用枠（年額）</th>
-          <th>未使用枠（月額目安）</th>
+          <th>区分（⑤へ組み入れ）</th>
+          <th>a: 現在の控除額</th>
+          <th>b: 未使用控除額</th>
+          <th>c: 月額保険料（bを使い切る場合）</th>
+          <th>d: 年換算保険料（c×12）</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -667,9 +355,7 @@ input[type="text"]{
   <div class="card" id="recalcCard" style="display:none">
     <b>⑤ 再計算（未使用枠を適用）</b>
     <div class="muted" style="margin-top:4px">
-      ④で算出した未使用枠を A（新一般）・C（介護医療）・D（新個人年金）に充当した場合の効果を試算します。<br>
-      チェックを外した区分は旧制度分を除外し、新制度のみで控除上限を取りに行く前提で再計算します。<br>
-      現在の年収に該当する行はハイライト表示します。
+      ④でチェックONの区分に対し未使用枠を <b>A（新一般）・C（介護医療）・D（新個人年金）</b> に充当。旧制度（B・E）は固定で合算。
     </div>
     <div style="margin:8px 0 12px">
       <button id="recalcBtn" class="btn">⑤ 再計算を実行する</button>
@@ -682,12 +368,8 @@ input[type="text"]{
           <th colspan="3">未使用枠を充当（After）</th>
         </tr>
         <tr>
-          <th>所得税</th>
-          <th>住民税</th>
-          <th>合計</th>
-          <th>所得税</th>
-          <th>住民税</th>
-          <th>合計</th>
+          <th>所得税</th><th>住民税</th><th>合計</th>
+          <th>所得税</th><th>住民税</th><th>合計</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -697,20 +379,12 @@ input[type="text"]{
   <!-- 注意・問い合わせ＋相談予約 -->
   <div class="footnote card">
     <div>
-      このシミュレーターはChatGPT5を利用して作成しました。様々なパターンで計算をして誤差がなく計算できているの公開していますが、<br/>
-      万が一不備がある場合もございます。<br/>
+      このシミュレーターはChatGPT5を利用して作成しました。様々なパターンで計算し誤差がないように公開していますが、万が一不備がある場合もございます。<br/>
       最終的な確認は利用者自身で行ってください。<br/>
-      また不備・不具合の連絡は
-      <a class="mailLink" href="mailto:seminar.wize@gmail.com">こちら</a>
-      までお願いします。
+      また不備・不具合の連絡は <a class="mailLink" href="mailto:seminar.wize@gmail.com?subject=%E4%BF%9D%E9%99%BA%E6%8E%A8%E5%87%BA%20%E4%B8%8D%E5%82%99%E3%83%BB%E4%B8%8D%E5%85%B7%E5%90%88%E3%81%AE%E9%80%A3%E7%B5%A1">こちら</a> までお願いします。
     </div>
     <div class="cta">
-      <a class="btn2 glowPulse"
-         href="https://www.wize.uno/reserve"
-         target="_blank"
-         rel="noopener">
-        ✨ 相談予約をする
-      </a>
+      <a class="btn2 twinkleShake" id="reserveBtn" href="https://www.wize.uno/reserve" rel="noopener">✨ 相談予約をする</a>
     </div>
   </div>
 </div>
@@ -723,275 +397,153 @@ input[type="text"]{
     このシミュレーターは <b>ChatGPT5</b> を利用して作成しました。<br>
     <span class="warn">様々なパターンで検証し誤差がないように公開していますが、不備・不具合がある場合もございます。</span><br>
     最終的な確認はご利用者自身でお願いいたします。<br>
-    不備・不具合の連絡は
-    <a href="mailto:seminar.wize@gmail.com" style="color:#9cc0ff">こちら</a>
-    までお願いします。
+    不備・不具合の連絡は <a class="mailLink" href="mailto:seminar.wize@gmail.com?subject=%E4%BF%9D%E9%99%BA%E6%8E%A8%E5%87%BA%20%E4%B8%8D%E5%82%99%E3%83%BB%E4%B8%8D%E5%85%B7%E5%90%88%E3%81%AE%E9%80%A3%E7%B5%A1">こちら</a> までお願いします。
   </p>
-  <div style="margin-top:10px">
-    <button id="agreeBtn" class="btn" style="background:#27ae60;">同意してはじめる</button>
-  </div>
+  <div style="margin-top:10px"><button id="agreeBtn" class="btn" style="background:#27ae60;">同意してはじめる</button></div>
 </div>
 
 <script>
-/* ユーティリティ */
-const $  = s=>document.querySelector(s);
+/* ===== 共通ユーティリティ ===== */
+const $ = s=>document.querySelector(s);
 const $$ = s=>document.querySelectorAll(s);
 const numRaw = t => Number(String(t).replace(/[^0-9.-]/g,''))||0;
 const withComma = n => n.toLocaleString('ja-JP');
 
-/* ④→⑤で使うフラグ（どの区分を未使用枠に使うか） */
-const reuseFlags = {a:true,b:true,c:true,d:true,e:true};
-
-/* 入力系をカンマ付きで整形 */
-function syncFormatInput(el){
-  const v = numRaw(el.value);
-  el.value = withComma(v);
+/* mailto 起動の確実化（_self → iframe → コピー救済） */
+function bindMailtoFix(){
+  const copyToClipboard = async (txt) => {
+    try {
+      await navigator.clipboard.writeText(txt);
+      alert('メールアドレスをコピーしました。お使いのメールアプリで貼り付けてご利用ください。');
+    } catch {
+      prompt('以下をコピーしてご利用ください：', txt);
+    }
+  };
+  $$('.mailLink').forEach(a=>{
+    a.removeAttribute('target');
+    a.addEventListener('click', async (e)=>{
+      e.preventDefault();
+      const href=a.getAttribute('href');
+      const addr=(href.match(/^mailto:([^?]+)/)||[])[1]||'seminar.wize@gmail.com';
+      try{ window.open(href,'_self'); }catch(_){}
+      setTimeout(()=>{
+        if(document.visibilityState==='visible'){
+          try{
+            const ifr=document.createElement('iframe');
+            ifr.style.display='none'; ifr.src=href; document.body.appendChild(ifr);
+            setTimeout(()=>ifr.remove(),2500);
+          }catch(_){}
+        }
+        setTimeout(()=>{ if(document.visibilityState==='visible'){ copyToClipboard(addr); } },1000);
+      },400);
+    });
+  });
 }
-function syncAllMoney(){
-  $$('.money').forEach(el=>syncFormatInput(el));
-  syncFormatInput($('#income'));
-}
 
-/* 各区分ごとの証明書カウンタ */
-const certCounters = {a:0,b:0,c:0,d:0,e:0};
+/* 入力整形 */
+function syncFormatInput(el){ const v=numRaw(el.value); el.value=withComma(v); }
+function syncAllMoney(){ $$('.money').forEach(el=>syncFormatInput(el)); syncFormatInput($('#income')); }
 
-/* ±ボタン押下処理（年収含む） */
+/* 証明書管理 */
+const certCounters={a:0,b:0,c:0,d:0,e:0};
 document.addEventListener('click',e=>{
   if(e.target.classList.contains('adjBtn')){
-    const tId  = e.target.dataset.target;
-    const diff = Number(e.target.dataset.diff);
-    const el = document.getElementById(tId);
-    if(!el) return;
-
-    if(diff===0){
-      el.value = '0';
-    }else{
-      const now = numRaw(el.value);
-      let nv = now + diff;
-      if(nv<0) nv=0;
-      el.value = withComma(nv);
-    }
+    const tId=e.target.dataset.target, diff=Number(e.target.dataset.diff);
+    const el=document.getElementById(tId); if(!el) return;
+    if(diff===0){ el.value='0'; } else { let nv=numRaw(el.value)+diff; if(nv<0) nv=0; el.value=withComma(nv); }
     sumLines();
   }
+  if(e.target.matches('.addBtn[data-add-cat]')) addCertificateRow(e.target.dataset.addCat);
 });
-
-/* ＋証明書を追加 */
-document.addEventListener('click',e=>{
-  if(e.target.matches('.addBtn[data-add-cat]')){
-    const cat = e.target.dataset.addCat;
-    addCertificateRow(cat);
-  }
-});
-
 function addCertificateRow(cat){
-  certCounters[cat] += 1;
-  const id = cat + 'Cert' + certCounters[cat];
-
-  const row = document.createElement('div');
-  row.className='certRow';
-
-  const inp = document.createElement('input');
-  inp.type='text';
-  inp.id=id;
-  inp.className='mono money certInput';
-  inp.placeholder='＋証明書（円）';
-  inp.value='0';
-  inp.dataset.cat=cat;
-  inp.addEventListener('input',()=>{
-    syncFormatInput(inp);
-    sumLines();
-  });
+  certCounters[cat]+=1;
+  const id=cat+'Cert'+certCounters[cat];
+  const row=document.createElement('div'); row.className='certRow';
+  const inp=document.createElement('input'); inp.type='text'; inp.id=id; inp.className='mono money certInput'; inp.placeholder='＋証明書（円）'; inp.value='0'; inp.dataset.cat=cat;
+  inp.addEventListener('input',()=>{ syncFormatInput(inp); sumLines(); });
   row.appendChild(inp);
-
-  const diffsForCert=[-10000,-1000,-100,-10,-1,0,1,10,100,1000,10000];
-  diffsForCert.forEach(v=>{
-    const b=document.createElement('button');
-    b.className='pill adjBtn';
-    b.dataset.target=id;
-    b.dataset.diff=String(v);
-    b.textContent=(v>0?`+${withComma(v)}`:withComma(v));
-    row.appendChild(b);
+  [-10000,-1000,-100,-10,-1,0,1,10,100,1000,10000].forEach(v=>{
+    const b=document.createElement('button'); b.className='pill adjBtn'; b.dataset.target=id; b.dataset.diff=String(v); b.textContent=(v>0?`+${withComma(v)}`:withComma(v)); row.appendChild(b);
   });
-
-  const wrap = document.getElementById(cat+'CertWrap');
-  wrap.appendChild(row);
-
-  sumLines();
+  document.getElementById(cat+'CertWrap').appendChild(row); sumLines();
 }
-
-/* A〜Eの合計を再集計し、②の編集ボックスにも反映 */
 function sumLines(){
   ['a','b','c','d','e'].forEach(k=>{
-    const baseEl = document.getElementById(k+'Sum');
-    let total = numRaw(baseEl.value);
-
-    const wrap = document.getElementById(k+'CertWrap');
-    if(wrap){
-       wrap.querySelectorAll('input.money.certInput').forEach(el=>{
-         total += numRaw(el.value);
-       });
-    }
-
-    const editEl = document.getElementById(k.toUpperCase()+'_edit');
-    if(editEl){
-      editEl.value = withComma(total);
-    }
+    const base=document.getElementById(k+'Sum'); if(!base) return;
+    let total=numRaw(base.value);
+    const wrap=document.getElementById(k+'CertWrap'); if(wrap) wrap.querySelectorAll('input.money.certInput').forEach(el=>total+=numRaw(el.value));
+    const edit=document.getElementById(k.toUpperCase()+'_edit'); if(edit) edit.value=withComma(total);
   });
 }
-
-/* ②側の直接編集：編集すると元の合計をその値に揃える＆証明書欄リセット */
 ;['A_edit','B_edit','C_edit','D_edit','E_edit'].forEach(id=>{
   const el=document.getElementById(id);
   el.addEventListener('input',()=>{
     syncFormatInput(el);
-
-    const k = id[0].toLowerCase(); // a,b,c,d,e
-    const baseEl=document.getElementById(k+'Sum');
-    if(!baseEl)return;
-
-    // 証明書側はリセット
-    const wrap=document.getElementById(k+'CertWrap');
-    if(wrap){
-      wrap.querySelectorAll('input.money.certInput').forEach(x=>{
-        x.value='0';
-      });
-    }
-
-    baseEl.value=el.value;
-    sumLines();
+    const k=id[0].toLowerCase();
+    const base=document.getElementById(k+'Sum'); if(!base) return;
+    const wrap=document.getElementById(k+'CertWrap'); if(wrap) wrap.querySelectorAll('input.money.certInput').forEach(x=>x.value='0');
+    base.value=el.value; sumLines();
   });
 });
 
-/* === 控除ロジック（所得税側） === */
-function newSchemeI(p, cap=40000){
-  if(p<=0) return 0;
-  if(p<=20000) return Math.min(p, cap);
-  if(p<=40000) return Math.min(Math.floor(p/2)+10000, cap);
-  if(p<=80000) return Math.min(Math.floor(p/4)+20000, cap);
-  return cap;
-}
-function oldSchemeII(p){
-  if(p<=0) return 0;
-  if(p<=25000) return p;
-  if(p<=50000) return Math.floor(p/2)+12500;
-  if(p<=100000) return Math.floor(p/4)+25000;
-  return 50000;
-}
+/* ===== 計算ロジック ===== */
+/* 所得税側（新制度 計算式Ⅰ） */
+function newSchemeI(p,cap=40000){ if(p<=0) return 0; if(p<=20000) return Math.min(p,cap); if(p<=40000) return Math.min(Math.floor(p/2)+10000,cap); if(p<=80000) return Math.min(Math.floor(p/4)+20000,cap); return cap; }
+/* 旧制度（所得税） */
+function oldSchemeII(p){ if(p<=0) return 0; if(p<=25000) return p; if(p<=50000) return Math.floor(p/2)+12500; if(p<=100000) return Math.floor(p/4)+25000; return 50000; }
+/* 住民税（新制度） */
+function newSchemeLT(p){ if(p<=0) return 0; if(p<=12000) return p; if(p<=32000) return Math.floor(p/2)+6000; if(p<=56000) return Math.floor(p/4)+14000; return 28000; }
+/* 住民税（旧制度） */
+function oldSchemeLT(p){ if(p<=0) return 0; if(p<=15000) return p; if(p<=40000) return Math.floor(p/2)+7500; if(p<=70000) return Math.floor(p/4)+17500; return 35000; }
 
-/* === 住民税側ロジック（練馬区式） === */
-function newSchemeLT(p){
-  if(p<=0) return 0;
-  if(p<=12000) return p;
-  if(p<=32000) return Math.floor(p/2)+6000;
-  if(p<=56000) return Math.floor(p/4)+14000;
-  return 28000;
-}
-function oldSchemeLT(p){
-  if(p<=0) return 0;
-  if(p<=15000) return p;
-  if(p<=40000) return Math.floor(p/2)+7500;
-  if(p<=70000) return Math.floor(p/4)+17500;
-  return 35000;
-}
-function bestLTForGeneral(newP, oldP){
-  const n=newSchemeLT(newP);
-  const o=oldSchemeLT(oldP);
-  return Math.max(o, n, Math.min(28000, o+n));
-}
-function bestLTForPension(newP, oldP){
-  const n=newSchemeLT(newP);
-  const o=oldSchemeLT(oldP);
-  return Math.max(o, n, Math.min(28000, o+n));
-}
-function computeResidentGrand(aP,bP,cP,dP,eP){
-  const gen = bestLTForGeneral(aP,bP); // 一般(A/B)
-  const med = newSchemeLT(cP);         // 介護医療(C)
-  const pen = bestLTForPension(dP,eP); // 年金(D/E)
-  return Math.min(70000, gen+med+pen);
-}
+function bestLTForGeneral(aNew,bOld){ const n=newSchemeLT(aNew), o=oldSchemeLT(bOld); return Math.max(o,n,Math.min(28000,o+n)); }
+function bestLTForPension(dNew,eOld){ const n=newSchemeLT(dNew), o=oldSchemeLT(eOld); return Math.max(o,n,Math.min(28000,o+n)); }
+function computeResidentGrand(aP,bP,cP,dP,eP){ const gen=bestLTForGeneral(aP,bP), med=newSchemeLT(cP), pen=bestLTForPension(dP,eP); return Math.min(70000,gen+med+pen); }
 
-/* ③ 年収レンジ別テーブル（Before用） */
-function buildRangeRows(tbody, income, grandIT, grandLT){
+/* 逆算（控除 → 必要保険料（年））新制度のみ */
+function inverseNewSchemeI(d,cap=40000){ d=Math.max(0,Math.min(d,cap)); if(d<=20000) return d; if(d<=30000) return 2*(d-10000); if(d<=40000) return 4*(d-20000); return 80000; }
+
+/* ③ Beforeテーブル */
+function buildRangeRows(tbody,income,grandIT,grandLT){
   const ranges=[
-    {label:'〜4,000,000',rate:0.05, match:x=>x<=4000000},
-    {label:'4,000,001〜6,000,000',rate:0.10, match:x=>x>=4000001 && x<=6000000},
-    {label:'6,000,001〜9,000,000',rate:0.20, match:x=>x>=6000001 && x<=9000000},
-    {label:'9,000,001〜10,000,000',rate:0.23, match:x=>x>=9000001 && x<=10000000},
-    {label:'10,000,001〜',rate:0.33, match:x=>x>=10000001},
+    {label:'〜4,000,000',rate:0.05,match:x=>x<=4000000},
+    {label:'4,000,001〜6,000,000',rate:0.10,match:x=>x>=4000001&&x<=6000000},
+    {label:'6,000,001〜9,000,000',rate:0.20,match:x=>x>=6000001&&x<=9000000},
+    {label:'9,000,001〜10,000,000',rate:0.23,match:x=>x>=9000001&&x<=10000000},
+    {label:'10,000,001〜',rate:0.33,match:x=>x>=10000001},
   ];
   tbody.innerHTML='';
-
-  // 住民税の軽減額(目安)＝住民税控除額(上限7万円)×10%
   const ltTax=Math.round(Math.min(70000,grandLT)*0.10);
-
   ranges.forEach(r=>{
     const it=Math.round(grandIT*r.rate);
     const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <th>${r.label}</th>
-      <td class="r">${(r.rate*100).toFixed(0)}%</td>
-      <td class="r">${withComma(it)}</td>
-      <td class="r">${withComma(ltTax)}</td>
-      <td class="r sum">${withComma(it+ltTax)}</td>
-    `;
-    if(r.match(income)){
-      tr.classList.add('rangeHighlight');
-    }
+    tr.innerHTML=`<th>${r.label}</th><td class="r">${(r.rate*100).toFixed(0)}%</td><td class="r">${withComma(it)}</td><td class="r">${withComma(ltTax)}</td><td class="r sum">${withComma(it+ltTax)}</td>`;
+    if(r.match(income)) tr.classList.add('rangeHighlight');
     tbody.appendChild(tr);
   });
 }
 
-/* ④ 未使用枠テーブル
-   - A(新一般): aNeed
-   - B(旧一般): 未使用枠は算出しない →0 / "-"
-   - C(介護医療): cNeed
-   - D(新年金): deNeed
-   - E(旧年金): 未使用枠は算出しない →0 / "-"
-*/
-function fillUnusedTable(unused){
-  const tb=$('#unusedTable tbody');
-  tb.innerHTML='';
+/* ④テーブル（新制度のみ）：a,b,c,d */
+const reuseFlags = {a:true, c:true, d:true};
+function fillUnusedTable(u){
+  const tb=$('#unusedTable tbody'); tb.innerHTML='';
+  const {aNow,cNow,dNow,aNeed,cNeed,deNeed,d1_now,d4C_now,d4D_now,capGeneral}=u;
 
-  const rows=[
-    {
-      cat:'a',
-      label:'一般生命保険料（新制度）',
-      now:unused.aNow,
-      year:unused.aNeed,
-      mon:Math.ceil(unused.aNeed/12)
+  const rowsA = [
+    {cat:'a', label:'一般生命保険料（新制度）', a:d1_now, b:aNeed,
+      c: (()=>{ const before=inverseNewSchemeI(d1_now,capGeneral); const after=inverseNewSchemeI(d1_now+aNeed,capGeneral); return Math.max(0,Math.ceil((after-before)/12)); })()
     },
-    {
-      cat:'b',
-      label:'一般生命保険料（旧制度）',
-      now:unused.bNow,
-      year:0,
-      mon:0
+    {cat:'c', label:'介護医療保険料（新のみ）', a:d4C_now, b:cNeed,
+      c: (()=>{ const before=inverseNewSchemeI(d4C_now,40000); const after=inverseNewSchemeI(d4C_now+cNeed,40000); return Math.max(0,Math.ceil((after-before)/12)); })()
     },
-    {
-      cat:'c',
-      label:'介護医療保険料（新のみ）',
-      now:unused.cNow,
-      year:unused.cNeed,
-      mon:Math.ceil(unused.cNeed/12)
-    },
-    {
-      cat:'d',
-      label:'新 個人年金保険料',
-      now:unused.dNow,
-      year:unused.deNeed, // 年金側の未使用枠は「新」のほうに表示
-      mon:Math.ceil(unused.deNeed/12)
-    },
-    {
-      cat:'e',
-      label:'旧 個人年金保険料',
-      now:unused.eNow,
-      year:0,
-      mon:0
-    },
+    {cat:'d', label:'新 個人年金保険料',       a:d4D_now, b:deNeed,
+      c: (()=>{ const before=inverseNewSchemeI(d4D_now,40000); const after=inverseNewSchemeI(d4D_now+deNeed,40000); return Math.max(0,Math.ceil((after-before)/12)); })()
+    }
   ];
 
-  rows.forEach(r=>{
+  rowsA.forEach(r=>{
     const tr=document.createElement('tr');
+    const d = r.c*12;
     tr.innerHTML=`
       <td>
         <label style="display:flex;align-items:center;gap:6px;">
@@ -999,14 +551,13 @@ function fillUnusedTable(unused){
           <span>${r.label}</span>
         </label>
       </td>
-      <td class="r">${withComma(r.now)}</td>
-      <td class="r">${withComma(r.year)}</td>
-      <td class="r">${r.mon?withComma(r.mon):'-'}</td>`;
+      <td class="r">${withComma(r.a)}</td>
+      <td class="r">${withComma(r.b)}</td>
+      <td class="r">${withComma(r.c)}</td>
+      <td class="r">${withComma(d)}</td>`;
     tb.appendChild(tr);
   });
 }
-
-/* チェック変更時、reuseFlagsを更新 */
 document.addEventListener('change',e=>{
   if(e.target.classList.contains('reuseChk')){
     const cat=e.target.dataset.cat;
@@ -1014,140 +565,53 @@ document.addEventListener('change',e=>{
   }
 });
 
-/* 控除額→追加で必要な保険料を逆算（新制度側近似） */
-function inverseNewSchemeI(d, cap=40000){
-  d=Math.max(0,Math.min(d,cap));
-  if(d<=20000) return d;
-  if(d<=30000) return 2*(d-10000);
-  if(d<=40000) return 4*(d-20000);
-  return 80000;
-}
-
-/* ⑤ After (未使用枠で上限まで積んだ場合) の所得税側控除合計
-   - 旧制度分(B,E)は reuseFlags.b / reuseFlags.e がfalseなら0扱い
-   - 新制度(A,C,D)は reuseFlags.a / c / d を見て未使用枠を足す
-*/
+/* ⑤ After（所得税側） */
 function computeGrandAfterUsingUnused_IT(ctx){
-  const capGeneral = ctx.special2026 ? 60000 : 40000;
-
-  // 一般（A 新 / B 旧）
-  const d1_newPart = ctx.d1; // A(新)由来
-  const d2_oldPart = reuseFlags.b ? ctx.d2 : 0; // B(旧)はフラグで殺す
-  const extraA     = reuseFlags.a ? ctx.unusedA : 0; // Aの未使用枠
-  const d3_after   = Math.min(capGeneral, d1_newPart + d2_oldPart + extraA);
-  const vI_after   = Math.max(d2_oldPart, d3_after); // ㋑
-
-  // 介護医療（C）
-  const d4C_base   = ctx.d4C;
-  const extraC     = reuseFlags.c ? ctx.unusedC : 0;
-  const d4C_after  = Math.min(40000, d4C_base + extraC);
-
-  // 個人年金（D 新 / E 旧）
-  const d4D_newPart= ctx.d4D;
-  const d5_oldPart = reuseFlags.e ? ctx.d5 : 0; // E(旧)はフラグで殺す
-  const extraD     = reuseFlags.d ? ctx.unusedD : 0; // Dの未使用枠(deNeed)
-  const d6_after   = Math.min(40000, d4D_newPart + d5_oldPart + extraD);
-  const vP_after   = Math.max(d5_oldPart, d6_after); // ㋩
-
+  const capGeneral=ctx.special2026?60000:40000;
+  const extraA = reuseFlags.a ? ctx.unusedA : 0;
+  const d3_after=Math.min(capGeneral, ctx.d1 + ctx.d2 + extraA);
+  const vI_after=Math.max(ctx.d2, d3_after);
+  const d4C_after=Math.min(40000, ctx.d4C + (reuseFlags.c?ctx.unusedC:0));
+  const d6_after =Math.min(40000, ctx.d4D + ctx.d5 + (reuseFlags.d?ctx.unusedD:0));
+  const vP_after=Math.max(ctx.d5, d6_after);
   return vI_after + d4C_after + vP_after;
 }
-
-/* ⑤ After の住民税側控除合計
-   住民税は支払額ベース。旧制度の支払額 bP/eP も reuseFlags.b/e false なら0扱い。
-   さらに、新制度側A/C/Dに未使用枠を投入した状態を逆算する。
-*/
+/* ⑤ After（住民税側） */
 function computeGrandAfterUsingUnused_LT(ctx,aP,bP,cP,dP,eP){
-  const capGeneral = ctx.special2026 ? 60000 : 40000;
-
-  // 旧一般Bの保険料そのものをON/OFF
-  const bP_after = reuseFlags.b ? bP : 0;
-
-  // 一般枠A：旧制度Bも含めるが、BがOFFなら0扱い
-  const d1_newPart = ctx.d1;
-  const d2_oldPart = reuseFlags.b ? ctx.d2 : 0;
-  const extraA     = reuseFlags.a ? ctx.unusedA : 0;
-  const d3_target  = Math.min(capGeneral, d1_newPart + d2_oldPart + extraA);
-
-  // Aとしてこの控除額を達成するのに必要な支払額（新制度側）
-  const aP_after = Math.max(
-    aP,
-    inverseNewSchemeI(d3_target, capGeneral)
-  );
-
-  // 介護医療C
-  const d4C_target = Math.min(
-    40000,
-    ctx.d4C + (reuseFlags.c ? ctx.unusedC : 0)
-  );
-  const cP_after = Math.max(
-    cP,
-    inverseNewSchemeI(d4C_target, 40000)
-  );
-
-  // 旧個人年金Eの保険料もON/OFF
-  const eP_after = reuseFlags.e ? eP : 0;
-
-  // 年金枠 D(新)+E(旧)+未使用D
-  const d5_oldPart  = reuseFlags.e ? ctx.d5 : 0;
-  const extraD      = reuseFlags.d ? ctx.unusedD : 0;
-  const d6_target   = Math.min(
-    40000,
-    ctx.d4D + d5_oldPart + extraD
-  );
-
-  const dP_after = Math.max(
-    dP,
-    inverseNewSchemeI(d6_target, 40000)
-  );
-
-  return computeResidentGrand(aP_after,bP_after,cP_after,dP_after,eP_after);
+  const capGeneral=ctx.special2026?60000:40000;
+  const d3_target = Math.min(capGeneral, ctx.d1 + ctx.d2 + (reuseFlags.a?ctx.unusedA:0));
+  const aP_after  = reuseFlags.a ? Math.max(aP, inverseNewSchemeI(d3_target,capGeneral)) : aP;
+  const d4C_target= Math.min(40000, ctx.d4C + (reuseFlags.c?ctx.unusedC:0));
+  const cP_after  = reuseFlags.c ? Math.max(cP, inverseNewSchemeI(d4C_target,40000)) : cP;
+  const d6_target = Math.min(40000, ctx.d4D + ctx.d5 + (reuseFlags.d?ctx.unusedD:0));
+  const dP_after  = reuseFlags.d ? Math.max(dP, inverseNewSchemeI(d6_target,40000)) : dP;
+  return computeResidentGrand(aP_after,bP,cP_after,dP_after,eP);
 }
-
-/* ⑤ 比較テーブル（Before / After） */
-function buildCompareRangeRows(
-  tbody,
-  income,
-  beforeGrandIT,
-  afterGrandIT,
-  beforeGrandLT,
-  afterGrandLT
-){
+function buildCompareRangeRows(tbody,income,bIT,aIT,bLT,aLT){
   const ranges=[
-    {label:'〜4,000,000',rate:0.05, match:x=>x<=4000000},
-    {label:'4,000,001〜6,000,000',rate:0.10, match:x=>x>=4000001 && x<=6000000},
-    {label:'6,000,001〜9,000,000',rate:0.20, match:x=>x>=6000001 && x<=9000000},
-    {label:'9,000,001〜10,000,000',rate:0.23, match:x=>x>=9000001 && x<=10000000},
-    {label:'10,000,001〜',rate:0.33, match:x=>x>=10000001},
+    {label:'〜4,000,000',rate:0.05,match:x=>x<=4000000},
+    {label:'4,000,001〜6,000,000',rate:0.10,match:x=>x>=4000001&&x<=6000000},
+    {label:'6,000,001〜9,000,000',rate:0.20,match:x=>x>=6000001&&x<=9000000},
+    {label:'9,000,001〜10,000,000',rate:0.23,match:x=>x>=9000001&&x<=10000000},
+    {label:'10,000,001〜',rate:0.33,match:x=>x>=10000001},
   ];
   tbody.innerHTML='';
-
-  const ltB=Math.round(Math.min(70000,beforeGrandLT)*0.10);
-  const ltA=Math.round(Math.min(70000,afterGrandLT )*0.10);
-
+  const ltB=Math.round(Math.min(70000,bLT)*0.10);
+  const ltA=Math.round(Math.min(70000,aLT)*0.10);
   ranges.forEach(r=>{
-    const itB=Math.round(beforeGrandIT*r.rate);
-    const itA=Math.round(afterGrandIT *r.rate);
+    const itB=Math.round(bIT*r.rate), itA=Math.round(aIT*r.rate);
     const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <th>${r.label}</th>
-      <td class="r">${withComma(itB)}</td>
-      <td class="r">${withComma(ltB)}</td>
-      <td class="r sum">${withComma(itB+ltB)}</td>
-      <td class="r">${withComma(itA)}</td>
-      <td class="r">${withComma(ltA)}</td>
-      <td class="r sum">${withComma(itA+ltA)}</td>
-    `;
-    if(r.match(income)){
-      tr.classList.add('rangeHighlight');
-    }
+    tr.innerHTML=`<th>${r.label}</th>
+      <td class="r">${withComma(itB)}</td><td class="r">${withComma(ltB)}</td><td class="r sum">${withComma(itB+ltB)}</td>
+      <td class="r">${withComma(itA)}</td><td class="r">${withComma(ltA)}</td><td class="r sum">${withComma(itA+ltA)}</td>`;
+    if(r.match(income)) tr.classList.add('rangeHighlight');
     tbody.appendChild(tr);
   });
 }
 
-/* メイン計算 */
+/* ===== メイン計算 ===== */
 function calculate(){
   const income=numRaw($('#income').value);
-
   const a=numRaw($('#A_edit').value||$('#aSum').value);
   const b=numRaw($('#B_edit').value||$('#bSum').value);
   const c=numRaw($('#C_edit').value||$('#cSum').value);
@@ -1155,111 +619,62 @@ function calculate(){
   const e=numRaw($('#E_edit').value||$('#eSum').value);
 
   const special2026=$('#sp2026').checked;
-  const capGeneral =special2026?60000:40000;
+  const capGeneral=special2026?60000:40000;
+  $('#capGenLbl').textContent=withComma(capGeneral);
+  $('#capGenLbl2').textContent=withComma(capGeneral);
+  $('#capGenSide').textContent=withComma(capGeneral);
 
-  // 上限ラベル更新
-  $('#capGenLbl').textContent  =withComma(capGeneral);
-  $('#capGenLbl2').textContent =withComma(capGeneral);
-  $('#capGenSide').textContent =withComma(capGeneral);
-
-  // 所得税側の控除
-  const d1=newSchemeI(a,capGeneral);     //①(新一般A)
-  const d2=oldSchemeII(b);               //②(旧一般B)
-  const d3=Math.min(capGeneral,d1+d2);   //③
-  const vI=Math.max(d2,d3);              //㋑
-
-  const d4C=newSchemeI(c,40000);         //㋺(介護医療C)
-  const d4D=newSchemeI(d,40000);         //④(新年金D)
-  const d5 =oldSchemeII(e);              //⑤(旧年金E)
-  const d6 =Math.min(40000,d4D+d5);      //⑥
-  const vP =Math.max(d5,d6);             //㋩
-
-  const grandIT=vI+d4C+vP;               // 所得税側の合計控除額
-
-  // 住民税側（控除合計は7万円上限）
+  // ② 現状控除
+  const d1=newSchemeI(a,capGeneral);
+  const d2=oldSchemeII(b);
+  const d3=Math.min(capGeneral,d1+d2);
+  const vI=Math.max(d2,d3);
+  const d4C=newSchemeI(c,40000);
+  const d4D=newSchemeI(d,40000);
+  const d5=oldSchemeII(e);
+  const d6=Math.min(40000,d4D+d5);
+  const vP=Math.max(d5,d6);
+  const grandIT=vI+d4C+vP;
   const grandLT=computeResidentGrand(a,b,c,d,e);
 
-  // ② 表示更新
-  $('#d1').textContent   =withComma(d1);
-  $('#d2').textContent   =withComma(d2);
-  $('#d3').textContent   =withComma(d3);
-  $('#vI').textContent   =withComma(vI);
-  $('#d4C').textContent  =withComma(d4C);
-  $('#d4D').textContent  =withComma(d4D);
-  $('#d5').textContent   =withComma(d5);
-  $('#d6').textContent   =withComma(d6);
-  $('#vP').textContent   =withComma(vP);
-  $('#grand').textContent=withComma(grandIT);
-  $('#grandSide').textContent=withComma(grandIT);
+  // ② 表示
+  $('#d1').textContent=withComma(d1); $('#d2').textContent=withComma(d2); $('#d3').textContent=withComma(d3); $('#vI').textContent=withComma(vI);
+  $('#d4C').textContent=withComma(d4C); $('#d4D').textContent=withComma(d4D); $('#d5').textContent=withComma(d5); $('#d6').textContent=withComma(d6); $('#vP').textContent=withComma(vP);
+  $('#grand').textContent=withComma(grandIT); $('#grandSide').textContent=withComma(grandIT);
 
-  // ③ 年収レンジ別テーブル（Before）
+  // ③ Before 表
   buildRangeRows($('#rangeTable tbody'),income,grandIT,grandLT);
 
-  // ④ 未使用枠の算出
-  // 一般（新A）：capGeneralに対して d1+d2 を使っているが、
-  // 「未使用枠」は“新制度でこれ以上いける余地”なので、capGeneralから(現状のd1+d2)を引いた残りをaNeedとして扱う
-  const aNeed =Math.max(0,capGeneral - Math.min(capGeneral,d1+d2));
-
-  // 介護医療(C)：40,000に対してd4C
-  const cNeed =Math.max(0,40000 - d4C);
-
-  // 年金(D/E)：40,000に対して d4D+d5
-  // こちらも「新制度で上限まで行く余地」はD側に持たせるので deNeed としてD行に表示する
+  // ④ 未使用枠（新制度のみ）
+  const aNeed=Math.max(0,capGeneral - Math.min(capGeneral,d1+d2));
+  const cNeed=Math.max(0,40000 - d4C);
   const deNeed=Math.max(0,40000 - Math.min(40000,d4D+d5));
+  fillUnusedTable({aNow:a,cNow:c,dNow:d,aNeed,cNeed,deNeed,d1_now:d1,d4C_now:d4C,d4D_now:d4D,capGeneral});
 
-  fillUnusedTable({
-    aNow:a,bNow:b,cNow:c,dNow:d,eNow:e,
-    aNeed,cNeed,deNeed
-  });
-
-  // ⑤ 再計算ボタン
+  // ⑤ 再計算
   $('#recalcCard').style.display='block';
   $('#recalcBtn').onclick=()=>{
-    const ctx={
-      special2026,
-      d1,d2,d3,d4C,d4D,d5,d6,vI,vP,
-      grand:grandIT,
-      unusedA:aNeed,
-      unusedC:cNeed,
-      unusedD:deNeed
-    };
-
-    const afterGrandIT=computeGrandAfterUsingUnused_IT(ctx);
-    const afterGrandLT=computeGrandAfterUsingUnused_LT(ctx,a,b,c,d,e);
-
-    buildCompareRangeRows(
-      $('#rangeTableCompare tbody'),
-      income,
-      grandIT,
-      afterGrandIT,
-      grandLT,
-      afterGrandLT
-    );
+    const ctx={special2026,d1,d2,d3,d4C,d4D,d5,d6,vI,vP,grand:grandIT,unusedA:aNeed,unusedC:cNeed,unusedD:deNeed};
+    const afterIT=computeGrandAfterUsingUnused_IT(ctx);
+    const afterLT=computeGrandAfterUsingUnused_LT(ctx,a,b,c,d,e);
+    buildCompareRangeRows($('#rangeTableCompare tbody'),income,grandIT,afterIT,grandLT,afterLT);
   };
 
   syncAllMoney();
 }
 
 /* 同意モーダル */
-function openConsent(){
-  $('#agreeMask').style.display='block';
-  $('#agreePanel').style.display='block';
-}
-function closeConsent(){
-  $('#agreeMask').style.display='none';
-  $('#agreePanel').style.display='none';
-}
+function openConsent(){ $('#agreeMask').style.display='block'; $('#agreePanel').style.display='block'; }
+function closeConsent(){ $('#agreeMask').style.display='none'; $('#agreePanel').style.display='none'; }
 $('#agreeBtn').onclick=closeConsent;
 
-/* イベント */
-$('#calcBtn').addEventListener('click',calculate);
-
-/* 初期ロード処理 */
+/* 初期ロード */
 window.addEventListener('load',()=>{
-  openConsent();   // 初回に同意ダイアログを表示
-  syncAllMoney();  // カンマ整形
-  sumLines();      // A〜E合計の同期
-  calculate();     // 初回計算＋ハイライト反映
+  bindMailtoFix();          // mailto起動の確実化
+  openConsent();            // モーダル
+  syncAllMoney(); sumLines();
+  calculate();
+  $('#calcBtn').addEventListener('click', calculate);
 });
 </script>
 </body>
