@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>高額療養費（改正案）自己負担 自動計算（2025/2026/2027）</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#111a2e; --muted:#94a3b8; --text:#e5e7eb;
+      --accent:#38bdf8; --line:rgba(148,163,184,.25);
+    }
+    /* Prevent subtle horizontal overflow on mobile */
+    *,*::before,*::after{box-sizing:border-box;}
+    body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:#0a0f1d;color:var(--text);}
+    .wrap{max-width:1140px;margin:24px auto;padding:0 16px;}
+    h1{font-size:20px;margin:0 0 12px;}
+    .sub{color:var(--muted);font-size:13px;line-height:1.6;margin:0 0 18px;}
+    .grid{display:grid;grid-template-columns:1fr;gap:14px;}
+    
+    .card{background:linear-gradient(180deg,rgba(56,189,248,.06),transparent 80%),var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 14px 12px;box-shadow:0 10px 30px rgba(0,0,0,.25);}
+    .card h2{font-size:14px;margin:0 0 10px;color:#cbd5e1;letter-spacing:.02em}
+    label{display:block;font-size:12px;color:#cbd5e1;margin:10px 0 6px;}
+    select,input{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--line);background:#0b1326;color:var(--text);padding:10px 10px;font-size:14px;outline:none;}
+    input[type="checkbox"]{width:auto;}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    @media (max-width: 520px){.row{grid-template-columns:1fr;}}
+    .inline{display:flex;align-items:center;gap:10px;margin-top:10px;color:#cbd5e1;font-size:13px;flex-wrap:wrap;}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+    button{border:1px solid var(--line);background:rgba(56,189,248,.12);color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;}
+    button:hover{border-color:rgba(56,189,248,.55);}
+    .note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px;}
+    table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px;border:1px solid var(--line);}
+    th,td{border-bottom:1px solid var(--line);padding:10px 10px;vertical-align:top;}
+    th{background:rgba(148,163,184,.08);text-align:left;font-size:12px;color:#cbd5e1;}
+    td{font-size:13px;}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;color:#cbd5e1;background:rgba(148,163,184,.06);}
+    .kpi{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+    .kpi .item{flex:1;min-width:160px;border:1px solid var(--line);border-radius:12px;padding:10px;background:rgba(148,163,184,.05);}
+    .kpi .label{font-size:11px;color:var(--muted);margin:0 0 6px;}
+    .kpi .value{font-size:16px;font-weight:700;}
+    .footer{margin-top:14px;color:var(--muted);font-size:12px;line-height:1.7;}
+  
+    /* ---- Responsive (Smartphone) ---- */
+    @media (max-width: 760px){
+      .wrap{margin:14px auto;padding:0 12px;}
+      h1{font-size:18px;}
+      .sub{font-size:12px;}
+      .card{padding:12px;}
+      .kpi .item{min-width:unset;width:100%;}
+      .kpi{gap:8px;}
+      .btns button{flex:1 1 160px;}
+      th,td{padding:8px 8px;}
+      
+      td{max-width:520px;}
+    }
+    @media (max-width: 420px){
+      select,input{font-size:13px;padding:9px 9px;}
+      button{width:100%;}
+      .btns{gap:8px;}
+      .pill{font-size:10px;}
+    }
+
+
+    /* --- In/Outpatient visual cues --- */
+    .grouphead th{
+      text-align:center;
+      font-weight:700;
+      letter-spacing:.02em;
+      color:#cbd5e1;
+      background:rgba(148,163,184,.08);
+      border-bottom:1px solid rgba(148,163,184,.18);
+      padding:10px 8px;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid rgba(148,163,184,.22);
+      background:rgba(148,163,184,.08);
+      color:#e5e7eb;
+      margin:0 8px 0 0;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .badge .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:rgba(148,163,184,.9);
+      box-shadow:0 0 0 3px rgba(148,163,184,.15);
+    }
+    .badge.inpatient .dot{ background:rgba(96,165,250,.95); box-shadow:0 0 0 3px rgba(96,165,250,.18); }
+    .badge.outpatient .dot{ background:rgba(52,211,153,.95); box-shadow:0 0 0 3px rgba(52,211,153,.18); }
+    .note-merged{
+      margin-top:10px;
+      font-size:12px;
+      color:#94a3b8;
+      line-height:1.6;
+    }
+
+    /* --- Inpatient dimming when outpatient-only is active --- */
+    .dim-inpatient thead tr:nth-child(2) th:nth-child(n+3),
+    .dim-inpatient tbody td:nth-child(n+3){
+      opacity:.35;
+      filter:saturate(.6);
+    }
+    .dim-inpatient thead tr.grouphead th:nth-child(3){
+      opacity:.35;
+    }
+    
+    /* --- Visual divider between Outpatient (left) and Inpatient (right) blocks --- */
+    .result-table thead tr.grouphead th:nth-child(3){
+      border-left:2px solid rgba(148,163,184,.35);
+    }
+    .result-table thead tr:not(.grouphead) th:nth-child(3),
+    .result-table tbody td:nth-child(3){
+      border-left:2px solid rgba(148,163,184,.35);
+    }
+    /* Subtle tone difference for readability */
+    .result-table thead tr:not(.grouphead) th:nth-child(-n+2),
+    .result-table tbody td:nth-child(-n+2){
+      background:rgba(148,163,184,.035);
+    }
+    .result-table thead tr:not(.grouphead) th:nth-child(n+3),
+    .result-table tbody td:nth-child(n+3){
+      background:rgba(148,163,184,.02);
+    }
+
+    /* When outpatient-only is active, dim inpatient side more clearly */
+    .dim-inpatient thead tr.grouphead th:nth-child(3){
+      opacity:.35;
+    }
+    .dim-inpatient thead tr:not(.grouphead) th:nth-child(n+3),
+    .dim-inpatient tbody td:nth-child(n+3){
+      opacity:.28;
+      filter:saturate(.5);
+    }
+
+
+/* --- total cost yen suffix + numeric input polish --- */
+.input-yen{position:relative;display:block;}
+.input-yen input{padding-right:2.6em;}
+.yen-suffix{
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  font-weight:600;
+  opacity:0.85;
+  pointer-events:none;
+}
+
+
+/* mode tabs */
+.modeTabs{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.modeTab{appearance:none;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:var(--text);padding:8px 12px;border-radius:999px;font-weight:700;cursor:pointer;transition:all .15s ease}
+.modeTab:hover{background:rgba(255,255,255,.10)}
+.modeTab.active{background:rgba(120,180,255,.22);border-color:rgba(120,180,255,.55);box-shadow:0 0 0 3px rgba(120,180,255,.12)}
+
+
+.modeTab.disabled{opacity:.45;cursor:not-allowed;pointer-events:none;filter:saturate(.4);}
+/* Year tabs (mobile) */
+.yearTabs{display:none;gap:8px;flex-wrap:wrap;margin-top:10px}
+.yearTabs button{appearance:none;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:var(--text);padding:8px 12px;border-radius:999px;font-weight:700;cursor:pointer}
+.yearTabs button[aria-selected="true"]{background:rgba(90,208,255,.18);border-color:rgba(90,208,255,.45)}
+.mobileYearCard{display:none;margin-top:12px}
+.mobileYearCard .ycard{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);border-radius:16px;padding:12px;margin-top:10px}
+.mobileYearCard .ycard h4{margin:0 0 8px 0;font-size:14px;opacity:.95}
+.mobileYearCard .kv{display:grid;grid-template-columns:1fr;gap:8px}
+.mobileYearCard .kv .row{display:flex;justify-content:space-between;gap:10px;border-top:1px dashed rgba(255,255,255,.12);padding-top:8px;align-items:flex-start}
+.mobileYearCard .kv .row:first-child{border-top:none;padding-top:0}
+.mobileYearCard .kv .k{opacity:.82;flex:1;min-width:0}
+.mobileYearCard .kv .v{font-weight:800;flex:1;min-width:0;text-align:right;white-space:normal;overflow-wrap:anywhere}
+@media (max-width: 720px){
+  .yearTabs{display:flex}
+  #resultTable{display:none}
+  #mobileYearCard{display:block}
+}
+
+
+
+/* ===== Patch: mobile-friendly result table (no horizontal scroll) ===== */
+@media (max-width: 720px){
+  #resultTable{width:100% !important;}
+  #resultTable thead{display:none;}
+  #resultTable, #resultTable tbody, #resultTable tr, #resultTable td{display:block; width:100%;}
+  #resultTable tr{
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:14px;
+    margin:10px 0;
+    overflow:hidden;
+  }
+  #resultTable td{
+    padding:10px 12px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  #resultTable td:first-child{
+    font-weight:700;
+    border-bottom:1px solid rgba(255,255,255,0.10);
+  }
+  #resultTable td[data-label]{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+  }
+  #resultTable td[data-label]::before{
+    content: attr(data-label);
+    opacity:0.85;
+    font-weight:600;
+    flex:0 0 auto;
+  }
+}
+/* ===== end patch ===== */
+
+
+/* --- Mobile readability: keep result tables within screen (no horizontal cut) --- */
+@media (max-width: 640px){
+  table{display:table;width:100%;overflow:visible;white-space:normal;table-layout:fixed;}
+  th,td{white-space:normal;overflow-wrap:anywhere;word-break:break-word;}
+}
+html, body { max-width: 100%; overflow-x: hidden; }
+</style>
+</head>
+<body>
+
+<!-- Notice Modal -->
+<div id="noticeModal" style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;">
+  <div style="max-width:520px;background:#0f172a;border:1px solid #334155;border-radius:14px;padding:22px;color:#e5e7eb;box-shadow:0 20px 40px rgba(0,0,0,.5);">
+    <h2 style="font-size:18px;margin-bottom:10px;">重要なお知らせ</h2>
+    <p style="font-size:14px;line-height:1.7;margin-bottom:16px;">
+      このシミュレーターは<strong>2026年度 高額療養費制度の改正案</strong>を参考に作成しています。<br>
+      <strong>2026年8月以降</strong>の表示結果は、<u>可決・施行された法案に基づくものではありません</u>。<br>
+      実際の自己負担額は、最終的に成立した制度内容により変わる可能性があります。
+    </p>
+    <div style="text-align:right;">
+      <button onclick="document.getElementById('noticeModal').style.display='none'"
+        style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;">
+        理解しました
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <h1>高額療養費（改正案）自己負担 自動計算（2025 / 2026 / 2027）</h1>
+  <p class="sub">
+    画像の表（現行＝2025、R8.8〜＝2026年8月〜、R9.8〜＝2027年8月〜）をロジック化し、
+    <span class="pill">総医療費（保険診療10割・1か月あたり）</span> を入力すると、<b>月額</b>と<b>年額</b>の自己負担上限（概算）を出します。<br/>
+    ①対応：<b>70歳以上（外来特例）</b>を追加しました。
+  </p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>入力</h2>
+
+      <div class="row">
+        <div>
+          <label>年齢区分</label>
+          <select id="ageGroup">
+            <option value="u70">70歳未満</option>
+            <option value="o70">70歳以上</option>
+          </select>
+        </div>
+        <div>
+          <label>自己負担割合（参考：3割/2割/1割）</label>
+          <select id="copayRate">
+            <option value="0.3">3割</option>
+            <option value="0.2">2割</option>
+            <option value="0.1">1割</option>
+          </select>
+        </div>
+      </div>
+
+      <label id="incomeLabel">所得区分</label>
+      <select id="income"></select>
+
+      <div class="row">
+        <div>
+          <label>治療例（資料のケースを例として収録）</label>
+          <select id="example"></select>
+        </div>
+        <div>
+          <label>総医療費（1か月あたり・10割）</label>
+          <div class="input-yen"><input id="totalCost" type="text" min="0" step="1" placeholder="例：2872000"  inputmode="numeric" pattern="[0-9,]*" aria-label="総医療費（1か月あたり・10割）"><span class="yen-suffix">円</span></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>治療月数（年額試算用）</label>
+          <input id="months" type="number" min="1" max="12" step="1" value="12" />
+        </div>
+        <div>
+          <label>（表示）3割/2割/1割負担分</label>
+          <input id="copayRawInput" type="text" disabled value="—" />
+        </div>
+      </div>
+
+      <div class="inline">
+        <input id="isMultiple" type="checkbox" />
+        <label for="isMultiple" style="margin:0;">多数回該当（直近12か月で4回目以降）を適用する</label>
+      </div>
+
+      <div class="inline" id="outpatientRow" style="display:none;">
+        <input id="outpatientOnly" type="checkbox" />
+        <label for="outpatientOnly" style="margin:0;"><b>外来のみ</b>（70歳以上の「外来特例」の上限を使う）</label>
+        <span class="pill">入院を含む月はOFF推奨</span>
+      </div>
+
+      <div class="btns">
+        <button id="calcBtn" type="button">再計算</button>
+        <button id="resetBtn" type="button">入力を初期化</button>
+      </div>
+
+      <div class="note">
+        ■計算の考え方：<br/>
+        ・負担分＝ 総医療費×（3/2/1割）を計算し、上限額と比べて小さい方を<b>月額自己負担</b>とします。<br/>
+        ・2026/2027で「年間上限」がある区分は <b>年額自己負担＝min(月額×治療月数, 年間上限)</b>。<br/>
+        ・70歳以上で「外来のみ」をONにすると、表の<b>外来特例（70歳以上）</b>の上限を優先します（該当区分のみ）。<br/>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>結果</h2>
+
+      <div class="kpi">
+        <div class="item">
+          <div class="label">上限適用前の自己負担（参考）</div>
+          <div class="value mono" id="copayRaw">—</div>
+        </div>
+        <div class="item">
+          <div class="label">選択区分</div>
+          <div class="value" id="pickedIncome">—</div>
+        </div>
+        <div class="item">
+          <div class="label">治療月数</div>
+          <div class="value mono" id="pickedMonths">—</div>
+        </div>
+      </div>
+
+      
+      
+<div id="calcBadges">
+  <div class="modeTabs" role="tablist" aria-label="計算モード">
+    <button type="button" class="modeTab" data-mode="outpatient" role="tab" aria-selected="false">外来のみ（外来特例）</button>
+    <button type="button" class="modeTab" data-mode="combo" role="tab" aria-selected="false">外来＋入院＋手術</button>
+    <button type="button" class="modeTab" data-mode="inpatient" role="tab" aria-selected="false">入院＋手術</button>
+  </div>
+  <div class="yearTabs" id="yearTabs" role="tablist" aria-label="年度選択"></div>
+  <div class="mobileYearCard" id="mobileYearCard" style="display:none;"></div>
+
+</div>
+
+<div class="note-merged" id="noteOutpatient" style="display:none;">
+        ※外来特例（70歳以上・外来のみ・個人単位）と、入院を含む高額療養費は<strong>合算されません</strong>。外来のみをONにした場合、月額自己負担は外来特例の上限（例：18,000円／22,000円／28,000円）を優先して計算します。
+      </div>
+      <div class="note-merged" id="noteOutpatientUnavailable" style="display:none;">※「外来のみ（外来特例）」は <strong>70歳以上</strong> かつ <strong>外来特例の対象所得区分</strong> の場合に限り有効です。この条件を満たさないため、計算は <strong>入院（高額療養費）</strong> として行います。</div>
+
+      <div style="height:12px"></div>
+
+      <table id="resultTable" class="resultTable">
+  <thead>
+    <tr class="grouphead">
+      <th rowspan="2" class="col-year">年</th>
+      <th colspan="1" class="group-out" id="thOutpatientGroup">外来（70歳以上・外来特例）</th>
+      <th colspan="4" class="group-in" id="thInpatientGroup">外来＋入院＋手術 / 入院＋手術（高額療養費）</th>
+    </tr>
+    <tr>
+      <th class="col-outcap">外来特例上限（月額／年額）</th>
+      <th class="col-caplogic">月額上限（ロジック）</th>
+      <th class="col-yearcap">年間上限</th>
+      <th class="col-month">月額自己負担</th>
+      <th class="col-yearpay">年額自己負担</th>
+    </tr>
+  </thead>
+  <tbody id="resultBody"></tbody>
+</table>
+
+      <div class="footer">
+        ※本HTMLは制度説明のための概算ツールです。実際の算定は加入保険者の決定に従ってください。<br/>
+        ※外来特例は「70歳以上・外来のみ」の場合に限って有効化しています。<br/>
+        ※病院食・差額ベッド代・光熱費等の選定療養負担額は含まれておりません。
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------------- Income options ----------------
+  const INCOME_U70 = [
+    {value:"A", text:"約1,650万円〜（標報:127万円〜）"},
+    {value:"B", text:"約1,410〜約1,650万円（標報:103〜121万円）"},
+    {value:"C", text:"約1,160〜約1,410万円（標報:83〜98万円）"},
+    {value:"D", text:"約1,040〜約1,160万円（標報:71〜79万円）"},
+    {value:"E", text:"約950〜約1,040万円（標報:62〜68万円）"},
+    {value:"F", text:"約770〜約950万円（標報:53〜59万円）"},
+    {value:"G", text:"約650〜約770万円（標報:44〜50万円）"},
+    {value:"H", text:"約510〜約650万円（標報:36〜41万円）"},
+    {value:"I", text:"約370〜約510万円（標報:28〜34万円）"},
+    {value:"J", text:"約200〜約260万円（標報:16〜19万円）"},
+    {value:"NTU70", text:"非課税（70歳未満）"},
+  ];
+
+  const INCOME_O70 = [
+    {value:"A", text:"年収 約1,650万円〜（70歳以上・外来特例なし）"},
+    {value:"D", text:"年収 約950〜約1,650万円相当（70歳以上・外来特例なし）"},
+    {value:"G", text:"年収 約370〜約950万円相当（70歳以上・外来特例なし）"},
+
+    {value:"J2", text:"年収 約260〜約370万円（R9.8〜のみ 外来特例あり）"},
+    {value:"J",  text:"年収 約200〜約260万円（外来特例あり）"},
+    {value:"K",  text:"年収 〜約200万円（外来特例あり）"},
+
+    {value:"NTO70", text:"非課税（70歳以上）"},
+    {value:"FIXO70", text:"一定所得以下（70歳以上）"},
+  ];
+
+  function loadIncomeOptions(){
+    const age = document.getElementById("ageGroup").value;
+    const sel = document.getElementById("income");
+    sel.innerHTML = "";
+    const items = age==="u70" ? INCOME_U70 : INCOME_O70;
+    items.forEach(it=>{
+      const opt=document.createElement("option");
+      opt.value=it.value;
+      opt.textContent=it.text;
+      sel.appendChild(opt);
+    });
+    // sensible defaults
+    sel.value = age==="u70" ? "G" : "NTO70";
+    document.getElementById("incomeLabel").textContent = "所得区分（画像の表に準拠）";
+    // show outpatient toggle only for 70+
+    document.getElementById("outpatientRow").style.display = (age==="o70") ? "flex" : "none";
+    if (age==="u70") document.getElementById("outpatientOnly").checked = false;
+
+    // default copay rate
+    const copaySel = document.getElementById("copayRate");
+    if (age==="u70") copaySel.value = "0.3";
+    else if (copaySel.value==="0.3") copaySel.value = "0.2"; // 70+は2割が多い前提で初期値だけ調整
+  }
+
+  // ---------------- Examples ----------------
+  const EXAMPLES = [
+    {key:"custom", label:"（手入力）", monthlyTotal:null},
+
+    // 厚労省資料の治療例（病名で選択）
+    {key:"cml", label:"慢性骨髄性白血病（分子標的薬治療の例）", monthlyTotal:2872000},
+    {key:"ird", label:"遺伝性網膜ジストロフィー（ルクスターナ治療の例）", monthlyTotal:49600000},
+    {key:"breast", label:"乳がん（抗がん剤等の例）", monthlyTotal:6582000},
+
+    // 胃がん：ユーザー要望。総医療費は暫定（資料値に差替可）
+    {key:"stomach", label:"胃がん（治療例）", monthlyTotal:1000000},
+
+    {key:"ref1m", label:"参考：総医療費 100万円 / 月", monthlyTotal:1000000},
+  ];
+
+  // ---------------- Rules (from your image) ----------------
+  // base + 1% * max(0, total - threshold)
+  // multi = 多数回該当の上限（<...>）
+  // annual = 年間上限（ある場合のみ）
+  // outpatient = 外来特例（70歳以上）月額上限（ある場合のみ）
+  const RULES = {
+    2025: {
+      // 高所得〜一般（外来特例なし）
+      A:{type:"formula", base:252600, threshold:842000, rate:0.01, multi:140100, annual:null, outpatient:null},
+      B:{type:"formula", base:252600, threshold:842000, rate:0.01, multi:140100, annual:null, outpatient:null},
+      C:{type:"formula", base:252600, threshold:842000, rate:0.01, multi:140100, annual:null, outpatient:null},
+
+      D:{type:"formula", base:167400, threshold:558000, rate:0.01, multi:93000, annual:null, outpatient:null},
+      E:{type:"formula", base:167400, threshold:558000, rate:0.01, multi:93000, annual:null, outpatient:null},
+      F:{type:"formula", base:167400, threshold:558000, rate:0.01, multi:93000, annual:null, outpatient:null},
+
+      G:{type:"formula", base:80100, threshold:267000, rate:0.01, multi:44400, annual:null, outpatient:null},
+      H:{type:"formula", base:80100, threshold:267000, rate:0.01, multi:44400, annual:null, outpatient:null},
+      I:{type:"formula", base:80100, threshold:267000, rate:0.01, multi:44400, annual:null, outpatient:null},
+
+      // 所得低め（外来特例あり）
+      J:{type:"fixed", base:57600, threshold:0, rate:0, multi:44400, annual:null, outpatient:18000, outpatientAnnual:144000}, // 年14.4万は表示だけ（年額計算は months×月額でOK）
+      K:{type:"fixed", base:null, threshold:0, rate:0, multi:null, annual:null, outpatient:18000, outpatientAnnual:144000}, // 〜約200は現行欄に月額上限の明記がないため空（後で使う場合は入れてください）
+
+      // 非課税
+      NTU70:{type:"fixed", base:35400, threshold:0, rate:0, multi:24600, annual:null, outpatient:null},
+      NTO70:{type:"fixed", base:24600, threshold:0, rate:0, multi:null, annual:null, outpatient:8000, outpatientAnnual:96000},
+      FIXO70:{type:"fixed", base:15000, threshold:0, rate:0, multi:null, annual:null, outpatient:8000, outpatientAnnual:96000},
+      J2:{type:"fixed", base:null, threshold:0, rate:0, multi:null, annual:null, outpatient:null},
+    },
+    2026: {
+      A:{type:"formula", base:270300, threshold:842000, rate:0.01, multi:140100, annual:1680000, outpatient:null},
+      B:{type:"formula", base:270300, threshold:842000, rate:0.01, multi:140100, annual:1680000, outpatient:null},
+      C:{type:"formula", base:270300, threshold:842000, rate:0.01, multi:140100, annual:1680000, outpatient:null},
+
+      D:{type:"formula", base:179100, threshold:558000, rate:0.01, multi:93000, annual:1110000, outpatient:null},
+      E:{type:"formula", base:179100, threshold:558000, rate:0.01, multi:93000, annual:1110000, outpatient:null},
+      F:{type:"formula", base:179100, threshold:558000, rate:0.01, multi:93000, annual:1110000, outpatient:null},
+
+      G:{type:"formula", base:85800, threshold:267000, rate:0.01, multi:44400, annual:530000, outpatient:null},
+      H:{type:"formula", base:85800, threshold:267000, rate:0.01, multi:44400, annual:530000, outpatient:null},
+      I:{type:"formula", base:85800, threshold:267000, rate:0.01, multi:44400, annual:530000, outpatient:null},
+
+      J:{type:"fixed", base:61500, threshold:0, rate:0, multi:44400, annual:530000, outpatient:22000, outpatientAnnual:216000},
+      K:{type:"fixed", base:null, threshold:0, rate:0, multi:null, annual:null, outpatient:22000, outpatientAnnual:216000}, // 〜約200は（※1）で年額上限の導入時期が限定されているため、ここは空
+
+      NTU70:{type:"fixed", base:36900, threshold:0, rate:0, multi:24600, annual:290000, outpatient:null},
+      NTO70:{type:"fixed", base:25700, threshold:0, rate:0, multi:24600, annual:290000, outpatient:11000, outpatientAnnual:96000},
+      FIXO70:{type:"fixed", base:15700, threshold:0, rate:0, multi:null, annual:180000, outpatient:8000, outpatientAnnual:96000},
+      J2:{type:"fixed", base:null, threshold:0, rate:0, multi:null, annual:null, outpatient:null},
+    },
+    2027: {
+      // 上位区分が細分化（画像のR9.8列）
+      A:{type:"formula", base:342000, threshold:842000, rate:0.01, multi:140100, annual:1680000, outpatient:null},
+      B:{type:"formula", base:303000, threshold:842000, rate:0.01, multi:140100, annual:1680000, outpatient:null},
+      C:{type:"formula", base:270300, threshold:842000, rate:0.01, multi:140100, annual:1680000, outpatient:null},
+
+      D:{type:"formula", base:209400, threshold:558000, rate:0.01, multi:93000, annual:1110000, outpatient:null},
+      E:{type:"formula", base:194400, threshold:558000, rate:0.01, multi:93000, annual:1110000, outpatient:null},
+      F:{type:"formula", base:179100, threshold:558000, rate:0.01, multi:93000, annual:1110000, outpatient:null},
+
+      G:{type:"formula", base:110400, threshold:267000, rate:0.01, multi:44400, annual:530000, outpatient:null},
+      H:{type:"formula", base:98100, threshold:267000, rate:0.01, multi:44400, annual:530000, outpatient:null},
+      I:{type:"formula", base:85800, threshold:267000, rate:0.01, multi:44400, annual:530000, outpatient:null},
+
+      // 低所得帯（画像下段）
+      J:{type:"fixed", base:65400, threshold:0, rate:0, multi:44400, annual:530000, outpatient:28000, outpatientAnnual:216000},
+      K:{type:"fixed", base:61500, threshold:0, rate:0, multi:34500, annual:410000, outpatient:22000, outpatientAnnual:216000},
+
+      NTU70:{type:"fixed", base:36900, threshold:0, rate:0, multi:24600, annual:290000, outpatient:null},
+      NTO70:{type:"fixed", base:25700, threshold:0, rate:0, multi:24600, annual:290000, outpatient:13000, outpatientAnnual:96000},
+      FIXO70:{type:"fixed", base:15700, threshold:0, rate:0, multi:null, annual:180000, outpatient:8000, outpatientAnnual:96000},
+
+      J2:{type:"fixed", base:69600, threshold:0, rate:0, multi:44400, annual:530000, outpatient:28000, outpatientAnnual:216000},
+    }
+  };
+
+  // ---------------- Helpers ----------------
+
+  function parseYenInput(str){
+    if (str===null || str===undefined) return 0;
+    return Number(String(str).replace(/,/g,"").trim() || 0);
+  }
+  function formatWithCommas(n){
+    if (n===null || n===undefined || Number.isNaN(n)) return "";
+    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+  const yen = (n) => {
+    if (n === null || n === undefined || Number.isNaN(n)) return "—";
+    const x = Math.round(n);
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "円";
+  };
+
+  const calcMonthlyLimit = (rule, total, isMultiple) => {
+    if (!rule) return null;
+    if (isMultiple && rule.multi !== null && rule.multi !== undefined) return rule.multi;
+    if (rule.type === "fixed") return rule.base;
+    const extra = Math.max(0, total - rule.threshold) * rule.rate;
+    return rule.base + extra;
+  };
+
+  const ruleLogicText = (rule) => {
+    if (!rule || rule.base === null || rule.base === undefined) return "—";
+    if (rule.type === "fixed"){
+      const multiTxt = (rule.multi!==null && rule.multi!==undefined) ? `（多数回 ${yen(rule.multi)}）` : "";
+      return `固定 ${yen(rule.base)}${multiTxt}`;
+    }
+    const multiTxt = (rule.multi!==null && rule.multi!==undefined) ? `（多数回 ${yen(rule.multi)}）` : "";
+    return `${yen(rule.base)} + 1% × max(0, 総医療費 - ${yen(rule.threshold).replace("円","")})${multiTxt}`;
+  };
+
+  function pickedIncomeLabel(){
+    const sel = document.getElementById("income");
+    return sel.options[sel.selectedIndex]?.text || "—";
+  }
+
+  // ---------------- UI wiring ----------------
+  const totalCostInput = document.getElementById("totalCost");
+  const exampleSel = document.getElementById("example");
+  EXAMPLES.forEach(e=>{
+    const opt=document.createElement("option");
+    opt.value=e.key;
+    opt.textContent=e.label;
+    exampleSel.appendChild(opt);
+  });
+
+  function setExampleToCost(){
+    const picked = EXAMPLES.find(x=>x.key===exampleSel.value);
+    if (picked && picked.monthlyTotal){
+      totalCostInput.value = formatWithCommas(picked.monthlyTotal);
+    }
+  }
+
+  exampleSel.addEventListener("change", ()=>{ setExampleToCost(); recalc(); });
+
+  document.getElementById("ageGroup").addEventListener("change", ()=>{
+    loadIncomeOptions();
+    recalc();
+  });
+
+  document.getElementById("calcBtn").addEventListener("click", ()=>{ setExampleToCost(); recalc(); });
+  document.getElementById("resetBtn").addEventListener("click", ()=>{
+    document.getElementById("ageGroup").value="u70";
+    document.getElementById("copayRate").value="0.3";
+    loadIncomeOptions();
+    document.getElementById("example").value="custom";
+    document.getElementById("totalCost").value="";
+    document.getElementById("months").value="12";
+    document.getElementById("isMultiple").checked=false;
+    document.getElementById("outpatientOnly").checked=false;
+    recalc();
+  });
+
+
+  // 総医療費：カンマ区切り表示（入力中は邪魔しない・フォーカスアウトで整形）
+  totalCostInput.addEventListener("focus", ()=>{
+    totalCostInput.value = String(totalCostInput.value || "").replace(/,/g,"");
+  });
+  totalCostInput.addEventListener("blur", ()=>{
+    const v = parseYenInput(totalCostInput.value);
+    totalCostInput.value = formatWithCommas(v);
+    recalc();
+  });
+  ["income","totalCost","months","isMultiple","copayRate","outpatientOnly"].forEach(id=>{
+    document.getElementById(id).addEventListener("input", recalc);
+    document.getElementById(id).addEventListener("change", recalc);
+  });
+
+  function recalc(){
+    const income = document.getElementById("income").value;
+    let total = parseYenInput(totalCostInput.value);
+
+    // AUTO-FILL: 総医療費が空/0なら、選択中の治療例（病名）の金額を採用
+    const exKey = document.getElementById("example").value;
+    const exPicked = EXAMPLES.find(x=>x.key===exKey);
+    if ((!Number.isFinite(total) || total === 0) && exPicked && exPicked.monthlyTotal && exKey !== "custom"){
+      total = exPicked.monthlyTotal;
+      totalCostInput.value = formatWithCommas(total);
+    }
+const months = Math.min(12, Math.max(1, Number(document.getElementById("months").value || 12)));
+    document.getElementById("months").value = months;
+
+    const copayRate = Number(document.getElementById("copayRate").value || 0.3);
+    const copay = total * copayRate;
+
+    document.getElementById("copayRaw").textContent = yen(copay);
+    document.getElementById("copayRawInput").value = yen(copay);
+    document.getElementById("pickedIncome").textContent = pickedIncomeLabel();
+    document.getElementById("pickedMonths").textContent = months + "か月";
+
+    const age = document.getElementById("ageGroup").value;
+    const isMultipleEl = document.getElementById("isMultiple");
+    const outpatientOnly = document.getElementById("outpatientOnly").checked;
+    // Badge / Note toggle (外来特例の説明)
+    
+    // === Mode tabs (外来のみ / 外来+入院+手術 / 入院+手術) ===
+    const outpatientOnlyEl = document.getElementById("outpatientOnly");
+    const modeNoteEl = document.getElementById("modeNote");
+    const thOutGroup = document.getElementById("thOutpatientGroup");
+    const thInGroup = document.getElementById("thInpatientGroup");
+    const modeTabs = Array.from(document.querySelectorAll(".modeTab"));
+
+    // Derive currentMode from checkbox (backward-compatible)
+    let currentMode = outpatientOnlyEl && outpatientOnlyEl.checked ? "outpatient" : "combo";
+    // If tabs exist, prefer the active one
+    const activeBtn = modeTabs.find(b => b.classList.contains("active"));
+    if (activeBtn && activeBtn.dataset && activeBtn.dataset.mode) currentMode = activeBtn.dataset.mode;
+
+    function applyModeUI(mode){
+      modeTabs.forEach(btn=>{
+        const on = btn.dataset.mode === mode;
+        btn.classList.toggle("active", on);
+        btn.setAttribute("aria-selected", on ? "true" : "false");
+      });
+
+      if (thOutGroup) thOutGroup.textContent = "外来のみ（外来特例）";
+      if (thInGroup){
+        thInGroup.textContent =
+          mode === "combo" ? "外来＋入院＋手術" :
+          mode === "inpatient" ? "入院＋手術" :
+          "入院＋手術（参考）";
+      }
+
+      if (modeNoteEl){
+        if (mode === "outpatient"){
+          modeNoteEl.innerHTML = '※外来特例（70歳以上・外来のみ・個人単位）の上限を優先して試算します。<br>※外来のみのため、右側（入院＋手術）は参考表示です。';
+        }else if (mode === "combo"){
+          modeNoteEl.innerHTML = '※外来特例（70歳以上・外来のみ・個人単位）は、入院を伴う高額療養費とは合算されません。外来＋入院＋手術の合算を想定する場合は、右側（外来＋入院＋手術）で試算します。';
+        }else{
+          modeNoteEl.innerHTML = '※入院＋手術（高額療養費）を想定する場合は、右側（入院＋手術）で試算します。外来特例（外来のみ）は適用しません。';
+        }
+      }
+    }
+
+    // Wire tab clicks (do once)
+    if (!window.__modeTabsWired){
+      modeTabs.forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          if (btn.classList.contains("disabled")) return;
+          const mode = btn.dataset.mode;
+          if (!mode) return;
+          if (outpatientOnlyEl) outpatientOnlyEl.checked = (mode === "outpatient"); // keep calculation logic
+          applyModeUI(mode);
+          recalc();
+        });
+      });
+      window.__modeTabsWired = true;
+    }
+
+    applyModeUI(currentMode);
+
+// Table dimming + unavailable note
+    const resultTable = document.getElementById("resultTable");
+    const noteUnavailable = document.getElementById("noteOutpatientUnavailable");
+
+    // eligibility: 70+ and selected income group has outpatient cap in 2025 rules (same key is used for all years in this simulator)
+    let hasOutCap = false;
+    try{
+      const key = document.getElementById("income").value;
+      const r0 = (RULES && RULES[2025] && RULES[2025][key]) ? RULES[2025][key] : null;
+      hasOutCap = !!(r0 && r0.outpatient !== null && r0.outpatient !== undefined);
+    }catch(e){ hasOutCap = false; }
+
+    
+    // Disable "外来のみ（外来特例）" tab when not applicable (e.g., 70歳未満)
+    const outpatientTabBtn = modeTabs.find(b => b.dataset && b.dataset.mode === "outpatient");
+    const canSelectOutTab = (age === "o70") && hasOutCap;
+    if (outpatientTabBtn){
+      outpatientTabBtn.classList.toggle("disabled", !canSelectOutTab);
+      outpatientTabBtn.setAttribute("aria-disabled", !canSelectOutTab ? "true" : "false");
+      outpatientTabBtn.title = !canSelectOutTab ? "外来特例は70歳以上かつ対象区分のみ選択できます" : "";
+    }
+    // If currently on outpatient mode but it became unavailable, fall back to combo
+    if (!canSelectOutTab && currentMode === "outpatient"){
+      if (outpatientOnlyEl) outpatientOnlyEl.checked = false;
+      currentMode = "combo";
+      applyModeUI("combo");
+    }
+
+    const eligibleOut = (age === "o70") && outpatientOnly && hasOutCap;
+
+    if (resultTable){
+      if (eligibleOut) resultTable.classList.add("dim-inpatient");
+      else resultTable.classList.remove("dim-inpatient");
+    }
+    if (noteUnavailable){
+      noteUnavailable.style.display = (outpatientOnly && !eligibleOut) ? "block" : "none";
+    }
+
+    // 外来特例（70+・外来のみ）には多数回該当を適用しない
+    if (age === "o70" && outpatientOnly){
+      isMultipleEl.checked = false;
+      isMultipleEl.disabled = true;
+    } else {
+      isMultipleEl.disabled = false;
+    }
+    const isMultiple = isMultipleEl.checked;
+
+    const years = [2025,2026,2027];
+    const tbody = document.getElementById("resultBody");
+    tbody.innerHTML = "";
+
+    const yearRows = [];
+    years.forEach(y=>{
+      const rule = RULES[y][income];
+      const monthlyLimit = calcMonthlyLimit(rule, total, isMultiple);
+
+      // outpatient cap (70+ & outpatientOnly)
+      let outpatientCap = null;
+      if (age==="o70" && outpatientOnly && rule && rule.outpatient !== null && rule.outpatient !== undefined){
+        outpatientCap = rule.outpatient;
+      }
+
+      const effectiveCap = (outpatientCap !== null && outpatientCap !== undefined) ? outpatientCap : monthlyLimit;
+      const monthlyOop = (effectiveCap !== null && effectiveCap !== undefined) ? Math.min(copay, effectiveCap) : copay;
+
+      const annualCap = (rule && rule.annual !== null && rule.annual !== undefined) ? rule.annual : null;
+      const annualRaw = monthlyOop * months;
+
+      // 外来特例（70+）は年額上限（例：年21.6万円）を優先適用
+      const outpatientAnnualCap = (outpatientCap !== null && outpatientCap !== undefined)
+        ? ((rule && rule.outpatientAnnual !== null && rule.outpatientAnnual !== undefined) ? rule.outpatientAnnual : (outpatientCap*12))
+        : null;
+
+      
+      // Text for outpatient cap column (only when eligible outpatient cap exists)
+      const outpatientText = (outpatientCap !== null && outpatientCap !== undefined)
+        ? `月 ${yen(outpatientCap)}（年 ${yen(outpatientAnnualCap)}）`
+        : "—";
+const annualOop = (outpatientAnnualCap !== null && outpatientAnnualCap !== undefined)
+        ? Math.min(annualRaw, outpatientAnnualCap)
+        : (annualCap ? Math.min(annualRaw, annualCap) : annualRaw);
+
+      const capText = `<div>${ruleLogicText(rule)}</div>`;
+
+
+      yearRows.push({
+        year: y,
+        outpatientCapText: outpatientText,
+        outpatientMonthlyCap: outpatientCap ?? null,
+        outpatientAnnualCap: outpatientAnnualCap ?? null,
+        inpatientRuleText: ruleLogicText(rule),
+        inpatientAnnualCap: annualCap ?? null,
+        inpatientMonthlyOop: monthlyOop ?? null,
+        inpatientAnnualOop: annualOop ?? null
+      });
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td data-label="年"><span class="val"><b>${y}</b></span></td>
+        <td data-label="外来特例上限（月額／年額）" class="mono"><span class="val"><b>${outpatientText}</b></span></td>
+        <td data-label="入院 月額上限（ロジック）"><span class="val">${capText}</span></td>
+        <td data-label="入院 年間上限" class="mono"><span class="val"><b>${annualCap?yen(annualCap):"—"}</b></span></td>
+        <td data-label="入院 月額自己負担" class="mono"><span class="val"><b>${yen(monthlyOop)}</b></span></td>
+        <td data-label="入院 年額自己負担" class="mono"><span class="val"><b>${yen(annualOop)}</b></span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Mobile: 年度タブ + カード表示（横スクロール回避）
+    window.__yearRows = yearRows;
+    window.__currentMode = currentMode;
+    if (!window.__activeYear) window.__activeYear = 2025;
+    renderYearTabs(yearRows, currentMode);
+    renderMobileYearCard(yearRows, window.__activeYear, currentMode);
+  }
+
+  // initial
+  loadIncomeOptions();
+  totalCostInput.value = formatWithCommas(parseYenInput(totalCostInput.value));
+  recalc();
+
+// --- Comma formatting for 総医療費 input (UI only; calc uses comma-stripped value) ---
+function formatNumberWithComma(value){
+  if(value===null||value===undefined) return '';
+  const num = Number(String(value).replace(/,/g,''));
+  if(Number.isNaN(num)) return '';
+  return num.toLocaleString('ja-JP');
+}
+function removeComma(value){
+  return String(value||'').replace(/,/g,'');
+}
+
+  function isMobileView(){
+    return window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
+  }
+
+  function renderYearTabs(yearRows, currentMode){
+    const tabWrap = document.getElementById('yearTabs');
+    if(!tabWrap) return;
+    tabWrap.innerHTML = '';
+    yearRows.forEach(r=>{
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = String(r.year);
+      b.setAttribute('role','tab');
+      b.setAttribute('aria-selected', String(window.__activeYear===r.year));
+      b.addEventListener('click', ()=>{
+        window.__activeYear = r.year;
+        renderYearTabs(window.__yearRows||yearRows, window.__currentMode||currentMode);
+        renderMobileYearCard(window.__yearRows||yearRows, window.__activeYear, window.__currentMode||currentMode);
+      });
+      tabWrap.appendChild(b);
+    });
+    [...tabWrap.querySelectorAll('button')].forEach(btn=>{
+      btn.setAttribute('aria-selected', String(Number(btn.textContent)===window.__activeYear));
+    });
+  }
+
+  function renderMobileYearCard(yearRows, year, currentMode){
+    const box = document.getElementById('mobileYearCard');
+    if(!box) return;
+    const r = yearRows.find(x=>x.year===year) || yearRows[0];
+    if(!r){
+      box.innerHTML = '';
+      return;
+    }
+
+    const parts = [];
+
+    // 外来（外来特例）
+    parts.push(`
+      <div class="ycard">
+        <h4>外来（70歳以上・外来特例）</h4>
+        <div class="kv">
+          <div class="row"><div class="k">外来特例上限（月額／年額）</div><div class="v">${r.outpatientCapText || '—'}</div></div>
+        </div>
+      </div>
+    `);
+
+    // 入院（高額療養費）
+    if(currentMode !== 'outpatient'){
+      parts.push(`
+        <div class="ycard">
+          <h4>${currentMode === 'combo' ? '外来＋入院＋手術（高額療養費）' : '入院＋手術（高額療養費）'}</h4>
+          <div class="kv">
+            <div class="row"><div class="k">月額上限（ロジック）</div><div class="v">${r.inpatientRuleText || '—'}</div></div>
+            <div class="row"><div class="k">年間上限</div><div class="v">${r.inpatientAnnualCap!=null ? yen(r.inpatientAnnualCap) : '—'}</div></div>
+            <div class="row"><div class="k">月額自己負担</div><div class="v">${r.inpatientMonthlyOop!=null ? yen(r.inpatientMonthlyOop) : '—'}</div></div>
+            <div class="row"><div class="k">年間自己負担</div><div class="v">${r.inpatientAnnualOop!=null ? yen(r.inpatientAnnualOop) : '—'}</div></div>
+          </div>
+        </div>
+      `);
+    }
+
+    box.innerHTML = parts.join('');
+
+    if(!isMobileView()){
+      box.style.display = 'none';
+    }else{
+      box.style.display = 'block';
+    }
+  }
+
+  (function bindMobileRerender(){
+    if(window.__mobileBindDone) return;
+    window.__mobileBindDone = true;
+    window.addEventListener('resize', ()=>{
+      if(window.__yearRows){
+        renderYearTabs(window.__yearRows, window.__currentMode||'combo');
+        renderMobileYearCard(window.__yearRows, window.__activeYear||2025, window.__currentMode||'combo');
+      }
+    }, {passive:true});
+  })();
+
+function getTotalCostValue(){
+  const el = document.getElementById('totalCost');
+  if(!el) return 0;
+  return Number(removeComma(el.value));
+}
+(function attachTotalCostFormat(){
+  const el = document.getElementById('totalCost');
+  if(!el) return;
+  el.addEventListener('input', () => {
+    el.value = el.value.replace(/[^\d,]/g,'');
+  });
+  el.addEventListener('blur', () => {
+    el.value = formatNumberWithComma(el.value);
+  });
+})();
+
+
+
+/* ===== Patch: stable rendering for result table (v17) ===== */
+function fmtYen(n){
+  if(!isFinite(n)) return "—";
+  return Math.round(n).toLocaleString("ja-JP") + "円";
+}
+function getRulesByYear(y){
+  // RULES is a map keyed by year (e.g., 2025/2026/2027)
+  return RULES[y] ?? RULES[String(y)] ?? null;
+}
+function getRuleForYearIncome(y, incomeCode){
+  const rules = getRulesByYear(y);
+  return rules[incomeCode] || null;
+}
+
+  // 外来特例（70歳以上・外来のみ）の月額上限（年別）
+  // 対象外の場合は null
+  function outpatientCapFor(year, incomeKey){
+    const rule = getRuleForYearIncome(year, incomeKey);
+    if(!rule || !rule.outpatient) return null;
+    return rule.outpatient;
+  }
+
+
+function calcMonthlyCap(rule, totalCost){
+  if(!rule) return null;
+  if(rule.type==="fixed") return rule.cap;
+  if(rule.type==="formula"){
+    return rule.base + Math.floor(rule.rate * Math.max(0, totalCost - rule.threshold));
+  }
+  return null;
+}
+function calcMonthlyCapMulti(rule, totalCost){
+  if(!rule) return null;
+  if(rule.type==="fixed") return rule.multi ?? rule.cap;
+  if(rule.type==="formula"){
+    // 多数回該当は固定値（rule.multi）を優先
+    return (rule.multi ?? calcMonthlyCap(rule,totalCost));
+  }
+  return null;
+}
+</script>
+</body>
+</html>
