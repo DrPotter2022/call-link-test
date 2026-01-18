@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>自動車保険（長期契約）等級計算ツール</title>
+<style>
+  :root{
+    --bg0:#070b16;
+    --bg1:#0b1126;
+    --card:#0f152caa;
+    --line:rgba(255,255,255,.14);
+    --muted:rgba(255,255,255,.72);
+    --text:#eaf1ff;
+    --good:#39d98a;
+    --bad:#ff5a72;
+    --accent:#78a6ff;
+    --shadow:0 18px 60px rgba(0,0,0,.55);
+    --r:18px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans JP", Arial;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 30% -20%, #1c2b72 0%, transparent 55%),
+      radial-gradient(900px 500px at 80% 10%, #401b5e 0%, transparent 55%),
+      linear-gradient(180deg, var(--bg0), #050812 60%, #050812 100%);
+    min-height:100vh;
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:20px 14px 40px}
+  h1{margin:0 0 6px;font-size:28px;letter-spacing:.02em}
+  .sub{margin:0 0 18px;color:rgba(255,255,255,.75);font-size:13px}
+
+  .grid{
+    display:grid;
+    grid-template-columns: 1.15fr .85fr;
+    gap:14px;
+  }
+  @media (max-width: 920px){
+    .grid{grid-template-columns:1fr}
+  }
+
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+    border:1px solid var(--line);
+    border-radius:var(--r);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .hd{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .pill{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:6px 10px;border-radius:999px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.10);
+    font-size:12px;color:rgba(255,255,255,.85);
+    white-space:nowrap;
+  }
+  .badge{
+    padding:4px 8px;border-radius:999px;font-size:12px;
+    border:1px solid rgba(255,255,255,.16);
+    background:rgba(0,0,0,.15);
+    white-space:nowrap;
+  }
+  .badge.good{color:#bfffe3;border-color:rgba(57,217,138,.35); background:rgba(57,217,138,.10)}
+  .badge.bad{color:#ffd0d6;border-color:rgba(255,90,114,.35); background:rgba(255,90,114,.10)}
+
+  .bd{padding:16px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  @media (max-width: 520px){.row{grid-template-columns:1fr}}
+  .field{display:flex;flex-direction:column;gap:8px}
+  label{font-size:12px;color:rgba(255,255,255,.78)}
+  select,input{
+    width:100%;
+    height:44px;
+    padding:0 12px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(0,0,0,.24);
+    color:var(--text);
+    outline:none;
+  }
+  select:focus,input:focus{border-color:rgba(120,166,255,.6); box-shadow:0 0 0 3px rgba(120,166,255,.18)}
+  option{background:rgba(10,15,30,.98);color:var(--text)}
+  .hint{font-size:12px;color:rgba(255,255,255,.55);margin-top:-2px}
+
+  .btnrow{display:flex;gap:10px;margin-top:10px}
+  button{
+    height:44px;border-radius:14px;
+    border:1px solid rgba(255,255,255,.14);
+    background:linear-gradient(180deg, rgba(120,166,255,.20), rgba(255,255,255,.06));
+    color:var(--text);cursor:pointer;
+    padding:0 14px;font-weight:700;
+  }
+  button.secondary{
+    background:rgba(255,255,255,.06);
+  }
+  button:active{transform:translateY(1px)}
+
+  /* 日付：テキスト入力 + 日付ピッカーボタン(type=date) */
+  .dateLine{display:grid;grid-template-columns:1fr 46px;gap:8px;align-items:center}
+  .dateBtn{
+    width:46px;height:44px;border-radius:14px;
+    border:1px solid rgba(255,255,255,.16);
+    background:rgba(255,255,255,.06);
+    position:relative;
+    overflow:hidden;
+  }
+  .dateBtn input[type="date"]{
+    width:100%;height:100%;
+    border:0;
+    padding:0;
+    background:
+      rgba(255,255,255,0.06)
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='14' height='13' rx='2'/%3E%3Cpath d='M6 2v4M14 2v4M3 8h14'/%3E%3C/svg%3E")
+      center/18px no-repeat;
+    color:transparent;
+    cursor:pointer;
+    appearance:none;-webkit-appearance:none;
+  }
+  .dateBtn input[type="date"]::-webkit-datetime-edit{display:none}
+  .dateBtn input[type="date"]::-webkit-calendar-picker-indicator{opacity:0}
+  .dateBtn input[type="date"]::-moz-focus-inner{border:0}
+
+  /* 事故リスト */
+  .accWrap{margin-top:6px}
+  .accHead{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin:2px 0 10px;
+  }
+  .accTools{display:flex;gap:10px;flex-wrap:wrap}
+  .accTools button{height:40px;border-radius:12px;font-size:13px}
+  .accSummary{
+    margin:10px 0 8px;
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(0,0,0,.20);
+    color:rgba(255,255,255,.82);
+    font-size:12px;
+  }
+  .accItem{
+    display:grid;
+    grid-template-columns: 1fr 30px 1.1fr 1fr 44px;
+    gap:10px;
+    align-items:center;
+    padding:10px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.03);
+    margin-bottom:10px;
+  }
+  @media (max-width: 720px){
+    .accItem{
+      grid-template-columns: 1fr 30px 1fr 44px;
+      grid-template-areas:
+        "type info date del"
+        "memo memo memo del";
+    }
+    .accItem .accType{grid-area:type}
+    .accItem .infoBtn{grid-area:info}
+    .accItem .accDate{grid-area:date}
+    .accItem .accMemo{grid-area:memo}
+    .accItem .delBtn{grid-area:del}
+  }
+  .accType select{height:44px}
+  .accDate{display:grid;grid-template-columns:1fr 46px;gap:8px;align-items:center}
+  .accDate input[type="text"]{height:44px}
+  .accMemo input{height:44px}
+  .delBtn{
+    height:44px;width:44px;border-radius:14px;
+    border:1px solid rgba(255,90,114,.45);
+    background:rgba(255,90,114,.10);
+    font-weight:900;
+  }
+
+  /* (i) ポップアップ */
+  .infoBtn{
+    width:28px;height:28px;border-radius:10px;
+    border:1px solid rgba(255,255,255,.28);
+    background:rgba(255,255,255,.08);
+    color:#fff;font-weight:800;cursor:pointer;
+  }
+  .tipPop{
+    position:fixed;
+    z-index:9999;
+    max-width:320px;
+    background:rgba(10,14,28,.96);
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:14px;
+    padding:10px 12px;
+    color:rgba(255,255,255,.92);
+    font-size:12px;
+    line-height:1.4;
+    box-shadow:0 20px 70px rgba(0,0,0,.6);
+    display:none;
+  }
+
+  /* 結果カード */
+  .kpi{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+  }
+  .kpiBox{
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(0,0,0,.18);
+    border-radius:16px;
+    padding:14px 14px;
+  }
+  .kpiT{font-size:12px;color:rgba(255,255,255,.70)}
+  .kpiV{font-size:34px;font-weight:900;line-height:1.05;margin-top:6px}
+  .kpiS{font-size:12px;color:rgba(255,255,255,.74);margin-top:6px}
+
+  .refBox{
+    margin-top:12px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(0,0,0,.16);
+    border-radius:16px;
+    padding:12px 14px;
+    color:rgba(255,255,255,.86);
+    font-size:13px;
+  }
+  .refBox .big{font-size:18px;font-weight:900}
+
+  /* 合計 */
+  .sumGrid{
+    margin-top:12px;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+  }
+  @media (max-width: 720px){
+    .sumGrid{grid-template-columns:1fr}
+  }
+  .sumCard{
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(0,0,0,.18);
+    border-radius:16px;
+    padding:12px 14px;
+  }
+  .sumTitle{font-size:12px;color:rgba(255,255,255,.72);margin-bottom:6px}
+  .sumBig{font-size:30px;font-weight:900;letter-spacing:.02em}
+  .sumList{margin-top:8px;font-size:12px;color:rgba(255,255,255,.76);line-height:1.55;white-space:pre-line}
+
+  /* チャート（全等級） */
+  .chartCard{margin-top:14px}
+  .chartTop{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;flex-wrap:wrap;
+  }
+  .chartHint{
+    font-size:12px;color:rgba(255,255,255,.78);
+    padding:6px 10px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(0,0,0,.18);
+    white-space:normal;
+  }
+  .legend{
+    display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  }
+  .lgItem{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.78)}
+  .dot{width:10px;height:10px;border-radius:3px}
+  .dot.good{background:rgba(57,217,138,.75); border:1px solid rgba(57,217,138,.95)}
+  .dot.bad{background:rgba(255,90,114,.70); border:1px solid rgba(255,90,114,.95)}
+
+  .nfChart{
+    margin-top:10px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(0,0,0,.16);
+    border-radius:16px;
+    padding:12px;
+    width:100%;
+    overflow:hidden;
+  }
+
+  .nfRow{
+    display:grid;
+    grid-template-columns: 34px 1fr;
+    gap:10px;
+    align-items:center;
+    margin:6px 0;
+  }
+  .nfY{
+    text-align:right;
+    font-weight:800;
+    color:rgba(255,255,255,.78);
+    font-size:12px;
+    padding-right:2px;
+  }
+  .nfRail{
+    position:relative;
+    height:14px;
+    border-radius:999px;
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+    border:1px solid rgba(255,255,255,.10);
+    overflow:hidden;
+  }
+  .nfCenter{
+    position:absolute;top:0;bottom:0;
+    left:50%;
+    width:1px;
+    background:rgba(255,255,255,.18);
+  }
+  .bar{
+    position:absolute;top:2px;bottom:2px;
+    border-radius:999px;
+  }
+  .bar.neg{right:50%}
+  .bar.pos{left:50%}
+  .bar.good{
+    background:rgba(57,217,138,.55);
+    border:1px solid rgba(57,217,138,.90);
+    z-index:2;
+  }
+  .bar.bad{
+    background:rgba(255,90,114,.50);
+    border:1px solid rgba(255,90,114,.95);
+    z-index:4;
+  }
+
+  @keyframes blinkStrong{
+    0%{filter:brightness(1); box-shadow:0 0 0 rgba(255,255,255,0)}
+    50%{filter:brightness(1.65); box-shadow:0 0 18px rgba(255,255,255,.55)}
+    100%{filter:brightness(1); box-shadow:0 0 0 rgba(255,255,255,0)}
+  }
+  .blink{
+    animation: blinkStrong .65s linear infinite;
+  }
+
+  .xnote{
+    margin-top:10px;
+    font-size:12px;color:rgba(255,255,255,.70);
+  }
+
+  .msg{margin-top:10px;font-size:12px;color:rgba(255,255,255,.72)}
+
+  /* hover tooltip */
+  .hoverTip{
+    position:fixed;
+    z-index:99999;
+    background:rgba(12,16,30,.96);
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:14px;
+    padding:10px 12px;
+    font-size:12px;
+    color:rgba(255,255,255,.92);
+    display:none;
+    pointer-events:none;
+    box-shadow:0 16px 60px rgba(0,0,0,.6);
+    max-width:280px;
+  }
+
+  /* modal */
+  .modal{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.65);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:100000;
+    padding:18px;
+  }
+  .modal.on{display:flex}
+  .modalBox{
+    width:min(560px, 94vw);
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,.18);
+    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.28));
+    box-shadow:0 24px 80px rgba(0,0,0,.7);
+    padding:18px 18px 16px;
+  }
+  .modalT{font-weight:900;font-size:16px;margin-bottom:8px}
+  .modalP{font-size:13px;color:rgba(255,255,255,.86);line-height:1.6;white-space:pre-line}
+  .modalBtns{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+  .disabledAll{
+    pointer-events:none;
+    filter:blur(.25px);
+    opacity:.55;
+  }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>自動車保険（長期契約）等級計算ツール</h1>
+  <p class="sub">事故区分（3等級ダウン／1等級ダウン／ノーカウント）を登録して、更新後等級と事故有係数適用期間を計算します。</p>
+
+  <div id="appRoot" class="grid">
+    <!-- 入力 -->
+    <section class="card">
+      <div class="hd">
+        <div class="pill">入力</div>
+        <div class="badge good" id="badgeNow">無事故</div>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <div class="field">
+            <label>現在のご契約の等級</label>
+            <select id="gradeNow">
+              <option>20</option><option>19</option><option>18</option><option>17</option><option>16</option>
+              <option>15</option><option>14</option><option>13</option><option>12</option><option>11</option>
+              <option>10</option><option>9</option><option>8</option><option>7</option><option>6</option>
+              <option>5</option><option>4</option><option>3</option><option>2</option><option>1</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>現在の事故有係数適用期間（年）</label>
+            <select id="coefNow">
+              <option value="0">0年（無事故）</option>
+              <option value="1">1年</option><option value="2">2年</option><option value="3">3年</option>
+              <option value="4">4年</option><option value="5">5年</option><option value="6">6年</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>契約の保険期間(年)</label>
+            <select id="term">
+              <option value="1">1年(月払/年払)</option>
+              <option value="3">3年(月払/年払)</option>
+              <option value="5">5年(一時払)</option>
+              <option value="7">7年(一時払)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>保険始期日 (yy/mm/dd)</label>
+            <div class="dateLine">
+              <input id="startDateText" type="text" placeholder="例）26/02/01" />
+              <div class="dateBtn" id="startDateBtn" title="カレンダー">
+                <input id="startDatePick" type="date" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="accWrap">
+          <div class="accHead">
+            <div class="pill">事故区分（事故ごとに追加）</div>
+            <div class="accTools">
+              <button id="btnAdd" type="button">事故を追加</button>
+              <button id="btnClear" type="button" class="secondary">事故一覧をクリア</button>
+            </div>
+          </div>
+
+          <div class="accSummary" id="accSummary">自動集計：3等級ダウン件数=0 / 1等級ダウン件数=0 / ノーカウント=0</div>
+          <div id="accList"></div>
+        </div>
+
+        <div class="btnrow">
+          <button id="btnCalc" type="button" style="flex:1">計算する</button>
+          <button id="btnReset" type="button" class="secondary" style="flex:1">リセット</button>
+        </div>
+        <div class="msg" id="msg"></div>
+      </div>
+    </section>
+
+    <!-- 結果 -->
+    <section class="card">
+      <div class="hd">
+        <div class="pill">結果</div>
+        <div class="badge good" id="badgeOut">無事故</div>
+      </div>
+      <div class="bd">
+        <div class="kpi">
+          <div class="kpiBox">
+            <div class="kpiT">更新後等級</div>
+            <div class="kpiV"><span id="outGrade">-</span></div>
+            <div class="kpiS" id="outRate">割引増率：-</div>
+            <div class="kpiS" id="nextDate">次回更改日：-</div>
+          </div>
+          <div class="kpiBox">
+            <div class="kpiT">事故有係数適用期間</div>
+            <div class="kpiV"><span id="outCoef">-</span></div>
+            <div class="kpiS">0年＝無事故、1〜6年＝事故有</div>
+          </div>
+        </div>
+
+        <div class="refBox">
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <div style="font-weight:900;">1年更新（参考：事故あり）</div>
+            <div style="opacity:.86;">等級<span id="refGrade">-</span> / <span id="refCoef">-</span>年</div>
+          </div>
+          <div class="big" id="refRate">割引増率：-</div>
+        </div>
+
+        <div class="sumGrid">
+          <div class="sumCard">
+            <div class="sumTitle">事故有係数が0年になるまでの割引増率 合計（主表示：参考と同年数）</div>
+            <div class="sumBig" id="sumMain">-</div>
+            <div class="sumList" id="sumMainList"></div>
+          </div>
+          <div class="sumCard">
+            <div class="sumTitle">事故有係数が0年になるまでの割引増率 合計（1年更新・参考）</div>
+            <div class="sumBig" id="sumRef">-</div>
+            <div class="sumList" id="sumRefList"></div>
+          </div>
+          <div class="sumCard">
+            <div class="sumTitle">差（主表示 − 参考）</div>
+            <div class="sumBig" id="sumDiff">-</div>
+            <div class="sumList" id="sumDiffMsg"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- グラフ（全等級） -->
+    <section class="card chartCard" style="grid-column:1 / -1;">
+      <div class="hd">
+        <div class="pill">等級別 割引増率（全等級）</div>
+        <div class="chartHint" id="chartHint">主表示：- / 参考：-</div>
+      </div>
+      <div class="bd">
+        <div class="chartTop">
+          <div class="legend">
+            <div class="lgItem"><span class="dot good"></span>事故なし</div>
+            <div class="lgItem"><span class="dot bad"></span>事故あり</div>
+          </div>
+          <div class="xnote">X軸：左側＝割引（マイナス）、右側＝割増（プラス）。事故あり（赤）は事故なし（緑）の上に重ねて表示します。</div>
+        </div>
+
+        <div class="nfChart" id="nfChart"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="tipPop" id="tipPop"></div>
+<div class="hoverTip" id="hoverTip"></div>
+
+<!-- 同意モーダル -->
+<div class="modal" id="modal">
+  <div class="modalBox">
+    <div class="modalT">注意事項</div>
+    <div class="modalP">本ページはChatGPT5.2によって作成しています。
+テストはしていますが、計算結果にズレが生じる場合があります。
+目安としてご活用ください。</div>
+    <div class="modalBtns">
+      <button id="btnAgree" type="button">同意して利用する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========= Helpers ========= */
+const $ = (id)=>document.getElementById(id);
+const clamp = (x,a,b)=>Math.min(Math.max(x,a),b);
+
+function fmtYYMMDD(d){
+  const yy = String(d.getFullYear()).slice(-2);
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${yy}/${mm}/${dd}`;
+}
+
+// yy/mm/dd, yyyy/mm/dd, yymmdd, yyyymmdd
+function parseFlexDate(s){
+  if(!s) return null;
+  const t = String(s).trim();
+  let y,m,d;
+  if(/^\d{2}\/\d{2}\/\d{2}$/.test(t)){
+    const [yy,mm,dd]=t.split('/').map(Number);
+    y = 2000 + yy; m=mm; d=dd;
+  }else if(/^\d{4}\/\d{2}\/\d{2}$/.test(t)){
+    const [yyyy,mm,dd]=t.split('/').map(Number);
+    y=yyyy; m=mm; d=dd;
+  }else if(/^\d{6}$/.test(t)){
+    y = 2000 + Number(t.slice(0,2));
+    m = Number(t.slice(2,4));
+    d = Number(t.slice(4,6));
+  }else if(/^\d{8}$/.test(t)){
+    y = Number(t.slice(0,4));
+    m = Number(t.slice(4,6));
+    d = Number(t.slice(6,8));
+  }else{
+    return null;
+  }
+  if(!y||m<1||m>12||d<1||d>31) return null;
+  const dt = new Date(y, m-1, d);
+  if(dt.getFullYear()!==y || dt.getMonth()!==m-1 || dt.getDate()!==d) return null;
+  return dt;
+}
+function addYears(date, years){
+  const d = new Date(date);
+  const m = d.getMonth();
+  d.setFullYear(d.getFullYear() + years);
+  if(d.getMonth() !== m){
+    d.setDate(0);
+  }
+  return d;
+}
+
+/* ========= 等級別割引増率テーブル（目安） ========= */
+/* 注意：実務は保険会社・商品で異なる可能性があります。ここではWeb参照の目安値として利用。 */
+const rateNoAcc = {
+  20:-63,19:-50,18:-46,17:-44,16:-42,15:-41,14:-40,13:-38,12:-37,11:-35,
+  10:-33, 9:-31, 8:-29, 7:-27, 6:-13, 5: -2, 4: +7, 3:+23, 2:+49, 1:+64
+};
+// 事故有（目安）：無事故から+15%相当で近似（例：20等級 -63 → -44）
+const rateAcc = {
+  20:-44,19:-34,18:-33,17:-32,16:-31,15:-30,14:-29,13:-28,12:-27,11:-26,
+  10:-25, 9:-24, 8:-23, 7:-22, 6:-15, 5: -5, 4:+13, 3:+32, 2:+58, 1:+64
+};
+
+function getRate(grade, coefYears){
+  const g = clamp(grade,1,20);
+  const isAcc = coefYears>=1;
+  return isAcc ? rateAcc[g] : rateNoAcc[g];
+}
+
+/* ========= 事故区分 ========= */
+let accidents = []; // {type:"D3"/"D1"/"NC", dateText:"", memo:""}
+const typeMeta = {
+  D3: { label:"3等級ダウン", tip:"3等級ダウン：事故有+3年、等級-3（例：車同士の事故等）", coefAdd:3, gradeDown:3 },
+  D1: { label:"1等級ダウン", tip:"1等級ダウン：事故有+1年、等級-1（例：飛び石等）", coefAdd:1, gradeDown:1 },
+  NC: { label:"ノーカウント", tip:"ノーカウント：等級・事故有係数に影響なし", coefAdd:0, gradeDown:0 },
+};
+
+function makeAccRow(item, idx){
+  const wrap = document.createElement("div");
+  wrap.className="accItem";
+
+  // type
+  const typeBox = document.createElement("div");
+  typeBox.className="accType";
+  const sel = document.createElement("select");
+  [["D3","3等級ダウン"],["D1","1等級ダウン"],["NC","ノーカウント"]].forEach(([v,txt])=>{
+    const o=document.createElement("option");
+    o.value=v; o.textContent=txt;
+    sel.appendChild(o);
+  });
+  sel.value = item.type;
+  sel.addEventListener("change", ()=>{
+    item.type = sel.value;
+    renderAccidents();
+    compute();
+  });
+  typeBox.appendChild(sel);
+
+  // info
+  const info = document.createElement("button");
+  info.type="button";
+  info.className="infoBtn";
+  info.textContent="i";
+  info.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    const meta = typeMeta[item.type];
+    const r = info.getBoundingClientRect();
+    showTip(r.left, r.top, meta.tip);
+  });
+
+  // date (text + date picker)
+  const dateWrap = document.createElement("div");
+  dateWrap.className="accDate";
+
+  const dateText = document.createElement("input");
+  dateText.type="text";
+  dateText.placeholder="事故日";
+  dateText.value = item.dateText || "";
+  dateText.addEventListener("blur", ()=>{
+    const d = parseFlexDate(dateText.value);
+    if(d){
+      dateText.value = fmtYYMMDD(d);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      datePick.value = `${yyyy}-${mm}-${dd}`;
+    }
+    item.dateText = dateText.value;
+  });
+
+  const dateBtn = document.createElement("div");
+  dateBtn.className="dateBtn";
+  dateBtn.title="カレンダー";
+  const datePick = document.createElement("input");
+  datePick.type="date";
+  // init from text if possible
+  const d0 = parseFlexDate(dateText.value);
+  if(d0){
+    const yyyy=d0.getFullYear();
+    const mm=String(d0.getMonth()+1).padStart(2,'0');
+    const dd=String(d0.getDate()).padStart(2,'0');
+    datePick.value = `${yyyy}-${mm}-${dd}`;
+  }
+  datePick.addEventListener("change", ()=>{
+    if(!datePick.value) return;
+    const d = new Date(datePick.value);
+    dateText.value = fmtYYMMDD(d);
+    item.dateText = dateText.value;
+  });
+  dateBtn.appendChild(datePick);
+
+  // クリックで確実にカレンダーを開く（対応ブラウザでは showPicker）
+  dateBtn.addEventListener('click', (ev)=>{
+    ev.preventDefault();
+    try{
+      if (typeof datePick.showPicker === 'function') datePick.showPicker();
+    }catch(_){}
+    datePick.focus();
+    datePick.click();
+  });
+
+  dateWrap.appendChild(dateText);
+  dateWrap.appendChild(dateBtn);
+
+  // memo
+  const memo = document.createElement("div");
+  memo.className="accMemo";
+  const memoIn = document.createElement("input");
+  memoIn.type="text";
+  memoIn.placeholder="メモ（任意：例）車両";
+  memoIn.value = item.memo || "";
+  memoIn.addEventListener("input", ()=>{
+    item.memo = memoIn.value;
+  });
+  memo.appendChild(memoIn);
+
+  // del
+  const del = document.createElement("button");
+  del.type="button";
+  del.className="delBtn";
+  del.textContent="×";
+  del.addEventListener("click", ()=>{
+    accidents.splice(idx,1);
+    renderAccidents();
+    compute();
+  });
+
+  wrap.appendChild(typeBox);
+  wrap.appendChild(info);
+  wrap.appendChild(dateWrap);
+  wrap.appendChild(memo);
+  wrap.appendChild(del);
+  return wrap;
+}
+
+function renderAccidents(){
+  const list = $("accList");
+  list.innerHTML = "";
+  accidents.forEach((it,i)=>list.appendChild(makeAccRow(it,i)));
+
+  let c3=0,c1=0,cn=0;
+  for(const a of accidents){
+    if(a.type==="D3") c3++;
+    else if(a.type==="D1") c1++;
+    else cn++;
+  }
+  $("accSummary").textContent = `自動集計：3等級ダウン件数=${c3} / 1等級ダウン件数=${c1} / ノーカウント=${cn}`;
+}
+
+/* ========= Tip popup ========= */
+const tipPop = $("tipPop");
+function showTip(x,y,text){
+  if(!text) return;
+  tipPop.textContent = text;
+  tipPop.style.display="block";
+  const pad=12;
+  const w = 320;
+  const h = 120;
+  let left = x + 10;
+  let top = y + 10;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  if(left + w > vw - pad) left = vw - w - pad;
+  if(top + h > vh - pad) top = vh - h - pad;
+  tipPop.style.left = left+"px";
+  tipPop.style.top = top+"px";
+}
+document.addEventListener("click", ()=> tipPop.style.display="none");
+
+/* ========= 保険始期日 ========= */
+(function initStartDate(){
+  const t = $("startDateText");
+  const p = $("startDatePick");
+  const btn = $("startDateBtn");
+  if(btn){
+    btn.addEventListener("click", ()=>{
+      try{ p.showPicker && p.showPicker(); }catch(_){}
+      p.focus(); p.click();
+    });
+  }
+  p.addEventListener("change", ()=>{
+    if(!p.value) return;
+    const d = new Date(p.value);
+    t.value = fmtYYMMDD(d);
+  });
+  t.addEventListener("blur", ()=>{
+    const d = parseFlexDate(t.value);
+    if(d){
+      t.value = fmtYYMMDD(d);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      p.value = `${yyyy}-${mm}-${dd}`;
+    }
+  });
+})();
+
+/* ========= 契約年数 ========= */
+function getTermYears(){
+  const v = $("term").value;
+  const n = parseInt(v,10);
+  return Number.isFinite(n) ? n : 1;
+}
+
+/* ========= 計算 ========= */
+function compute(){
+  const gradeNow = parseInt($("gradeNow").value,10);
+  const coefNow = parseInt($("coefNow").value,10);
+  const years = getTermYears();
+
+  let cnt3=0,cnt1=0;
+  for(const a of accidents){
+    if(a.type==="D3") cnt3++;
+    if(a.type==="D1") cnt1++;
+  }
+  const downgr = 3*cnt3 + 1*cnt1;
+  const addCoef = 3*cnt3 + 1*cnt1;
+
+  const addYearsForGrade = Math.max(0, years - 1);
+  let outGrade = clamp(Math.floor(gradeNow + addYearsForGrade - downgr), 1, 20);
+  let outCoef = clamp(coefNow + addCoef - addYearsForGrade, 0, 6);
+
+  const hadAcc = (cnt3 + cnt1) > 0;
+  let refGrade = hadAcc ? clamp(Math.floor(gradeNow - downgr), 1, 20)
+                        : clamp(Math.floor(gradeNow + 1), 1, 20);
+  let refCoef = clamp(coefNow + addCoef - 1, 0, 6);
+  if(!hadAcc){ refCoef = clamp(coefNow - 1, 0, 6); }
+
+  $("outGrade").textContent = outGrade;
+  $("outCoef").textContent = outCoef + "年";
+
+  const outR = getRate(outGrade, outCoef);
+  $("outRate").textContent = `割引増率：${outR}%`;
+
+  $("refGrade").textContent = refGrade;
+  $("refCoef").textContent = refCoef;
+  const refR = getRate(refGrade, refCoef);
+  $("refRate").textContent = `割引増率：${refR}%`;
+
+  const bNow = coefNow>=1 ? ["事故有","bad"] : ["無事故","good"];
+  $("badgeNow").textContent=bNow[0];
+  $("badgeNow").className="badge "+bNow[1];
+
+  const bOut = outCoef>=1 ? ["事故有","bad"] : ["無事故","good"];
+  $("badgeOut").textContent=bOut[0];
+  $("badgeOut").className="badge "+bOut[1];
+
+  const sd = parseFlexDate($("startDateText").value);
+  if(sd){
+    const nd = addYears(sd, years);
+    const yyyy = nd.getFullYear();
+    const mm = String(nd.getMonth()+1).padStart(2,'0');
+    const dd = String(nd.getDate()).padStart(2,'0');
+    $("nextDate").textContent = `次回更改日：${yyyy}/${mm}/${dd}`;
+  }else{
+    $("nextDate").textContent = "次回更改日：-";
+  }
+
+  const refRes = sumUntilZero(refGrade, refCoef);
+  const N = refRes.years;
+  const mainRes = sumForYears(outGrade, outCoef, N);
+
+  $("sumMain").textContent = `合計${fmtPct(mainRes.sum)}`;
+  $("sumMainList").textContent = mainRes.lines.join("\n");
+
+  $("sumRef").textContent = `合計${fmtPct(refRes.sum)}`;
+  $("sumRefList").textContent = refRes.lines.join("\n");
+
+  const diff = mainRes.sum - refRes.sum;
+  $("sumDiff").textContent = fmtPct(diff);
+  $("sumDiffMsg").textContent = diffMessage(diff);
+
+  const outLabel = `主表示：等級${outGrade}/${outCoef>=1?"事故有":"無事故"}`;
+  const refLabel = `参考：等級${refGrade}/${refCoef>=1?"事故有":"無事故"}`;
+  $("chartHint").textContent = `${outLabel} / ${refLabel}`;
+
+  renderChart(outGrade, outCoef, refGrade, refCoef);
+
+  $("msg").textContent = "計算しました。";
+}
+
+function fmtPct(x){
+  const v = Math.round(x);
+  if(v===0) return "0%";
+  return v>0 ? `+${v}%` : `${v}%`;
+}
+function fmtPctAbs(x){
+  const v = Math.round(Math.abs(x));
+  return `+${v}%`;
+}
+function diffMessage(diff){
+  const v = Math.round(diff);
+  if(v===0) return "差：同等（0%）";
+  if(v<0) return `差：主表示が ${fmtPctAbs(v)} 有利`;
+  return `差：参考（1年更新）が ${fmtPctAbs(v)} 有利`;
+}
+
+function sumUntilZero(startGrade, startCoef){
+  let g = startGrade;
+  let c = startCoef;
+  let sum = 0;
+  const lines = [];
+  let years = 0;
+  for(let year=1; year<=6; year++){
+    if(c<=0) break;
+    years = year;
+    const r = getRate(g, c);
+    sum += r;
+    lines.push(`年${year}：等級${g} / ${c>=1?"事故有":"無事故"} / ${r}%`);
+    g = clamp(g+1,1,20);
+    c = clamp(c-1,0,6);
+  }
+  return { sum, lines, years };
+}
+
+function sumForYears(startGrade, startCoef, years){
+  let g = startGrade;
+  let c = startCoef;
+  let sum = 0;
+  const lines = [];
+  for(let year=1; year<=years; year++){
+    const r = getRate(g, c);
+    sum += r;
+    lines.push(`年${year}：等級${g} / ${c>=1?"事故有":"無事故"} / ${r}%`);
+    g = clamp(g+1,1,20);
+    c = clamp(c-1,0,6);
+  }
+  return { sum, lines, years };
+}
+
+/* ========= hover tooltip ========= */
+const hoverTip = $("hoverTip");
+function showHover(x,y, html){
+  hoverTip.innerHTML = html;
+  hoverTip.style.display="block";
+  const pad=12;
+  const vw=innerWidth, vh=innerHeight;
+  let left = x + 12;
+  let top  = y + 12;
+  const rectW = 280, rectH = 120;
+  if(left + rectW > vw - pad) left = vw - rectW - pad;
+  if(top + rectH > vh - pad) top = vh - rectH - pad;
+  hoverTip.style.left = left+"px";
+  hoverTip.style.top = top+"px";
+}
+function hideHover(){ hoverTip.style.display="none"; }
+
+/* ========= グラフ ========= */
+function widthFromRate(r){
+  const maxAbs = 70;
+  const a = Math.abs(r);
+  const pct = (a / maxAbs) * 49;
+  return clamp(pct, 0, 49);
+}
+
+function renderChart(mainG, mainC, refG, refC){
+  const host = $("nfChart");
+  host.innerHTML = "";
+
+  for(let g=20; g>=1; g--){
+    const row = document.createElement("div");
+    row.className="nfRow";
+
+    const y = document.createElement("div");
+    y.className="nfY";
+    y.textContent = g;
+
+    const rail = document.createElement("div");
+    rail.className="nfRail";
+
+    const center = document.createElement("div");
+    center.className="nfCenter";
+    rail.appendChild(center);
+
+    const rNo = getRate(g, 0);
+    const rYes = getRate(g, 1);
+
+    const barNo = document.createElement("div");
+    barNo.className = "bar good " + (rNo<0 ? "neg" : "pos");
+    barNo.style.width = widthFromRate(rNo) + "%";
+
+    const barYes = document.createElement("div");
+    barYes.className = "bar bad " + (rYes<0 ? "neg" : "pos");
+    barYes.style.width = widthFromRate(rYes) + "%";
+
+    const mainIsAcc = mainC >= 1;
+    const refIsAcc  = refC >= 1;
+    if(g===mainG){ (mainIsAcc ? barYes : barNo).classList.add("blink"); }
+    if(g===refG){ (refIsAcc ? barYes : barNo).classList.add("blink"); }
+
+    rail.addEventListener("mousemove",(e)=>{
+      const html = `
+        <div style="font-weight:900;margin-bottom:6px;">等級${g}</div>
+        <div>事故なし：${rNo}%</div>
+        <div>事故あり：${rYes}%</div>
+      `;
+      showHover(e.clientX, e.clientY, html);
+    });
+    rail.addEventListener("mouseleave", hideHover);
+
+    rail.appendChild(barNo);
+    rail.appendChild(barYes);
+
+    row.appendChild(y);
+    row.appendChild(rail);
+    host.appendChild(row);
+  }
+}
+
+/* ========= イベント ========= */
+$("btnAdd").addEventListener("click", ()=>{
+  accidents.push({type:"D3", dateText:"", memo:""});
+  renderAccidents();
+  compute();
+});
+$("btnClear").addEventListener("click", ()=>{
+  accidents = [];
+  renderAccidents();
+  compute();
+});
+
+$("btnCalc").addEventListener("click", compute);
+
+$("btnReset").addEventListener("click", ()=>{
+  $("gradeNow").value="20";
+  $("coefNow").value="0";
+  $("term").value="1";
+  $("startDateText").value="";
+  $("startDatePick").value="";
+  accidents=[];
+  renderAccidents();
+  $("msg").textContent="";
+  compute();
+});
+
+$("gradeNow").addEventListener("change", compute);
+$("coefNow").addEventListener("change", compute);
+$("term").addEventListener("change", compute);
+$("startDateText").addEventListener("input", ()=>{$("msg").textContent="";});
+
+/* ========= 初期描画 ========= */
+renderAccidents();
+compute();
+
+/* ========= 同意モーダル ========= */
+(function consent(){
+  const modal = $("modal");
+  const root = $("appRoot");
+
+  function lock(on){
+    if(on) root.classList.add("disabledAll");
+    else root.classList.remove("disabledAll");
+  }
+
+  modal.classList.add("on");
+  lock(true);
+
+  $("btnAgree").addEventListener("click", ()=>{
+    modal.classList.remove("on");
+    lock(false);
+  });
+})();
+</script>
+</body>
+</html>
