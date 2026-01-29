@@ -196,6 +196,12 @@ function shouldInclude(filePath) {
       await setDoc(ref, { ...meta, updatedAt: serverTimestamp(), path: filePath }, { merge: true });
     }
 
+function diag(msg) {
+  const box = document.getElementById("diag");
+  box.textContent += msg + "\n";
+}
+
+    
     /********************
      * 4) UI
      ********************/
@@ -320,29 +326,43 @@ function shouldInclude(filePath) {
      * 5) 読み込み
      ********************/
     async function loadAll() {
-      el("updatedLabel").textContent = new Date().toLocaleString("ja-JP");
-      listEl.innerHTML = `<div class="card">読み込み中…</div>`;
+  el("updatedLabel").textContent = new Date().toLocaleString("ja-JP");
+  listEl.innerHTML = `<div class="card">読み込み中…</div>`;
+  document.getElementById("diag").textContent = "";
 
-      const raw = await fetchGitHubTree();
-      const files = raw.filter(x => shouldInclude(x.path));
+  diag("CFG.github.path = " + JSON.stringify(CFG.github.path));
+  diag("CFG.github.includeExt = " + JSON.stringify(CFG.github.includeExt));
 
-      const merged = [];
-      for (const f of files) {
-        const meta = await loadMeta(f.path);
-        merged.push({
-          path: f.path,
-          url: buildUrl(f.path),
-          title: meta?.title ?? defaultTitleFromPath(f.path),
-          category: meta?.category ?? null,
-          order: meta?.order ?? null,
-          hidden: meta?.hidden ?? false
-        });
-      }
+  const raw = await fetchGitHubTree();
+  diag("GitHub tree blobs = " + raw.length);
+  diag("sample paths:\n" + raw.slice(0, 20).map(x => " - " + x.path).join("\n"));
 
-      items = merged;
-      await rebuildCategoryList();
-      applyFiltersAndRender();
-    }
+  const files = raw.filter(x => shouldInclude(x.path));
+  diag("after ext filter = " + files.length);
+
+  // ★ここで、0件ならフィルタが原因確定
+  // いったんフィルタ無効化して表示確認する（診断用）
+  // const files = raw; // ←最終手段（診断時だけ）
+
+  // 以降は元の処理のままでOK
+  const merged = [];
+  for (const f of files) {
+    const meta = await loadMeta(f.path);
+    merged.push({
+      path: f.path,
+      url: buildUrl(f.path),
+      title: meta?.title ?? defaultTitleFromPath(f.path),
+      category: meta?.category ?? null,
+      order: meta?.order ?? null,
+      hidden: meta?.hidden ?? false
+    });
+  }
+
+  items = merged;
+  await rebuildCategoryList();
+  applyFiltersAndRender();
+}
+
 
     /********************
      * 6) Admin UI / Auth
