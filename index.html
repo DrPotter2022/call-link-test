@@ -350,18 +350,22 @@
       const files = raw.filter(x => shouldInclude(x.path));
       diag("after ext filter = " + files.length);
 
-      const merged = [];
-      for (const f of files) {
-        const meta = await loadMeta(f.path); // Firestore死んでてもnullで続行
-        merged.push({
-          path: f.path,
-          url: buildUrl(f.path),
-          title: meta?.title ?? defaultTitleFromPath(f.path),
-          category: meta?.category ?? null,
-          order: meta?.order ?? null,
-          hidden: meta?.hidden ?? false
-        });
-      }
+let meta = null;
+try {
+  meta = await loadMeta(f.path);
+} catch (e) {
+  // Firestore が死んでいても一覧表示は継続
+  meta = null;
+}
+merged.push({
+  path: f.path,
+  url: buildUrl(f.path),
+  title: meta?.title ?? defaultTitleFromPath(f.path),
+  category: meta?.category ?? null,
+  order: meta?.order ?? null,
+  hidden: meta?.hidden ?? false
+});
+
 
       items = merged;
       await rebuildCategoryList();
@@ -422,11 +426,12 @@
     reloadBtn.addEventListener("click", loadAll);
     qEl.addEventListener("input", applyFiltersAndRender);
     catFilterEl.addEventListener("change", applyFiltersAndRender);
+loadAll().catch(err => {
+  console.error(err);
+  // 表示は止めない
+});
 
-    loadAll().catch(err => {
-      listEl.innerHTML = `<div class="card danger">エラー: ${escapeHtml(err?.message ?? err)}</div>`;
-      console.error(err);
-    });
+    
   </script>
 </body>
 </html>
