@@ -161,10 +161,11 @@
         .map(x => ({ path: x.path, size: x.size ?? null }));
     }
 
-    function shouldInclude(filePath) {
-      const exts = CFG.github.includeExt;
-      return exts.some(ext => filePath.toLowerCase().endsWith(ext));
-    }
+function shouldInclude(filePath) {
+  // .html / .pdf を大文字小文字無視で判定（? や # が付いてもOK）
+  return /\.(html|pdf)$/i.test(filePath.split(/[?#]/)[0]);
+}
+
 
     function defaultTitleFromPath(p) {
       const name = p.split("/").pop() || p;
