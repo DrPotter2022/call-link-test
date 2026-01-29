@@ -249,6 +249,13 @@
     }
 
     function applyFiltersAndRender() {
+      // ログインしていない場合はリンク一覧を表示しない
+      if (!isAdmin) {
+        el("countLabel").textContent = "0";
+        listEl.innerHTML = `<div class="card">ログインするとリンク一覧が表示されます。</div>`;
+        return;
+      }
+
       const q = qEl.value.trim().toLowerCase();
       const cat = catFilterEl.value;
 
@@ -290,43 +297,116 @@
       `;
     }
 
+    function saveOneFromCard(wrap) {
+      const path =
+        wrap.querySelector('button[data-act="save"]')?.getAttribute("data-path") ||
+        wrap.querySelector('input[data-k="title"]')?.getAttribute("data-path") ||
+        wrap.querySelector('input[data-k="category"]')?.getAttribute("data-path") ||
+        wrap.querySelector('input[data-k="order"]')?.getAttribute("data-path");
+      if (!path) throw new Error("path not found");
+
+      const title = wrap.querySelector(`input[data-k="title"]`)?.value.trim() ?? "";
+      const category = wrap.querySelector(`input[data-k="category"]`)?.value.trim() ?? "";
+      const orderRaw = wrap.querySelector(`input[data-k="order"]`)?.value.trim() ?? "";
+      const hidden = wrap.querySelector(`input[type="checkbox"][data-k="hidden"]`)?.checked ?? false;
+
+      const order = orderRaw === "" ? null : Number(orderRaw);
+      if (orderRaw !== "" && Number.isNaN(order)) {
+        throw new Error("表示順は数字で入力してください");
+      }
+
+      return { path, meta: {
+        title: title || defaultTitleFromPath(path),
+        category: category || null,
+        order,
+        hidden
+      }};
+    }
+
+    async function persistOne({ path, meta }) {
+      await saveMeta(path, meta);
+
+      const idx = items.findIndex(x => x.path === path);
+      if (idx >= 0) {
+        items[idx].title = meta.title;
+        items[idx].category = meta.category;
+        items[idx].order = meta.order;
+        items[idx].hidden = meta.hidden;
+      }
+    }
+
     function bindAdminControls() {
+      // 単体保存
       listEl.querySelectorAll('button[data-act="save"]').forEach(btn => {
+        if (btn.dataset.bound === "1") return;
+        btn.dataset.bound = "1";
+
         btn.addEventListener("click", async () => {
-          const path = btn.getAttribute("data-path");
           const wrap = btn.closest(".item");
+          try {
+            btn.disabled = true;
+            const prev = btn.textContent;
+            btn.textContent = "保存中…";
 
-          const title = wrap.querySelector(`input[data-k="title"]`).value.trim();
-          const category = wrap.querySelector(`input[data-k="category"]`).value.trim();
-          const orderRaw = wrap.querySelector(`input[data-k="order"]`).value.trim();
-          const hidden = wrap.querySelector(`input[type="checkbox"][data-k="hidden"]`).checked;
+            const payload = saveOneFromCard(wrap);
+            await persistOne(payload);
 
-          const order = orderRaw === "" ? null : Number(orderRaw);
-          if (orderRaw !== "" && Number.isNaN(order)) {
-            alert("表示順は数字で入力してください");
-            return;
+            await rebuildCategoryList();
+            applyFiltersAndRender();
+            alert("保存しました");
+            btn.textContent = prev;
+          } catch (e) {
+            console.error(e);
+            alert("保存失敗:
+" + (e?.message ?? e));
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "保存";
           }
-
-          await saveMeta(path, {
-            title: title || defaultTitleFromPath(path),
-            category: category || null,
-            order: order,
-            hidden: hidden
-          });
-
-          const idx = items.findIndex(x => x.path === path);
-          if (idx >= 0) {
-            items[idx].title = title || defaultTitleFromPath(path);
-            items[idx].category = category || null;
-            items[idx].order = order;
-            items[idx].hidden = hidden;
-          }
-
-          await rebuildCategoryList();
-          applyFiltersAndRender();
-          alert("保存しました");
-        }, { once: true });
+        });
       });
+
+      // 一括保存
+      const saveAllBtn = document.getElementById("saveAllBtn");
+      const saveAllMsg = document.getElementById("saveAllMsg");
+      if (saveAllBtn && saveAllBtn.dataset.bound !== "1") {
+        saveAllBtn.dataset.bound = "1";
+
+        saveAllBtn.addEventListener("click", async () => {
+          const cards = [...listEl.querySelectorAll(".item")];
+          saveAllBtn.disabled = true;
+          if (saveAllMsg) saveAllMsg.textContent = "一括保存中…";
+
+          let ok = 0;
+          let ng = 0;
+
+          for (const wrap of cards) {
+            try {
+              const payload = saveOneFromCard(wrap);
+              await persistOne(payload);
+              ok++;
+            } catch (e) {
+              console.error(e);
+              ng++;
+            }
+          }
+
+          try {
+            await rebuildCategoryList();
+            applyFiltersAndRender();
+          } catch {}
+
+          if (saveAllMsg) saveAllMsg.textContent = `完了：成功 ${ok} / 失敗 ${ng}`;
+          saveAllBtn.disabled = false;
+
+          if (ng > 0) {
+            alert(`一括保存：成功 ${ok} / 失敗 ${ng}
+（Firestoreがブロック/オフラインだと失敗します）`);
+          } else {
+            alert(`一括保存：全件保存しました（${ok}件）`);
+          }
+        });
+      }
     }
 
     async function rebuildCategoryList() {
@@ -339,6 +419,12 @@
      * 5) 読み込み（診断付き）
      ********************/
     async function loadAll() {
+      // ログインしていない場合はリンクを取得/表示しない
+      if (!isAdmin) {
+        applyFiltersAndRender();
+        return;
+      }
+
       el("updatedLabel").textContent = new Date().toLocaleString("ja-JP");
       listEl.innerHTML = `<div class="card">読み込み中…</div>`;
       const d = document.getElementById("diag");
@@ -349,27 +435,25 @@
 
       const raw = await fetchGitHubTree();
       diag("GitHub tree blobs = " + raw.length);
-      diag("sample paths:\n" + raw.slice(0, 20).map(x => " - " + x.path).join("\n"));
+      diag("sample paths:
+" + raw.slice(0, 20).map(x => " - " + x.path).join("
+"));
 
       const files = raw.filter(x => shouldInclude(x.path));
       diag("after ext filter = " + files.length);
 
-let meta = null;
-try {
-  meta = await loadMeta(f.path);
-} catch (e) {
-  // Firestore が死んでいても一覧表示は継続
-  meta = null;
-}
-merged.push({
-  path: f.path,
-  url: buildUrl(f.path),
-  title: meta?.title ?? defaultTitleFromPath(f.path),
-  category: meta?.category ?? null,
-  order: meta?.order ?? null,
-  hidden: meta?.hidden ?? false
-});
-
+      const merged = [];
+      for (const f of files) {
+        const meta = await loadMeta(f.path); // ブロック/オフライン時は null
+        merged.push({
+          path: f.path,
+          url: buildUrl(f.path),
+          title: meta?.title ?? defaultTitleFromPath(f.path),
+          category: meta?.category ?? null,
+          order: meta?.order ?? null,
+          hidden: meta?.hidden ?? false
+        });
+      }
 
       items = merged;
       await rebuildCategoryList();
@@ -392,8 +476,11 @@ merged.push({
         editorBox.classList.add("hidden");
         userLabel.textContent = "";
         logoutBtn.classList.add("hidden");
+              items = [];
+        upsertCategoryOptions(new Set());
       }
       applyFiltersAndRender();
+      if (user) loadAll().catch(console.error);
     }
 
     loginBtn.addEventListener("click", () => {
@@ -427,13 +514,10 @@ merged.push({
 
     onAuthStateChanged(auth, (user) => showAdminUI(user));
 
-    reloadBtn.addEventListener("click", loadAll);
+    reloadBtn.addEventListener("click", () => loadAll().catch(console.error));
     qEl.addEventListener("input", applyFiltersAndRender);
     catFilterEl.addEventListener("change", applyFiltersAndRender);
-loadAll().catch(err => {
-  console.error(err);
-  // 表示は止めない
-});
+// 初期表示はログイン状態に応じて onAuthStateChanged 内で loadAll() が呼ばれます
 
     
   </script>
