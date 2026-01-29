@@ -93,6 +93,9 @@
 
   <section id="list" class="grid"></section>
 
+  <!-- ★diagは script より前に置く（DOM未生成で落ちるのを防ぐ） -->
+  <section class="card" id="diag" style="white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;"></section>
+
   <script type="module">
     /********************
      * 0) 設定
@@ -102,7 +105,7 @@
         owner: "DrPotter2022",
         repo: "call-link-test",
         branch: "main",
-        path: "", // content/ 配下を拾う。直下なら "" にする
+        path: "", // 直下を拾う
         includeExt: [".html", ".pdf"],
         siteBaseUrl: "https://drpotter2022.github.io/call-link-test/"
       },
@@ -130,6 +133,15 @@
     const app = initializeApp(CFG.firebase);
     const auth = getAuth(app);
     const db = getFirestore(app);
+
+    /********************
+     * diag（null安全）
+     ********************/
+    function diag(msg) {
+      const box = document.getElementById("diag");
+      if (!box) return;
+      box.textContent += msg + "\n";
+    }
 
     /********************
      * 2) GitHub API
@@ -161,11 +173,9 @@
         .map(x => ({ path: x.path, size: x.size ?? null }));
     }
 
-function shouldInclude(filePath) {
-  // .html / .pdf を大文字小文字無視で判定（? や # が付いてもOK）
-  return /\.(html|pdf)$/i.test(filePath.split(/[?#]/)[0]);
-}
-
+    function shouldInclude(filePath) {
+      return /\.(html|pdf)$/i.test(filePath.split(/[?#]/)[0]);
+    }
 
     function defaultTitleFromPath(p) {
       const name = p.split("/").pop() || p;
@@ -179,16 +189,21 @@ function shouldInclude(filePath) {
     }
 
     /********************
-     * 3) Firestore
+     * 3) Firestore（ブロックされても落ちない）
      ********************/
     function metaDocId(filePath) {
       return filePath.replaceAll("/", "__");
     }
 
     async function loadMeta(filePath) {
-      const ref = doc(db, CFG.collection, metaDocId(filePath));
-      const snap = await getDoc(ref);
-      return snap.exists() ? snap.data() : null;
+      try {
+        const ref = doc(db, CFG.collection, metaDocId(filePath));
+        const snap = await getDoc(ref);
+        return snap.exists() ? snap.data() : null;
+      } catch (e) {
+        console.warn("loadMeta failed (Firestore blocked/offline):", filePath, e);
+        return null;
+      }
     }
 
     async function saveMeta(filePath, meta) {
@@ -196,12 +211,6 @@ function shouldInclude(filePath) {
       await setDoc(ref, { ...meta, updatedAt: serverTimestamp(), path: filePath }, { merge: true });
     }
 
-function diag(msg) {
-  const box = document.getElementById("diag");
-  box.textContent += msg + "\n";
-}
-
-    
     /********************
      * 4) UI
      ********************/
@@ -323,46 +332,41 @@ function diag(msg) {
     }
 
     /********************
-     * 5) 読み込み
+     * 5) 読み込み（診断付き）
      ********************/
     async function loadAll() {
-  el("updatedLabel").textContent = new Date().toLocaleString("ja-JP");
-  listEl.innerHTML = `<div class="card">読み込み中…</div>`;
-  document.getElementById("diag").textContent = "";
+      el("updatedLabel").textContent = new Date().toLocaleString("ja-JP");
+      listEl.innerHTML = `<div class="card">読み込み中…</div>`;
+      const d = document.getElementById("diag");
+      if (d) d.textContent = "";
 
-  diag("CFG.github.path = " + JSON.stringify(CFG.github.path));
-  diag("CFG.github.includeExt = " + JSON.stringify(CFG.github.includeExt));
+      diag("CFG.github.path = " + JSON.stringify(CFG.github.path));
+      diag("CFG.github.includeExt = " + JSON.stringify(CFG.github.includeExt));
 
-  const raw = await fetchGitHubTree();
-  diag("GitHub tree blobs = " + raw.length);
-  diag("sample paths:\n" + raw.slice(0, 20).map(x => " - " + x.path).join("\n"));
+      const raw = await fetchGitHubTree();
+      diag("GitHub tree blobs = " + raw.length);
+      diag("sample paths:\n" + raw.slice(0, 20).map(x => " - " + x.path).join("\n"));
 
-  const files = raw.filter(x => shouldInclude(x.path));
-  diag("after ext filter = " + files.length);
+      const files = raw.filter(x => shouldInclude(x.path));
+      diag("after ext filter = " + files.length);
 
-  // ★ここで、0件ならフィルタが原因確定
-  // いったんフィルタ無効化して表示確認する（診断用）
-  // const files = raw; // ←最終手段（診断時だけ）
+      const merged = [];
+      for (const f of files) {
+        const meta = await loadMeta(f.path); // Firestore死んでてもnullで続行
+        merged.push({
+          path: f.path,
+          url: buildUrl(f.path),
+          title: meta?.title ?? defaultTitleFromPath(f.path),
+          category: meta?.category ?? null,
+          order: meta?.order ?? null,
+          hidden: meta?.hidden ?? false
+        });
+      }
 
-  // 以降は元の処理のままでOK
-  const merged = [];
-  for (const f of files) {
-    const meta = await loadMeta(f.path);
-    merged.push({
-      path: f.path,
-      url: buildUrl(f.path),
-      title: meta?.title ?? defaultTitleFromPath(f.path),
-      category: meta?.category ?? null,
-      order: meta?.order ?? null,
-      hidden: meta?.hidden ?? false
-    });
-  }
-
-  items = merged;
-  await rebuildCategoryList();
-  applyFiltersAndRender();
-}
-
+      items = merged;
+      await rebuildCategoryList();
+      applyFiltersAndRender();
+    }
 
     /********************
      * 6) Admin UI / Auth
@@ -384,7 +388,6 @@ function diag(msg) {
       applyFiltersAndRender();
     }
 
-    // ✅ 管理者ログインボタン：必ずパネルを開く
     loginBtn.addEventListener("click", () => {
       adminPanel.classList.remove("hidden");
       adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -425,8 +428,5 @@ function diag(msg) {
       console.error(err);
     });
   </script>
-
-  <section class="card" id="diag" style="white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;"></section>
-
 </body>
 </html>
