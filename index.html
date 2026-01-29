@@ -4,36 +4,41 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>リンクINDEX</title>
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="data:,"><!-- favicon 404対策 -->
   <style>
     body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 24px; }
-    header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .muted { opacity:.75; }
+    header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    h1 { margin:0; font-size:28px; }
+    .muted { opacity:.7; }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    .card { border:1px solid #ddd; border-radius:12px; padding:14px; margin:12px 0; }
-    .danger { border-color:#e7b3b3; background:#fff7f7; }
+    .card { border:1px solid #ddd; border-radius:12px; padding:14px; margin:12px 0; background:#fff; }
     .grid { display:grid; grid-template-columns: 1fr; gap:10px; }
     @media (min-width: 900px){ .grid { grid-template-columns: 1fr 1fr; } }
     input, select, button { padding:10px; border-radius:10px; border:1px solid #ccc; }
     button { cursor:pointer; }
-    button:disabled { opacity:.6; cursor:not-allowed; }
-    .hidden { display:none !important; }
+    button[disabled] { opacity:.6; cursor:not-allowed; }
     .tag { display:inline-block; padding:2px 10px; border:1px solid #ccc; border-radius:999px; font-size:12px; margin-left:8px; }
-    .item { border:1px solid #eee; border-radius:12px; padding:12px; background:#fff; }
+    .item { border:1px solid #eee; border-radius:12px; padding:12px; }
     .item h3 { margin:0 0 6px; font-size:16px; }
+    .item a { text-decoration:none; }
     .item small { display:block; margin-top:6px; }
     .admin { background:#fafafa; }
+    .danger { border-color:#e7b3b3; background:#fff7f7; }
+    .hidden { display:none !important; }
+    .pill { display:inline-block; padding:6px 10px; border-radius:999px; border:1px solid #ddd; background:#f6f6f6; font-size:12px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; user-select:none; }
+    .switch input { width:18px; height:18px; }
+    #diag { white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   </style>
 </head>
 
 <body>
   <header>
     <div>
-      <h1 style="margin:0;">リンクINDEX</h1>
-      <div class="muted">ログインした管理者のみリンクを閲覧・編集できます</div>
+      <h1>リンクINDEX</h1>
+      <div class="muted" id="subtitle">公開ONのリンクは、ログインしていない状態でも閲覧できます</div>
     </div>
 
-    <!-- ログイン前はこの3つだけ見せる -->
     <div class="row">
       <button id="reloadBtn">再読み込み</button>
       <button id="loginBtn">管理者ログイン</button>
@@ -41,34 +46,34 @@
     </div>
   </header>
 
-  <!-- ログイン前メッセージ -->
-  <section id="lockedCard" class="card">
-    <strong>表示はロックされています。</strong>
-    <div class="muted" style="margin-top:6px;">右上の「管理者ログイン」からログインしてください。</div>
-  </section>
-
-  <!-- ログイン後に表示するUI群 -->
-  <section id="authedControls" class="hidden">
-    <section class="card">
+  <section id="controlsCard" class="card">
+    <div class="row" style="justify-content:space-between;">
       <div class="row">
         <input id="q" placeholder="検索（タイトル/パス）" />
         <select id="catFilter">
           <option value="">カテゴリ（すべて）</option>
         </select>
-        <span class="muted">取得元:</span>
-        <code id="sourceLabel"></code>
-        <span class="muted">件数:</span>
-        <strong id="countLabel">-</strong>
-        <span class="muted">最終更新:</span>
-        <span id="updatedLabel">-</span>
       </div>
-      <div id="netWarn" class="muted hidden" style="margin-top:8px;"></div>
-    </section>
-
-    <section id="list" class="grid"></section>
+      <div class="row">
+        <span class="pill">取得元: <code id="sourceLabel"></code></span>
+        <span class="pill">件数: <strong id="countLabel">-</strong></span>
+        <span class="pill">最終更新: <span id="updatedLabel">-</span></span>
+      </div>
+    </div>
+    <div id="notice" class="muted" style="margin-top:10px;"></div>
   </section>
 
-  <!-- 管理者パネル -->
+  <section id="publicLocked" class="card">
+    <div><strong>閲覧について</strong></div>
+    <div class="muted" style="margin-top:6px;">
+      公開ONのリンクだけを表示します。管理者はログインすると公開/非公開の切り替え、タイトル・カテゴリ編集、単体保存/一括保存ができます。
+    </div>
+  </section>
+
+  <section id="statusCard" class="card">
+    <div id="statusText">待機中</div>
+  </section>
+
   <section id="adminPanel" class="card admin hidden">
     <h2 style="margin:0 0 10px;">管理者パネル</h2>
 
@@ -83,13 +88,15 @@
         <div id="authMsg" class="muted" style="margin-top:8px;"></div>
       </div>
 
-      <div class="item">
-        <h3>一括保存</h3>
+      <div class="item danger">
+        <h3>初回だけ：管理者ユーザーを作成</h3>
         <div class="row">
-          <button id="saveAllBtn" disabled>一括保存（ログイン後に有効）</button>
-          <span id="saveAllMsg" class="muted"></span>
+          <input id="newEmail" type="email" placeholder="admin email" style="min-width:240px;">
+          <input id="newPass" type="password" placeholder="admin password" style="min-width:240px;">
+          <button id="doCreateUser">管理者作成</button>
         </div>
-        <small class="muted">表示中の全リンクの編集内容をまとめて保存します。</small>
+        <small class="muted">公開前にこの機能は削除推奨。</small>
+        <div id="createMsg" class="muted" style="margin-top:8px;"></div>
       </div>
     </div>
 
@@ -98,9 +105,21 @@
         <span>ログイン中: <strong id="userLabel"></strong></span>
         <span class="muted">（編集内容はFirestoreに保存）</span>
       </div>
-      <small class="muted">各項目の「保存」で即時反映されます。Firestoreがブロックされていると保存に失敗します。</small>
+
+      <div class="row" style="margin:10px 0;">
+        <button id="saveAllBtn">一括保存</button>
+        <span id="saveAllMsg" class="muted"></span>
+      </div>
+
+      <div class="muted">
+        ※ Firestore が広告ブロッカー等でブロックされている環境では、保存/読み込みが失敗します（ConsoleにERR_BLOCKED_BY_CLIENTが出ます）。
+      </div>
     </div>
   </section>
+
+  <section id="list" class="grid"></section>
+
+  <section class="card hidden" id="diag"></section>
 
   <script type="module">
     /********************
@@ -111,7 +130,7 @@
         owner: "DrPotter2022",
         repo: "call-link-test",
         branch: "main",
-        path: "", // 直下
+        path: "",
         includeExt: [".html", ".pdf"],
         siteBaseUrl: "https://drpotter2022.github.io/call-link-test/"
       },
@@ -120,34 +139,49 @@
         authDomain: "index-6c554.firebaseapp.com",
         projectId: "index-6c554",
       },
-      collection: "link_index_meta_v1"
+      collection: "link_index_meta_v1",
+      debug: false
     };
 
     /********************
-     * 1) Firebase
-     ********************/
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import {
-      getAuth, onAuthStateChanged,
-      signInWithEmailAndPassword, signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import {
-      getFirestore, doc, getDoc, setDoc, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-    const app = initializeApp(CFG.firebase);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    /********************
-     * 2) 便利関数
+     * helpers
      ********************/
     const el = (id) => document.getElementById(id);
+    const listEl = el("list");
+    const qEl = el("q");
+    const catFilterEl = el("catFilter");
+    const reloadBtn = el("reloadBtn");
+    const loginBtn = el("loginBtn");
+    const logoutBtn = el("logoutBtn");
+    const noticeEl = el("notice");
+    const statusText = el("statusText");
+    const adminPanel = el("adminPanel");
+    const loginBox = el("loginBox");
+    const editorBox = el("editorBox");
+    const userLabel = el("userLabel");
+    const saveAllBtn = el("saveAllBtn");
+    const saveAllMsg = el("saveAllMsg");
+    const diagEl = el("diag");
 
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, (m) => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
       }[m]));
+    }
+
+    function diag(msg) {
+      if (!CFG.debug) return;
+      diagEl.classList.remove("hidden");
+      diagEl.textContent += msg + "\n";
+    }
+
+    function setStatus(msg) {
+      statusText.textContent = msg;
+    }
+
+    function shouldInclude(filePath) {
+      const p = filePath.split(/[?#]/)[0];
+      return /\.(html|pdf)$/i.test(p);
     }
 
     function defaultTitleFromPath(p) {
@@ -161,17 +195,41 @@
       return CFG.github.siteBaseUrl.replace(/\/$/, "/") + filePath;
     }
 
-    function shouldInclude(filePath) {
-      return /\.(html|pdf)$/i.test(filePath.split(/[?#]/)[0]);
+    function metaDocId(filePath) {
+      return filePath.replaceAll("/", "__");
     }
 
     /********************
-     * 3) GitHub API
+     * 1) Firebase
+     ********************/
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged,
+      signInWithEmailAndPassword, signOut,
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore, collection, doc, setDoc,
+      getDocs, query, where, documentId, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const app = initializeApp(CFG.firebase);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    async function saveMeta(path, meta) {
+      const ref = doc(db, CFG.collection, metaDocId(path));
+      await setDoc(ref, { ...meta, path, updatedAt: serverTimestamp() }, { merge: true });
+    }
+
+    /********************
+     * 2) GitHub Tree
      ********************/
     async function fetchGitHubTree() {
       const { owner, repo, branch, path } = CFG.github;
 
-      const refRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${branch}`);
+      const refUrl = `https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${branch}`;
+      const refRes = await fetch(refUrl);
       if (!refRes.ok) throw new Error("GitHub ref取得に失敗: " + refRes.status);
       const refJson = await refRes.json();
 
@@ -193,54 +251,33 @@
     }
 
     /********************
-     * 4) Firestore meta
+     * 3) Firestore Meta バッチ取得（高速化）
      ********************/
-    function metaDocId(filePath) {
-      return filePath.replaceAll("/", "__");
-    }
+    async function fetchMetaMapForAdmin(docIds) {
+      const map = new Map();
+      const colRef = collection(db, CFG.collection);
 
-    // 読み込みは失敗しても表示を止めない
-    async function loadMeta(filePath) {
-      try {
-        const ref = doc(db, CFG.collection, metaDocId(filePath));
-        const snap = await getDoc(ref);
-        return snap.exists() ? snap.data() : null;
-      } catch (e) {
-        console.warn("loadMeta failed:", filePath, e);
-        // Firestoreが遮断されていても一覧表示は継続
-        return null;
+      for (let i = 0; i < docIds.length; i += 30) {
+        const chunk = docIds.slice(i, i + 30);
+        const qy = query(colRef, where(documentId(), "in", chunk));
+        const snap = await getDocs(qy);
+        snap.forEach(d => map.set(d.id, d.data()));
       }
+      return map;
     }
 
-    // 保存は “失敗を通知” する（ここは握りつぶさない）
-    async function saveMeta(filePath, meta) {
-      const ref = doc(db, CFG.collection, metaDocId(filePath));
-      await setDoc(ref, { ...meta, updatedAt: serverTimestamp(), path: filePath }, { merge: true });
+    async function fetchPublicMetaMap() {
+      const map = new Map();
+      const colRef = collection(db, CFG.collection);
+      const qy = query(colRef, where("public", "==", true));
+      const snap = await getDocs(qy);
+      snap.forEach(d => map.set(d.id, d.data()));
+      return map;
     }
 
     /********************
-     * 5) UI state
+     * 4) 描画
      ********************/
-    const listEl = el("list");
-    const qEl = el("q");
-    const catFilterEl = el("catFilter");
-    const reloadBtn = el("reloadBtn");
-    const loginBtn = el("loginBtn");
-    const logoutBtn = el("logoutBtn");
-
-    const lockedCard = el("lockedCard");
-    const authedControls = el("authedControls");
-
-    const adminPanel = el("adminPanel");
-    const loginBox = el("loginBox");
-    const editorBox = el("editorBox");
-    const userLabel = el("userLabel");
-    const saveAllBtn = el("saveAllBtn");
-    const saveAllMsg = el("saveAllMsg");
-    const netWarn = el("netWarn");
-
-    el("sourceLabel").textContent = `github:${CFG.github.owner}/${CFG.github.repo}/${CFG.github.branch}/${CFG.github.path}`;
-
     let isAdmin = false;
     let items = [];
 
@@ -251,32 +288,25 @@
       catFilterEl.value = current;
     }
 
-    function applyFiltersAndRender() {
-      const q = (qEl.value || "").trim().toLowerCase();
-      const cat = catFilterEl.value;
-
-      const filtered = items
-        .filter(x => !x.hidden)
-        .filter(x => !q || (x.title.toLowerCase().includes(q) || x.path.toLowerCase().includes(q)))
-        .filter(x => !cat || x.category === cat)
-        .sort((a,b) => (a.order ?? 9999) - (b.order ?? 9999) || a.title.localeCompare(b.title,"ja"));
-
-      el("countLabel").textContent = String(filtered.length);
-      listEl.innerHTML = filtered.map(x => renderItemCard(x)).join("");
-      if (isAdmin) bindAdminControls();
+    function rebuildCategoryList() {
+      const cats = new Set();
+      items.forEach(x => { if (x.category) cats.add(x.category); });
+      upsertCategoryOptions(cats);
     }
 
     function renderItemCard(x) {
       const tag = x.category ? `<span class="tag">${escapeHtml(x.category)}</span>` : "";
+      const publicPill = x.public ? `<span class="pill">公開ON</span>` : `<span class="pill">公開OFF</span>`;
+
       const adminControls = isAdmin ? `
         <div class="row" style="margin-top:10px;">
+          <label class="switch">
+            <input type="checkbox" data-k="public" data-path="${escapeHtml(x.path)}" ${x.public ? "checked":""}>
+            公開
+          </label>
           <input data-k="title" data-path="${escapeHtml(x.path)}" value="${escapeHtml(x.title)}" placeholder="表示名" style="min-width:220px;">
           <input data-k="category" data-path="${escapeHtml(x.path)}" value="${escapeHtml(x.category ?? "")}" placeholder="カテゴリ" style="min-width:160px;">
           <input data-k="order" data-path="${escapeHtml(x.path)}" value="${escapeHtml(x.order ?? "")}" placeholder="表示順(数字)" style="width:140px;">
-          <label class="row" style="gap:6px;">
-            <input type="checkbox" data-k="hidden" data-path="${escapeHtml(x.path)}" ${x.hidden ? "checked":""}>
-            非表示
-          </label>
           <button data-act="save" data-path="${escapeHtml(x.path)}">保存</button>
         </div>
       ` : "";
@@ -287,42 +317,54 @@
             <a href="${escapeHtml(x.url)}" target="_blank" rel="noopener">${escapeHtml(x.title)}</a>
             ${tag}
           </h3>
-          <small class="muted">${escapeHtml(x.path)}</small>
+          <small class="muted">${escapeHtml(x.path)} ${!isAdmin ? publicPill : ""}</small>
           ${adminControls}
         </div>
       `;
     }
 
-    async function rebuildCategoryList() {
-      const cats = new Set();
-      items.forEach(x => { if (x.category) cats.add(x.category); });
-      upsertCategoryOptions(cats);
+    function applyFiltersAndRender() {
+      const q = qEl.value.trim().toLowerCase();
+      const cat = catFilterEl.value;
+
+      const filtered = items
+        .filter(x => isAdmin ? true : !!x.public)
+        .filter(x => !q || (x.title.toLowerCase().includes(q) || x.path.toLowerCase().includes(q)))
+        .filter(x => !cat || x.category === cat)
+        .sort((a,b) => (a.order ?? 9999) - (b.order ?? 9999) || a.title.localeCompare(b.title,"ja"));
+
+      el("countLabel").textContent = String(filtered.length);
+      listEl.innerHTML = filtered.map(x => renderItemCard(x)).join("");
+
+      if (isAdmin) bindAdminControls();
     }
 
     /********************
-     * 6) 保存処理の共通化
+     * 5) 保存処理を共通化（単体/一括）
      ********************/
-    function readMetaFromCard(cardEl) {
-      const path = cardEl.querySelector(`input[data-k="title"]`)?.getAttribute("data-path");
-      if (!path) return null;
+    function readMetaFromCard(wrap) {
+      const anyPathEl = wrap.querySelector('[data-path]');
+      const path = anyPathEl?.getAttribute("data-path");
+      if (!path) return { ok:false, error:"path not found" };
 
-      const title = cardEl.querySelector(`input[data-k="title"]`)?.value.trim() ?? "";
-      const category = cardEl.querySelector(`input[data-k="category"]`)?.value.trim() ?? "";
-      const orderRaw = cardEl.querySelector(`input[data-k="order"]`)?.value.trim() ?? "";
-      const hidden = cardEl.querySelector(`input[type="checkbox"][data-k="hidden"]`)?.checked ?? false;
+      const title = wrap.querySelector(`input[data-k="title"]`)?.value.trim() ?? "";
+      const category = wrap.querySelector(`input[data-k="category"]`)?.value.trim() ?? "";
+      const orderRaw = wrap.querySelector(`input[data-k="order"]`)?.value.trim() ?? "";
+      const isPublic = !!wrap.querySelector(`input[type="checkbox"][data-k="public"]`)?.checked;
 
       const order = orderRaw === "" ? null : Number(orderRaw);
       if (orderRaw !== "" && Number.isNaN(order)) {
-        throw new Error("表示順は数字で入力してください");
+        return { ok:false, error:"表示順は数字で入力してください", path };
       }
 
       return {
+        ok: true,
         path,
         meta: {
+          public: isPublic,
           title: title || defaultTitleFromPath(path),
           category: category || null,
-          order,
-          hidden
+          order
         }
       };
     }
@@ -332,142 +374,95 @@
 
       const idx = items.findIndex(x => x.path === path);
       if (idx >= 0) {
+        items[idx].public = !!meta.public;
         items[idx].title = meta.title ?? items[idx].title;
         items[idx].category = meta.category ?? null;
         items[idx].order = meta.order ?? null;
-        items[idx].hidden = !!meta.hidden;
       }
     }
 
     function bindAdminControls() {
       // 単体保存
       listEl.querySelectorAll('button[data-act="save"]').forEach(btn => {
-        if (btn.dataset.bound) return;
+        if (btn.dataset.bound === "1") return;
         btn.dataset.bound = "1";
 
         btn.addEventListener("click", async () => {
           const wrap = btn.closest(".item");
+          const r = readMetaFromCard(wrap);
+          if (!r.ok) { alert(r.error); return; }
+
+          btn.disabled = true;
+          const oldText = btn.textContent;
+          btn.textContent = "保存中…";
           try {
-            btn.disabled = true;
-            btn.textContent = "保存中…";
-
-            const data = readMetaFromCard(wrap);
-            if (!data) throw new Error("保存対象を特定できません");
-            await persistOne(data.path, data.meta);
-
-            await rebuildCategoryList();
+            await persistOne(r.path, r.meta);
+            rebuildCategoryList();
             applyFiltersAndRender();
             alert("保存しました");
           } catch (e) {
             console.error(e);
-            alert("保存失敗:\n" + (e?.message ?? e) + "\n\n※ Firestoreがブロックされている場合、保存できません。");
+            alert("保存失敗（Firestoreがブロックされている可能性大）:\n" + (e?.message ?? e));
           } finally {
             btn.disabled = false;
-            btn.textContent = "保存";
+            btn.textContent = oldText;
           }
         });
       });
-    }
 
-    async function saveAllVisible() {
-      const cards = [...listEl.querySelectorAll(".item")];
-      let ok = 0, ng = 0;
+      // 一括保存
+      if (!saveAllBtn.dataset.bound) {
+        saveAllBtn.dataset.bound = "1";
+        saveAllBtn.addEventListener("click", async () => {
+          const cards = [...listEl.querySelectorAll(".item")];
+          saveAllBtn.disabled = true;
+          saveAllMsg.textContent = "一括保存中…";
 
-      saveAllBtn.disabled = true;
-      saveAllMsg.textContent = "一括保存中…";
+          let ok = 0, ng = 0;
+          for (const wrap of cards) {
+            const r = readMetaFromCard(wrap);
+            if (!r.ok) { ng++; continue; }
+            try {
+              await persistOne(r.path, r.meta);
+              ok++;
+            } catch (e) {
+              console.error(e);
+              ng++;
+            }
+          }
+          rebuildCategoryList();
+          applyFiltersAndRender();
 
-      for (const card of cards) {
-        try {
-          const data = readMetaFromCard(card);
-          if (!data) { ng++; continue; }
-          await persistOne(data.path, data.meta);
-          ok++;
-        } catch (e) {
-          console.error(e);
-          ng++;
-        }
-      }
-
-      await rebuildCategoryList();
-      applyFiltersAndRender();
-
-      saveAllMsg.textContent = `完了：成功 ${ok} / 失敗 ${ng}`;
-      saveAllBtn.disabled = false;
-
-      if (ng > 0) {
-        alert(`一括保存：成功 ${ok} / 失敗 ${ng}\n\n※ Firestoreがブロックされていると失敗します。`);
-      } else {
-        alert(`一括保存：全件保存しました（${ok}件）`);
-      }
-    }
-
-    /********************
-     * 7) 読み込み（ログイン後のみ）
-     ********************/
-    async function loadAll() {
-      if (!isAdmin) return;
-
-      el("updatedLabel").textContent = new Date().toLocaleString("ja-JP");
-      listEl.innerHTML = `<div class="card">読み込み中…</div>`;
-
-      const raw = await fetchGitHubTree();
-      const files = raw.filter(x => shouldInclude(x.path));
-
-      const merged = [];
-      for (const f of files) {
-        const meta = await loadMeta(f.path);
-        merged.push({
-          path: f.path,
-          url: buildUrl(f.path),
-          title: meta?.title ?? defaultTitleFromPath(f.path),
-          category: meta?.category ?? null,
-          order: meta?.order ?? null,
-          hidden: meta?.hidden ?? false
+          saveAllBtn.disabled = false;
+          saveAllMsg.textContent = `完了：成功 ${ok} / 失敗 ${ng}`;
+          alert(`一括保存：成功 ${ok} / 失敗 ${ng}\n（ブロックされていると失敗します）`);
         });
       }
-
-      items = merged;
-      await rebuildCategoryList();
-      applyFiltersAndRender();
     }
 
     /********************
-     * 8) Auth UI
+     * 6) 画面制御（ログイン前後）
      ********************/
-    function setAuthedUI(user) {
+    function showAdminUI(user) {
       isAdmin = !!user;
-
-      // ログイン前：コントロール類は隠す
-      lockedCard.classList.toggle("hidden", isAdmin);
-      authedControls.classList.toggle("hidden", !isAdmin);
-
-      logoutBtn.classList.toggle("hidden", !isAdmin);
-      saveAllBtn.disabled = !isAdmin;
-
-      if (isAdmin) {
+      if (user) {
         loginBox.classList.add("hidden");
         editorBox.classList.remove("hidden");
         userLabel.textContent = user.email || "(unknown)";
-
-        // Firestoreがブロックされていると保存できないので注意喚起
-        netWarn.classList.remove("hidden");
-        netWarn.textContent = "※ Firestoreがブロックされている環境では、保存が失敗します（広告ブロッカー等を一時的にOFFにしてください）。";
-        loadAll().catch(e => {
-          console.error(e);
-          listEl.innerHTML = `<div class="card danger">読み込みエラー: ${escapeHtml(e?.message ?? e)}</div>`;
-        });
+        logoutBtn.classList.remove("hidden");
       } else {
         loginBox.classList.remove("hidden");
         editorBox.classList.add("hidden");
         userLabel.textContent = "";
-        items = [];
-        listEl.innerHTML = "";
+        logoutBtn.classList.add("hidden");
       }
     }
 
     loginBtn.addEventListener("click", () => {
-      adminPanel.classList.remove("hidden");
-      adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      adminPanel.classList.toggle("hidden");
+      if (!adminPanel.classList.contains("hidden")) {
+        adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     });
 
     logoutBtn.addEventListener("click", async () => {
@@ -484,26 +479,103 @@
       }
     });
 
-    saveAllBtn.addEventListener("click", async () => {
-      if (!isAdmin) {
-        alert("ログイン後に実行できます");
-        return;
+    el("doCreateUser").addEventListener("click", async () => {
+      try {
+        el("createMsg").textContent = "作成中…";
+        await createUserWithEmailAndPassword(auth, el("newEmail").value, el("newPass").value);
+        el("createMsg").textContent = "管理者ユーザーを作成しました（公開前に削除推奨）";
+      } catch (e) {
+        el("createMsg").textContent = "作成失敗: " + (e?.message ?? e);
       }
-      await saveAllVisible();
     });
 
-    reloadBtn.addEventListener("click", () => {
-      if (!isAdmin) {
-        alert("ログイン後に表示されます。管理者ログインしてください。");
-        return;
+    /********************
+     * 7) 読み込み
+     ********************/
+    el("sourceLabel").textContent = `github:${CFG.github.owner}/${CFG.github.repo}/${CFG.github.branch}/${CFG.github.path}`;
+
+    async function loadAll() {
+      noticeEl.textContent = "";
+      setStatus("読み込み中…");
+      el("updatedLabel").textContent = new Date().toLocaleString("ja-JP");
+
+      // 1) GitHub
+      const raw = await fetchGitHubTree();
+      const files = raw.filter(x => shouldInclude(x.path));
+      diag("GitHub tree blobs = " + raw.length);
+      diag("after ext filter = " + files.length);
+
+      // 2) まずitemsを作る（metaなし）
+      const base = files.map(f => ({
+        path: f.path,
+        url: buildUrl(f.path),
+        title: defaultTitleFromPath(f.path),
+        category: null,
+        order: null,
+        public: false
+      }));
+
+      // 3) Firestore meta をまとめて引く（失敗したら即諦める＝待たない）
+      let metaMap = new Map();
+      try {
+        if (isAdmin) {
+          const docIds = base.map(x => metaDocId(x.path));
+          metaMap = await fetchMetaMapForAdmin(docIds);
+        } else {
+          metaMap = await fetchPublicMetaMap();
+        }
+      } catch (e) {
+        console.warn("meta fetch failed:", e);
+        noticeEl.textContent = "※ Firestore がブロックされている環境では、公開ON/OFFの判定や保存が失敗します（広告ブロッカー等をOFFにしてください）。";
+        if (!isAdmin) {
+          items = [];
+          rebuildCategoryList();
+          applyFiltersAndRender();
+          setStatus("Firestoreに接続できないため、公開リンクを取得できません。");
+          return;
+        }
       }
-      loadAll().catch(e => console.error(e));
-    });
+
+      // 4) merge
+      items = base.map(x => {
+        const md = metaMap.get(metaDocId(x.path)) || null;
+        return {
+          ...x,
+          title: md?.title ?? x.title,
+          category: md?.category ?? x.category,
+          order: md?.order ?? x.order,
+          public: md?.public ?? x.public
+        };
+      });
+
+      rebuildCategoryList();
+      applyFiltersAndRender();
+      setStatus("完了");
+    }
+
+    reloadBtn.addEventListener("click", () => loadAll().catch(err => {
+      console.error(err);
+      setStatus("エラー: " + (err?.message ?? err));
+    }));
 
     qEl.addEventListener("input", applyFiltersAndRender);
     catFilterEl.addEventListener("change", applyFiltersAndRender);
 
-    onAuthStateChanged(auth, (user) => setAuthedUI(user));
+    onAuthStateChanged(auth, async (user) => {
+      showAdminUI(user);
+      try {
+        await loadAll();
+      } catch (e) {
+        console.error(e);
+        setStatus("エラー: " + (e?.message ?? e));
+      }
+    });
+
+    // 初回表示（未ログインでも公開ONを見せたい）
+    loadAll().catch(err => {
+      console.error(err);
+      setStatus("エラー: " + (err?.message ?? err));
+    });
   </script>
 </body>
 </html>
