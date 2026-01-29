@@ -360,10 +360,7 @@
             alert("保存しました");
           } catch (e) {
             console.error(e);
-            alert("保存失敗:
-" + (e?.message ?? e) + "
-
-※ Firestoreがブロックされている場合、保存できません。");
+            alert("保存失敗:\n" + (e?.message ?? e) + "\n\n※ Firestoreがブロックされている場合、保存できません。");
           } finally {
             btn.disabled = false;
             btn.textContent = "保存";
