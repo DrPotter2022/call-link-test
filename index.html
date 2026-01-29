@@ -109,13 +109,26 @@
       },
 
       // Firebase（Auth + Firestore）
-      firebase: {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        projectId: "YOUR_PROJECT_ID",
-        // appId 等も必要な場合は追加してください
-        // appId: "..."
-      },
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCJV2CDJl9NW6Qz3sbPd8nrV0zevzZam0I",
+    authDomain: "index-6c554.firebaseapp.com",
+    projectId: "index-6c554",
+    messagingSenderId: "571533029170",
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 
       // Firestoreコレクション名（メタ情報保存先）
       collection: "link_index_meta_v1"
