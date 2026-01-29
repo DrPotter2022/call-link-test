@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>リンクINDEX</title>
+  <link rel="icon" href="data:,"><!-- favicon 404対策 -->
 
   <style>
     body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 24px; }
@@ -21,134 +22,387 @@
     .item a { text-decoration:none; }
     .item small { display:block; margin-top:6px; }
     .admin { background:#fafafa; }
+    .danger { border-color:#e7b3b3; }
     .hidden { display:none; }
   </style>
 </head>
 
 <body>
-<header>
-  <div>
-    <h1 style="margin:0;">リンクINDEX</h1>
-    <div class="muted">ディレクトリ配下のリンクを自動収集して表示します</div>
-  </div>
-  <div class="row">
-    <input id="q" placeholder="検索（タイトル/パス）" />
-    <select id="catFilter">
-      <option value="">カテゴリ（すべて）</option>
-    </select>
-    <button id="reloadBtn">再読み込み</button>
-    <button id="loginBtn">管理者ログイン</button>
-    <button id="logoutBtn" class="hidden">ログアウト</button>
-  </div>
-</header>
-
-<section class="card">
-  <div class="row">
-    <span class="muted">取得元:</span>
-    <code id="sourceLabel"></code>
-    <span class="muted">件数:</span>
-    <strong id="countLabel">-</strong>
-    <span class="muted">最終更新:</span>
-    <span id="updatedLabel">-</span>
-  </div>
-</section>
-
-<section id="adminPanel" class="card admin hidden">
-  <h2>管理者パネル</h2>
-
-  <div id="loginBox">
-    <div class="row">
-      <input id="email" type="email" placeholder="email">
-      <input id="pass" type="password" placeholder="password">
-      <button id="doLogin">ログイン</button>
+  <header>
+    <div>
+      <h1 style="margin:0;">リンクINDEX</h1>
+      <div class="muted" id="subtitle">ディレクトリ配下のリンクを自動収集して表示します</div>
     </div>
-    <div id="authMsg" class="muted"></div>
-  </div>
+    <div class="row">
+      <input id="q" placeholder="検索（タイトル/パス）" />
+      <select id="catFilter">
+        <option value="">カテゴリ（すべて）</option>
+      </select>
+      <button id="reloadBtn">再読み込み</button>
+      <button id="loginBtn">管理者ログイン</button>
+      <button id="logoutBtn" class="hidden">ログアウト</button>
+    </div>
+  </header>
 
-  <div id="editorBox" class="hidden">
-    <div class="muted">ログイン中: <span id="userLabel"></span></div>
-  </div>
-</section>
+  <section class="card">
+    <div class="row">
+      <span class="muted">取得元:</span>
+      <code id="sourceLabel"></code>
+      <span class="muted">件数:</span>
+      <strong id="countLabel">-</strong>
+      <span class="muted">最終更新:</span>
+      <span id="updatedLabel">-</span>
+    </div>
+  </section>
 
-<section id="list" class="grid"></section>
+  <section id="adminPanel" class="card admin hidden">
+    <h2 style="margin:0 0 10px;">管理者パネル</h2>
 
-<script type="module">
-/* ========= 設定 ========= */
-const CFG = {
-  github: {
-    owner: "DrPotter2022",
-    repo: "call-link-test",
-    branch: "main",
-    path: "",
-    includeExt: [".html", ".pdf"],
-    siteBaseUrl: "https://YOURNAME.github.io/YOUR_GITHUB_REPO/"
-  },
-  firebase: {
-    apiKey: "AIzaSyCJV2CDJl9NW6Qz3sbPd8nrV0zevzZam0I",
-    authDomain: "index-6c554.firebaseapp.com",
-    projectId: "index-6c554"
-  },
-  collection: "link_index_meta_v1"
-};
+    <div id="loginBox" class="grid">
+      <div class="item">
+        <h3>ログイン（メール/パスワード）</h3>
+        <div class="row">
+          <input id="email" type="email" placeholder="email" style="min-width:240px;">
+          <input id="pass" type="password" placeholder="password" style="min-width:240px;">
+          <button id="doLogin">ログイン</button>
+        </div>
+        <small class="muted">※Firebase Authentication（Email/Password）を使用</small>
+        <div id="authMsg" class="muted" style="margin-top:8px;"></div>
+      </div>
 
-/* ========= Firebase ========= */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+      <div class="item danger">
+        <h3>初回だけ：管理者ユーザーを作成</h3>
+        <div class="row">
+          <input id="newEmail" type="email" placeholder="admin email" style="min-width:240px;">
+          <input id="newPass" type="password" placeholder="admin password" style="min-width:240px;">
+          <button id="doCreateUser">管理者作成</button>
+        </div>
+        <small class="muted">公開前にこの機能は削除推奨。</small>
+        <div id="createMsg" class="muted" style="margin-top:8px;"></div>
+      </div>
+    </div>
 
-const app = initializeApp(CFG.firebase);
-const auth = getAuth(app);
-const db = getFirestore(app);
+    <div id="editorBox" class="hidden">
+      <div class="row" style="margin-bottom:10px;">
+        <span>ログイン中: <strong id="userLabel"></strong></span>
+        <span class="muted">（編集内容はFirestoreに保存）</span>
+      </div>
+      <small class="muted">各項目の「保存」で即時反映されます。</small>
+    </div>
+  </section>
 
-/* ========= DOM ========= */
-const el = id => document.getElementById(id);
-const listEl = el("list");
-el("sourceLabel").textContent = `github:${CFG.github.owner}/${CFG.github.repo}/${CFG.github.path}`;
+  <section id="list" class="grid"></section>
 
-/* ========= GitHub ========= */
-async function fetchGitHubTree() {
-  const { owner, repo, branch } = CFG.github;
-  const ref = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${branch}`).then(r=>r.json());
-  const commit = await fetch(ref.object.url).then(r=>r.json());
-  const tree = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${commit.tree.sha}?recursive=1`).then(r=>r.json());
-  return tree.tree.filter(x => x.type==="blob" && x.path.startsWith(CFG.github.path));
-}
+  <script type="module">
+    /********************
+     * 0) 設定
+     ********************/
+    const CFG = {
+      github: {
+        owner: "DrPotter2022",
+        repo: "call-link-test",
+        branch: "main",
+        path: "content", // content/ 配下を拾う。直下なら "" にする
+        includeExt: [".html", ".pdf"],
+        siteBaseUrl: "https://drpotter2022.github.io/call-link-test/"
+      },
+      firebase: {
+        apiKey: "AIzaSyCJV2CDJl9NW6Qz3sbPd8nrV0zevzZam0I",
+        authDomain: "index-6c554.firebaseapp.com",
+        projectId: "index-6c554",
+      },
+      collection: "link_index_meta_v1"
+    };
 
-/* ========= 初期表示 ========= */
-async function loadAll() {
-  const files = await fetchGitHubTree();
-  listEl.innerHTML = files.map(f =>
-    `<div class="item">
-      <h3><a href="${CFG.github.siteBaseUrl}${f.path}" target="_blank">${f.path.split("/").pop()}</a></h3>
-      <small class="muted">${f.path}</small>
-    </div>`
-  ).join("");
-  el("countLabel").textContent = files.length;
-  el("updatedLabel").textContent = new Date().toLocaleString("ja-JP");
-}
+    /********************
+     * 1) Firebase 初期化
+     ********************/
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged,
+      signInWithEmailAndPassword, signOut,
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-loadAll();
+    const app = initializeApp(CFG.firebase);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-/* ========= Auth ========= */
-el("doLogin").onclick = async () => {
-  try {
-    await signInWithEmailAndPassword(auth, el("email").value, el("pass").value);
-  } catch(e) {
-    el("authMsg").textContent = e.message;
-  }
-};
+    /********************
+     * 2) GitHub API
+     ********************/
+    async function fetchGitHubTree() {
+      const { owner, repo, branch, path } = CFG.github;
 
-onAuthStateChanged(auth, user => {
-  if (user) {
-    el("loginBox").classList.add("hidden");
-    el("editorBox").classList.remove("hidden");
-    el("userLabel").textContent = user.email;
-    el("logoutBtn").classList.remove("hidden");
-  }
-});
+      const refUrl = `https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${branch}`;
+      const refRes = await fetch(refUrl);
+      if (!refRes.ok) throw new Error("GitHub ref取得に失敗: " + refRes.status);
+      const refJson = await refRes.json();
 
-el("logoutBtn").onclick = () => signOut(auth);
-</script>
+      const commitUrl = refJson.object.url;
+      const commitRes = await fetch(commitUrl);
+      if (!commitRes.ok) throw new Error("GitHub commit取得に失敗: " + commitRes.status);
+      const commitJson = await commitRes.json();
+      const treeSha = commitJson.tree.sha;
 
+      const treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${treeSha}?recursive=1`;
+      const treeRes = await fetch(treeUrl);
+      if (!treeRes.ok) throw new Error("GitHub tree取得に失敗: " + treeRes.status);
+      const treeJson = await treeRes.json();
+
+      const base = (path || "").replace(/\/$/, "");
+      const prefix = base ? (base + "/") : "";
+
+      return treeJson.tree
+        .filter(x => x.type === "blob" && x.path.startsWith(prefix))
+        .map(x => ({ path: x.path, size: x.size ?? null }));
+    }
+
+    function shouldInclude(filePath) {
+      const exts = CFG.github.includeExt;
+      return exts.some(ext => filePath.toLowerCase().endsWith(ext));
+    }
+
+    function defaultTitleFromPath(p) {
+      const name = p.split("/").pop() || p;
+      return decodeURIComponent(name)
+        .replace(/\.[^/.]+$/, "")
+        .replace(/[_-]+/g, " ");
+    }
+
+    function buildUrl(filePath) {
+      return CFG.github.siteBaseUrl.replace(/\/$/, "/") + filePath;
+    }
+
+    /********************
+     * 3) Firestore
+     ********************/
+    function metaDocId(filePath) {
+      return filePath.replaceAll("/", "__");
+    }
+
+    async function loadMeta(filePath) {
+      const ref = doc(db, CFG.collection, metaDocId(filePath));
+      const snap = await getDoc(ref);
+      return snap.exists() ? snap.data() : null;
+    }
+
+    async function saveMeta(filePath, meta) {
+      const ref = doc(db, CFG.collection, metaDocId(filePath));
+      await setDoc(ref, { ...meta, updatedAt: serverTimestamp(), path: filePath }, { merge: true });
+    }
+
+    /********************
+     * 4) UI
+     ********************/
+    const el = (id) => document.getElementById(id);
+    const listEl = el("list");
+    const qEl = el("q");
+    const catFilterEl = el("catFilter");
+    const reloadBtn = el("reloadBtn");
+    const loginBtn = el("loginBtn");
+    const logoutBtn = el("logoutBtn");
+    const adminPanel = el("adminPanel");
+    const loginBox = el("loginBox");
+    const editorBox = el("editorBox");
+    const userLabel = el("userLabel");
+
+    el("sourceLabel").textContent = `github:${CFG.github.owner}/${CFG.github.repo}/${CFG.github.branch}/${CFG.github.path}`;
+
+    let isAdmin = false;
+    let items = [];
+
+    function upsertCategoryOptions(categories) {
+      const current = catFilterEl.value;
+      catFilterEl.innerHTML = `<option value="">カテゴリ（すべて）</option>` +
+        [...categories].sort().map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+      catFilterEl.value = current;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (m) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[m]));
+    }
+
+    function applyFiltersAndRender() {
+      const q = qEl.value.trim().toLowerCase();
+      const cat = catFilterEl.value;
+
+      const filtered = items
+        .filter(x => !x.hidden)
+        .filter(x => !q || (x.title.toLowerCase().includes(q) || x.path.toLowerCase().includes(q)))
+        .filter(x => !cat || x.category === cat)
+        .sort((a,b) => (a.order ?? 9999) - (b.order ?? 9999) || a.title.localeCompare(b.title,"ja"));
+
+      el("countLabel").textContent = String(filtered.length);
+      listEl.innerHTML = filtered.map(x => renderItemCard(x)).join("");
+      if (isAdmin) bindAdminControls();
+    }
+
+    function renderItemCard(x) {
+      const tag = x.category ? `<span class="tag">${escapeHtml(x.category)}</span>` : "";
+      const adminControls = isAdmin ? `
+        <div class="row" style="margin-top:10px;">
+          <input data-k="title" data-path="${escapeHtml(x.path)}" value="${escapeHtml(x.title)}" placeholder="表示名" style="min-width:220px;">
+          <input data-k="category" data-path="${escapeHtml(x.path)}" value="${escapeHtml(x.category ?? "")}" placeholder="カテゴリ" style="min-width:160px;">
+          <input data-k="order" data-path="${escapeHtml(x.path)}" value="${escapeHtml(x.order ?? "")}" placeholder="表示順(数字)" style="width:140px;">
+          <label class="row" style="gap:6px;">
+            <input type="checkbox" data-k="hidden" data-path="${escapeHtml(x.path)}" ${x.hidden ? "checked":""}>
+            非表示
+          </label>
+          <button data-act="save" data-path="${escapeHtml(x.path)}">保存</button>
+        </div>
+      ` : "";
+
+      return `
+        <div class="item">
+          <h3>
+            <a href="${escapeHtml(x.url)}" target="_blank" rel="noopener">${escapeHtml(x.title)}</a>
+            ${tag}
+          </h3>
+          <small class="muted">${escapeHtml(x.path)}</small>
+          ${adminControls}
+        </div>
+      `;
+    }
+
+    function bindAdminControls() {
+      listEl.querySelectorAll('button[data-act="save"]').forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const path = btn.getAttribute("data-path");
+          const wrap = btn.closest(".item");
+
+          const title = wrap.querySelector(`input[data-k="title"]`).value.trim();
+          const category = wrap.querySelector(`input[data-k="category"]`).value.trim();
+          const orderRaw = wrap.querySelector(`input[data-k="order"]`).value.trim();
+          const hidden = wrap.querySelector(`input[type="checkbox"][data-k="hidden"]`).checked;
+
+          const order = orderRaw === "" ? null : Number(orderRaw);
+          if (orderRaw !== "" && Number.isNaN(order)) {
+            alert("表示順は数字で入力してください");
+            return;
+          }
+
+          await saveMeta(path, {
+            title: title || defaultTitleFromPath(path),
+            category: category || null,
+            order: order,
+            hidden: hidden
+          });
+
+          const idx = items.findIndex(x => x.path === path);
+          if (idx >= 0) {
+            items[idx].title = title || defaultTitleFromPath(path);
+            items[idx].category = category || null;
+            items[idx].order = order;
+            items[idx].hidden = hidden;
+          }
+
+          await rebuildCategoryList();
+          applyFiltersAndRender();
+          alert("保存しました");
+        }, { once: true });
+      });
+    }
+
+    async function rebuildCategoryList() {
+      const cats = new Set();
+      items.forEach(x => { if (x.category) cats.add(x.category); });
+      upsertCategoryOptions(cats);
+    }
+
+    /********************
+     * 5) 読み込み
+     ********************/
+    async function loadAll() {
+      el("updatedLabel").textContent = new Date().toLocaleString("ja-JP");
+      listEl.innerHTML = `<div class="card">読み込み中…</div>`;
+
+      const raw = await fetchGitHubTree();
+      const files = raw.filter(x => shouldInclude(x.path));
+
+      const merged = [];
+      for (const f of files) {
+        const meta = await loadMeta(f.path);
+        merged.push({
+          path: f.path,
+          url: buildUrl(f.path),
+          title: meta?.title ?? defaultTitleFromPath(f.path),
+          category: meta?.category ?? null,
+          order: meta?.order ?? null,
+          hidden: meta?.hidden ?? false
+        });
+      }
+
+      items = merged;
+      await rebuildCategoryList();
+      applyFiltersAndRender();
+    }
+
+    /********************
+     * 6) Admin UI / Auth
+     ********************/
+    function showAdminUI(user) {
+      isAdmin = !!user;
+
+      if (user) {
+        loginBox.classList.add("hidden");
+        editorBox.classList.remove("hidden");
+        userLabel.textContent = user.email || "(unknown)";
+        logoutBtn.classList.remove("hidden");
+      } else {
+        loginBox.classList.remove("hidden");
+        editorBox.classList.add("hidden");
+        userLabel.textContent = "";
+        logoutBtn.classList.add("hidden");
+      }
+      applyFiltersAndRender();
+    }
+
+    // ✅ 管理者ログインボタン：必ずパネルを開く
+    loginBtn.addEventListener("click", () => {
+      adminPanel.classList.remove("hidden");
+      adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+    });
+
+    el("doLogin").addEventListener("click", async () => {
+      try {
+        el("authMsg").textContent = "ログイン中…";
+        await signInWithEmailAndPassword(auth, el("email").value, el("pass").value);
+        el("authMsg").textContent = "";
+      } catch (e) {
+        el("authMsg").textContent = "ログイン失敗: " + (e?.message ?? e);
+      }
+    });
+
+    el("doCreateUser").addEventListener("click", async () => {
+      try {
+        el("createMsg").textContent = "作成中…";
+        await createUserWithEmailAndPassword(auth, el("newEmail").value, el("newPass").value);
+        el("createMsg").textContent = "管理者ユーザーを作成しました（公開前に削除推奨）";
+      } catch (e) {
+        el("createMsg").textContent = "作成失敗: " + (e?.message ?? e);
+      }
+    });
+
+    onAuthStateChanged(auth, (user) => showAdminUI(user));
+
+    reloadBtn.addEventListener("click", loadAll);
+    qEl.addEventListener("input", applyFiltersAndRender);
+    catFilterEl.addEventListener("change", applyFiltersAndRender);
+
+    loadAll().catch(err => {
+      listEl.innerHTML = `<div class="card danger">エラー: ${escapeHtml(err?.message ?? err)}</div>`;
+      console.error(err);
+    });
+  </script>
 </body>
 </html>
