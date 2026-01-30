@@ -18,7 +18,7 @@
   body{
     margin:0; font-family:var(--sans); color:var(--text);
     background: linear-gradient(180deg,#081027 0%, #050a16 100%);
-    overflow:auto; /* ★PCスクロール禁止を撤回 */
+    overflow:auto;
   }
 
   .wrap{
@@ -178,19 +178,18 @@
   a{ color: #9fd1ff; text-decoration: underline; }
   a:hover{ opacity:.9; }
 
+  /* ★フッター：見切れ防止（折返しOK、最大2行を想定） */
   .footer{
     margin-top:10px;
     color:var(--muted);
     font-size:12px;
-    line-height:1.4;
+    line-height:1.55;
     border-top:1px solid rgba(34,52,87,.7);
     padding-top:10px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  @media (max-width: 520px){
-    .footer{ white-space:normal; }
+    white-space:normal;     /* ←見切れ原因を除去 */
+    overflow:visible;       /* ←見切れ原因を除去 */
+    text-overflow:clip;     /* ←見切れ原因を除去 */
+    word-break:keep-all;
   }
 
   /* 同意モーダル */
@@ -228,22 +227,27 @@
   }
   .modal .mactions button.secondary{ background:transparent; }
 
-  /* ★印刷時だけ最適化：画面操作を犠牲にしない */
+  /* ★印刷時だけ詰める：画面は自由、紙で1枚に寄せる */
   @media print{
     body{ background:#fff !important; }
     .wrap{ margin:0 !important; padding:0 !important; max-width:none !important; }
     .card{ box-shadow:none !important; }
-    .grid{ gap:10px !important; }
-    .footer{ white-space:nowrap !important; }
+
+    /* 行間と余白を少し詰める */
+    .body{ padding:10px 12px !important; }
+    .row{ padding:8px 0 !important; }
+    .kpi{ padding:8px 10px !important; }
+    .footer{ margin-top:8px !important; padding-top:8px !important; line-height:1.45 !important; }
+
+    /* モーダルは印刷不要 */
+    .overlay{ display:none !important; }
+
     *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
 </style>
 </head>
 
 <body>
-<!-- （以下、HTML/JS本体はあなたの直前版と同じなので省略せずに貼っています） -->
-<!-- ここから下は前回提示の“全文”と同一構造です。タイトルとCSSの overflow だけ戻しています。 -->
-
 <div class="overlay" id="overlay" aria-modal="true" role="dialog">
   <div class="modal">
     <h3>ご利用前の確認</h3>
@@ -398,7 +402,7 @@
           <div class="v small" id="withhold">—</div>
         </div>
 
-        <div class="footer" title="本ページはChatGPT5.2で作成しました。計算結果精度については自己責任でご利用ください。">
+        <div class="footer">
           本ページはChatGPT5.2で作成しました。計算結果精度については自己責任でご利用ください。
         </div>
       </div>
@@ -407,9 +411,6 @@
 </div>
 
 <script>
-/* JS部は前回版（signMode修正込み）と同一：省略せずにそのまま貼り替えてOKです */
-
-/* ====== 余命年数表 ====== */
 const lifeTable = {
   male: {0:74,1:74,2:73,3:72,4:71,5:70,6:69,7:68,8:67,9:66,10:65,11:64,12:63,13:62,14:61,15:60,16:59,17:58,18:57,19:56,20:55,21:54,22:53,23:52,24:51,25:50,26:50,27:49,28:48,29:47,30:46,31:45,32:44,33:43,34:42,35:41,36:40,37:39,38:38,39:37,40:36,41:35,42:34,43:33,44:32,45:32,46:31,47:30,48:29,49:28,50:27,51:26,52:25,53:25,54:24,55:23,56:22,57:21,58:20,59:20,60:19,61:18,62:17,63:17,64:16,65:15,66:14,67:14,68:13,69:12,70:12,71:11,72:10,73:10,74:9,75:8,76:8,77:7,78:7,79:6,80:6,81:6,82:5,83:5,84:4,85:4,86:4,87:4,88:3,89:3,90:3,91:3,92:2,93:2,94:2,95:2,96:2,97:1},
   female:{0:80,1:79,2:78,3:77,4:77,5:76,6:75,7:74,8:73,9:72,10:71,11:70,12:69,13:68,14:67,15:66,16:65,17:64,18:63,19:62,20:61,21:60,22:59,23:58,24:57,25:56,26:55,27:54,28:53,29:52,30:51,31:50,32:49,33:48,34:47,35:46,36:45,37:44,38:43,39:42,40:41,41:40,42:39,43:38,44:37,45:36,46:36,47:35,48:34,49:33,50:32,51:31,52:30,53:29,54:28,55:27,56:26,57:25,58:25,59:24,60:23,61:22,62:21,63:20,64:19,65:18,66:18,67:17,68:16,69:15,70:14,71:14,72:13,73:12,74:11,75:11,76:10,77:9,78:9,79:8,80:8,81:7,82:7,83:6,84:6,85:5,86:5,87:4,88:4,89:4,90:3,91:3,92:3,93:3,94:2,95:2,96:2,97:1}
@@ -420,7 +421,7 @@ function parseMoney(v){ const s=String(v??'').replace(/[,\s　]/g,''); if(s===''
 function parseIntSafe(v){ const n=parseMoney(v); if(n===null) return null; return Math.trunc(n); }
 function yen(n){ if(!Number.isFinite(n)) return '—'; return nf.format(Math.round(n)); }
 function roundUp2(x){ return Math.ceil((x-1e-12)*100)/100; }
-function showMsg(t){ const el=document.getElementById('msg'); if(!t){el.style.display='none';el.textContent='';return;} el.style.display='block';el.textContent=t; }
+function showMsg(t){ const el=document.getElementById('msg'); if(!t){el.style.display='none';el.textContent='';return;} el.style.display='block'; el.textContent=t; }
 function formatCommaInput(el){ const n=parseMoney(el.value); if(n===null)return; el.value=nf.format(n); }
 ['premium','payment','death'].forEach(id=> document.getElementById(id).addEventListener('blur', e=>formatCommaInput(e.target)));
 function getLifeYears(sex, age){ if(age>=97) return 1; return lifeTable[sex]?.[age]; }
@@ -641,7 +642,7 @@ function resetAll(){
   closeAllPanels();
 }
 
-const CONSENT_KEY='teiki_keihi_consent_v8';
+const CONSENT_KEY='teiki_keihi_consent_v9';
 function openConsent(){ document.getElementById('overlay').style.display='flex'; }
 function closeConsent(){ document.getElementById('overlay').style.display='none'; }
 document.getElementById('agreeBtn').addEventListener('click', ()=>{ localStorage.setItem(CONSENT_KEY,'yes'); closeConsent(); });
