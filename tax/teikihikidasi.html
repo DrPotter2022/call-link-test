@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>定期支払金の必要経費　簡易計算</title>
+
+<style>
+  :root{
+    --bg:#0b1220; --card:#101c36; --muted:#a9b7d6; --text:#eef3ff;
+    --line:#223457; --accent:#4ea1ff; --accent2:#8cffc7; --danger:#ff6b6b;
+    --radius:16px;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP","Yu Gothic",sans-serif;
+    --mono: ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{ box-sizing:border-box; }
+  html, body{ height:100%; }
+  body{
+    margin:0; font-family:var(--sans); color:var(--text);
+    background: linear-gradient(180deg,#081027 0%, #050a16 100%);
+    overflow:hidden; /* ★PCでスクロールバーを出さない（印刷の2ページ化防止に寄与） */
+  }
+
+  .wrap{
+    max-width:980px;
+    margin:18px auto;
+    padding:0 12px 16px; /* ★下余白を圧縮 */
+  }
+
+  h1{
+    font-size:20px;
+    margin:0 0 8px;
+    letter-spacing:.02em;
+    text-align:center;
+  }
+
+  .grid{ display:grid; grid-template-columns: 1.1fr .9fr; gap:12px; }
+  @media (max-width: 860px){
+    body{ overflow:auto; } /* スマホは縦に伸びるのでスクロール許可 */
+    .grid{ grid-template-columns:1fr; }
+  }
+
+  .card{
+    background:rgba(16,28,54,.92);
+    border:1px solid rgba(34,52,87,.85);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 28px rgba(0,0,0,.35);
+    overflow:hidden;
+  }
+  .card h2{
+    font-size:14px; margin:0; padding:10px 14px; /* ★少し圧縮 */
+    background:linear-gradient(90deg, rgba(78,161,255,.18), rgba(140,255,199,.08));
+    border-bottom:1px solid rgba(34,52,87,.85);
+    letter-spacing:.02em;
+  }
+  .body{ padding:12px 14px; } /* ★少し圧縮 */
+
+  .row{
+    display:grid;
+    grid-template-columns: 220px 1fr;
+    gap:10px;
+    align-items:start;
+    padding:10px 0; /* ★圧縮 */
+    border-bottom:1px dashed rgba(34,52,87,.7);
+  }
+  .row:last-child{ border-bottom:none; }
+  @media (max-width: 520px){ .row{ grid-template-columns:1fr; } }
+
+  label{ color:var(--muted); font-size:13px; padding-top:10px; }
+
+  input,select{
+    width:100%;
+    padding:10px 44px 10px 10px;
+    border-radius: 12px;
+    border:1px solid rgba(34,52,87,.95);
+    background:#0b1530;
+    color:var(--text);
+    outline:none;
+    font-size:14px;
+  }
+  select{ padding-right:10px; }
+
+  input:focus, select:focus{
+    border-color: rgba(78,161,255,.9);
+    box-shadow:0 0 0 3px rgba(78,161,255,.18);
+  }
+
+  .inputWrap{ position:relative; }
+  .iconBtn{
+    position:absolute;
+    top:50%; right:8px;
+    transform:translateY(-50%);
+    width:34px; height:34px;
+    border-radius:10px;
+    border:1px solid rgba(140,255,199,.6);
+    background: rgba(140,255,199,.12);
+    color:var(--text);
+    font-weight:950;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    user-select:none;
+  }
+  .iconBtn:active{ transform:translateY(-50%) scale(.98); }
+  .iconBtn.open{
+    border-color: rgba(78,161,255,.8);
+    background: rgba(78,161,255,.14);
+  }
+
+  .panel{
+    margin-top:10px;
+    padding:10px 12px;
+    border:1px solid rgba(34,52,87,.85);
+    border-radius: 12px;
+    background: rgba(11,21,48,.55);
+    display:none;
+  }
+  .panel.open{ display:block; }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    border:1px solid rgba(34,52,87,.95);
+    background: rgba(78,161,255,.10);
+    color: var(--text);
+    border-radius: 999px;
+    padding:8px 10px;
+    cursor:pointer;
+    font-size:12px;
+    user-select:none;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  .chip:hover{ border-color: rgba(78,161,255,.85); }
+  .chip.secondary{ background: rgba(255,255,255,.06); font-weight:700; }
+  .chip.danger{ background: rgba(255,107,107,.12); border-color: rgba(255,107,107,.5); }
+  .chip.good{ background: rgba(140,255,199,.10); border-color: rgba(140,255,199,.45); }
+  .chip.active{ outline:2px solid rgba(78,161,255,.65); }
+
+  .btns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; } /* ★圧縮 */
+  button.main{
+    border:none; border-radius: 12px; padding:10px 14px;
+    background:linear-gradient(90deg, rgba(78,161,255,.95), rgba(140,255,199,.85));
+    color:#06101f; font-weight:900; cursor:pointer; font-size:14px;
+  }
+  button.secondary{
+    border-radius: 12px; padding:10px 14px;
+    background:transparent; color:var(--text);
+    border:1px solid rgba(34,52,87,.95);
+    font-weight:800; cursor:pointer;
+  }
+
+  .warn{ color:var(--danger); font-size:12px; margin-top:10px; line-height:1.5; }
+
+  .result{ display:grid; gap:10px; }
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width: 520px){ .two{ grid-template-columns:1fr; } }
+
+  .kpi{
+    background:rgba(11,21,48,.75);
+    border:1px solid rgba(34,52,87,.85);
+    border-radius: 14px;
+    padding:10px 12px; /* ★圧縮 */
+  }
+  .kpi .t{ color:var(--muted); font-size:12px; margin-bottom:8px; line-height:1.35; }
+  .kpi .v{ font-family:var(--mono); font-size:18px; line-height:1.35; }
+  .kpi .v.small{ font-size:14px; }
+  .subline{ display:block; margin-top:4px; color:var(--muted); font-size:12px; font-family:var(--sans); }
+
+  .blink{
+    color: var(--danger);
+    font-weight: 950;
+    animation: blink 1.0s steps(2, start) infinite;
+  }
+  @keyframes blink{
+    0%{ opacity:1; }
+    50%{ opacity:.12; }
+    100%{ opacity:1; }
+  }
+
+  a{ color: #9fd1ff; text-decoration: underline; }
+  a:hover{ opacity:.9; }
+
+  .footer{
+    margin-top:10px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.4;
+    border-top:1px solid rgba(34,52,87,.7);
+    padding-top:10px;
+    white-space:nowrap;           /* ★PCで折返しを抑えて高さを増やさない */
+    overflow:hidden;
+    text-overflow:ellipsis;       /* ★万一長い場合も高さ固定 */
+  }
+  @media (max-width: 520px){
+    .footer{ white-space:normal; } /* スマホは折返しOK */
+  }
+
+  /* 同意モーダル */
+  .overlay{
+    position:fixed; inset:0;
+    background: rgba(0,0,0,.62);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    z-index:9999;
+  }
+  .modal{
+    width:min(720px, 100%);
+    background: rgba(16,28,54,.97);
+    border:1px solid rgba(34,52,87,.9);
+    border-radius: 18px;
+    box-shadow: 0 18px 46px rgba(0,0,0,.5);
+    overflow:hidden;
+  }
+  .modal h3{
+    margin:0;
+    padding:14px 16px;
+    font-size:15px;
+    border-bottom:1px solid rgba(34,52,87,.85);
+    background:linear-gradient(90deg, rgba(255,107,107,.18), rgba(78,161,255,.12));
+  }
+  .modal .mbody{ padding:14px 16px; color:var(--text); font-size:13px; line-height:1.7; }
+  .modal .mactions{
+    display:flex; gap:10px; justify-content:flex-end;
+    padding:12px 16px;
+    border-top:1px solid rgba(34,52,87,.85);
+    background: rgba(11,21,48,.55);
+    flex-wrap:wrap;
+  }
+  .modal .mactions button.secondary{ background:transparent; }
+
+  /* ===== 印刷最適化：2ページ化を防ぐ ===== */
+  @media print{
+    body{ overflow:visible !important; background:#fff !important; }
+    .wrap{ margin:0 !important; padding:0 !important; max-width:none !important; }
+    .card{ box-shadow:none !important; }
+    .grid{ gap:10px !important; }
+    .footer{ white-space:nowrap !important; }
+    *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
+</style>
+</head>
+
+<body>
+<div class="overlay" id="overlay" aria-modal="true" role="dialog">
+  <div class="modal">
+    <h3>ご利用前の確認</h3>
+    <div class="mbody">
+      <p style="margin:0 0 10px;">
+        本ページはChatGPT5.2で作成しました。計算結果精度については自己責任でご利用ください。
+      </p>
+      <p style="margin:0;">
+        「同意する」を押すと、本ツールの利用を開始できます。
+      </p>
+    </div>
+    <div class="mactions">
+      <button class="secondary" id="denyBtn">同意しない</button>
+      <button id="agreeBtn">同意する</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <h1>定期支払金の必要経費　簡易計算</h1>
+
+  <div class="grid">
+    <div class="card">
+      <h2>入力</h2>
+      <div class="body" id="appBody">
+
+        <div class="row">
+          <label for="age">契約時年齢（歳）</label>
+          <div>
+            <div class="inputWrap">
+              <input id="age" inputmode="numeric" value="60" />
+              <button type="button" class="iconBtn" data-toggle="panel-age" aria-label="年齢入力ボタン">＋</button>
+            </div>
+            <div class="panel" id="panel-age">
+              <div class="chips" id="ageDecade"></div>
+              <div class="chips" id="ageDetail" style="margin-top:10px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="sex">性別</label>
+          <select id="sex">
+            <option value="male">男性</option>
+            <option value="female" selected>女性</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label for="premium">払込保険料相当額（円）</label>
+          <div>
+            <div class="inputWrap">
+              <input id="premium" inputmode="numeric" value="10,000,000" />
+              <button type="button" class="iconBtn" data-toggle="panel-premium" aria-label="払込保険料入力ボタン">＋</button>
+            </div>
+            <div class="panel" id="panel-premium">
+              <div class="chips" id="premiumAdd"></div>
+              <div class="chips" id="premiumAdjust" style="margin-top:10px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="payment">定期支払額（円）</label>
+          <div>
+            <div class="inputWrap">
+              <input id="payment" inputmode="numeric" value="430,000" />
+              <button type="button" class="iconBtn" data-toggle="panel-payment" aria-label="定期支払額入力ボタン">＋</button>
+            </div>
+            <div class="panel" id="panel-payment">
+              <div class="chips" id="paymentAdd"></div>
+              <div class="chips" id="paymentAdjust" style="margin-top:10px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="death">死亡保険金額（円）</label>
+          <div>
+            <div class="inputWrap">
+              <input id="death" inputmode="numeric" placeholder="未入力なら払込保険料相当額と同額" />
+              <button type="button" class="iconBtn" data-toggle="panel-death" aria-label="死亡保険金額入力ボタン">＋</button>
+            </div>
+            <div class="panel" id="panel-death">
+              <div class="chips" id="deathTop"></div>
+              <div class="chips" id="deathAdd" style="margin-top:10px;"></div>
+              <div class="chips" id="deathAdjust" style="margin-top:10px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="startAge">第1回定期支払日時点の年齢（歳）</label>
+          <div>
+            <div class="inputWrap">
+              <input id="startAge" inputmode="numeric" placeholder="未入力なら契約時年齢+1歳を適用" />
+              <button type="button" class="iconBtn" data-toggle="panel-startAge" aria-label="第1回定期支払年齢入力ボタン">＋</button>
+            </div>
+            <div class="panel" id="panel-startAge">
+              <div class="chips" id="startAgeSpecial"></div>
+              <div class="chips" id="startAgeDecade" style="margin-top:10px;"></div>
+              <div class="chips" id="startAgeDetail" style="margin-top:10px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="main" id="calcBtn">計算</button>
+          <button class="secondary" id="resetBtn">リセット</button>
+        </div>
+
+        <div id="msg" class="warn" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>計算結果</h2>
+      <div class="body result">
+        <div class="two">
+          <div class="kpi">
+            <div class="t">余命年数（年）</div>
+            <div class="v" id="life">—</div>
+          </div>
+          <div class="kpi">
+            <div class="t">定期支払金受取予定総額（円）</div>
+            <div class="v" id="total">—</div>
+          </div>
+        </div>
+
+        <div class="two">
+          <div class="kpi">
+            <div class="t">
+              <a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/pdf/1622_02.pdf" target="_blank" rel="noopener">
+                余命年数表（所得税施行令別表 第八十二条の三、第百八十五条関係）
+              </a>
+            </div>
+            <div class="v small" id="ratio">—</div>
+          </div>
+          <div class="kpi">
+            <div class="t">必要経費（円）</div>
+            <div class="v blink" id="expense">—</div>
+          </div>
+        </div>
+
+        <div class="kpi">
+          <div class="t">課税対象額（雑所得）（円）</div>
+          <div class="v" id="taxable">—</div>
+        </div>
+
+        <div class="kpi">
+          <div class="t">源泉徴収（10.21%）判定<br><span class="subline">（課税対象額が25万円以上）</span></div>
+          <div class="v small" id="withhold">—</div>
+        </div>
+
+        <div class="footer" title="本ページはChatGPT5.2で作成しました。計算結果精度については自己責任でご利用ください。">
+          本ページはChatGPT5.2で作成しました。計算結果精度については自己責任でご利用ください。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== 余命年数表 ====== */
+const lifeTable = {
+  male: {0:74,1:74,2:73,3:72,4:71,5:70,6:69,7:68,8:67,9:66,10:65,11:64,12:63,13:62,14:61,15:60,16:59,17:58,18:57,19:56,20:55,21:54,22:53,23:52,24:51,25:50,26:50,27:49,28:48,29:47,30:46,31:45,32:44,33:43,34:42,35:41,36:40,37:39,38:38,39:37,40:36,41:35,42:34,43:33,44:32,45:32,46:31,47:30,48:29,49:28,50:27,51:26,52:25,53:25,54:24,55:23,56:22,57:21,58:20,59:20,60:19,61:18,62:17,63:17,64:16,65:15,66:14,67:14,68:13,69:12,70:12,71:11,72:10,73:10,74:9,75:8,76:8,77:7,78:7,79:6,80:6,81:6,82:5,83:5,84:4,85:4,86:4,87:4,88:3,89:3,90:3,91:3,92:2,93:2,94:2,95:2,96:2,97:1},
+  female:{0:80,1:79,2:78,3:77,4:77,5:76,6:75,7:74,8:73,9:72,10:71,11:70,12:69,13:68,14:67,15:66,16:65,17:64,18:63,19:62,20:61,21:60,22:59,23:58,24:57,25:56,26:55,27:54,28:53,29:52,30:51,31:50,32:49,33:48,34:47,35:46,36:45,37:44,38:43,39:42,40:41,41:40,42:39,43:38,44:37,45:36,46:36,47:35,48:34,49:33,50:32,51:31,52:30,53:29,54:28,55:27,56:26,57:25,58:25,59:24,60:23,61:22,62:21,63:20,64:19,65:18,66:18,67:17,68:16,69:15,70:14,71:14,72:13,73:12,74:11,75:11,76:10,77:9,78:9,79:8,80:8,81:7,82:7,83:6,84:6,85:5,86:5,87:4,88:4,89:4,90:3,91:3,92:3,93:3,94:2,95:2,96:2,97:1}
+};
+
+const nf = new Intl.NumberFormat('ja-JP');
+
+function parseMoney(v){
+  const s = String(v ?? '').replace(/[,\s　]/g,'');
+  if(s === '') return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+function parseIntSafe(v){
+  const n = parseMoney(v);
+  if(n === null) return null;
+  return Math.trunc(n);
+}
+function yen(n){
+  if(!Number.isFinite(n)) return '—';
+  return nf.format(Math.round(n));
+}
+function roundUp2(x){
+  return Math.ceil((x - 1e-12) * 100) / 100;
+}
+function showMsg(t){
+  const el = document.getElementById('msg');
+  if(!t){ el.style.display='none'; el.textContent=''; return; }
+  el.style.display='block'; el.textContent=t;
+}
+function formatCommaInput(el){
+  const n = parseMoney(el.value);
+  if(n === null) return;
+  el.value = nf.format(n);
+}
+['premium','payment','death'].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener('blur', ()=>formatCommaInput(el));
+});
+
+function getLifeYears(sex, age){
+  if(age >= 97) return 1;
+  return lifeTable[sex]?.[age];
+}
+
+/* パネル制御 */
+function closeAllPanels(exceptId=null){
+  document.querySelectorAll('.panel').forEach(p=>{
+    if(p.id !== exceptId) p.classList.remove('open');
+  });
+  document.querySelectorAll('.iconBtn').forEach(b=>{
+    const target = b.getAttribute('data-toggle');
+    if(target !== exceptId) b.classList.remove('open');
+  });
+}
+function togglePanel(panelId, btn){
+  const p = document.getElementById(panelId);
+  const isOpen = p.classList.contains('open');
+  closeAllPanels(panelId);
+  if(isOpen){
+    p.classList.remove('open');
+    btn.classList.remove('open');
+  }else{
+    p.classList.add('open');
+    btn.classList.add('open');
+  }
+}
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('.iconBtn');
+  if(btn){
+    e.preventDefault();
+    const panelId = btn.getAttribute('data-toggle');
+    togglePanel(panelId, btn);
+    return;
+  }
+  if(e.target.closest('.panel')) return;
+  closeAllPanels(null);
+});
+
+/* 年齢二段階 */
+function renderAgeDecade(decadeBoxId, detailBoxId, targetInputId){
+  const decadeBox = document.getElementById(decadeBoxId);
+  const detailBox = document.getElementById(detailBoxId);
+  decadeBox.innerHTML = '';
+  detailBox.innerHTML = '';
+
+  for(let d=0; d<=90; d+=10){
+    const b = document.createElement('button');
+    b.type='button';
+    b.className='chip';
+    b.textContent = String(d);
+    b.addEventListener('click', ()=> renderAgeDetail(detailBox, d, targetInputId));
+    decadeBox.appendChild(b);
+  }
+
+  const clear = document.createElement('button');
+  clear.type='button';
+  clear.className='chip secondary';
+  clear.textContent='クリア';
+  clear.addEventListener('click', ()=>{
+    document.getElementById(targetInputId).value = '';
+    detailBox.innerHTML = '';
+  });
+  decadeBox.appendChild(clear);
+}
+function renderAgeDetail(detailBox, decade, targetInputId){
+  detailBox.innerHTML='';
+  const start = decade;
+  const end = Math.min(decade+9, 90);
+  for(let a=start; a<=end; a++){
+    const b = document.createElement('button');
+    b.type='button';
+    b.className='chip good';
+    b.textContent = String(a);
+    b.addEventListener('click', ()=>{ document.getElementById(targetInputId).value = String(a); });
+    detailBox.appendChild(b);
+  }
+}
+
+/* 長押し連打 */
+function attachAutoRepeat(button, actionFn, opt={}){
+  const delay = opt.delay ?? 350;
+  const interval = opt.interval ?? 90;
+  let t1=null,t2=null;
+  const clear=()=>{ if(t1)clearTimeout(t1); if(t2)clearInterval(t2); t1=null;t2=null; };
+  const start=(e)=>{
+    e.preventDefault();
+    actionFn();
+    clear();
+    t1=setTimeout(()=>{ t2=setInterval(actionFn, interval); }, delay);
+  };
+  const stop=()=>clear();
+  button.addEventListener('pointerdown', start);
+  button.addEventListener('pointerup', stop);
+  button.addEventListener('pointercancel', stop);
+  button.addEventListener('pointerleave', stop);
+  button.addEventListener('touchend', stop);
+}
+
+/* MoneyPad（signMode=trueなら、±でステップ表示も切替） */
+function MoneyPad(inputId, addBoxId, adjustBoxId, options){
+  this.inputId = inputId;
+  this.addBoxId = addBoxId;
+  this.adjustBoxId = adjustBoxId;
+  this.minValue = options?.minValue ?? 0;
+  this.lastStep = options?.defaultStep ?? 10_000;
+  this.signMode = options?.signMode ?? false;
+  this.sign = +1;
+  this.steps = options?.steps ?? [
+    {base:'+1万', v:10_000},
+    {base:'+10万', v:100_000},
+    {base:'+100万', v:1_000_000},
+    {base:'+1000万', v:10_000_000},
+  ];
+}
+MoneyPad.prototype.getValue = function(){
+  const v = parseMoney(document.getElementById(this.inputId).value);
+  return v ?? 0;
+};
+MoneyPad.prototype.setValue = function(v){
+  const n = Math.max(this.minValue, v);
+  document.getElementById(this.inputId).value = nf.format(n);
+};
+MoneyPad.prototype.apply = function(delta){
+  this.setValue(this.getValue() + delta);
+};
+MoneyPad.prototype.add = function(step){
+  this.lastStep = step;
+  const delta = (this.signMode ? this.sign : +1) * step;
+  this.apply(delta);
+};
+MoneyPad.prototype.adjust = function(sign){
+  if(this.signMode) this.setSign(sign);  // ★ここが表示切替のキー
+  this.apply(sign * this.lastStep);
+};
+MoneyPad.prototype.clear = function(){
+  document.getElementById(this.inputId).value = '';
+};
+MoneyPad.prototype.setSign = function(sign){
+  this.sign = (sign >= 0) ? +1 : -1;
+  if(!this.signMode) return;
+  this.updateStepButtons();
+  this.updateSignButtons();
+};
+MoneyPad.prototype.updateStepButtons = function(){
+  if(!this._stepButtons) return;
+  const prefix = (this.sign === 1) ? '+' : '-';
+  this._stepButtons.forEach(({btn, labelCore})=>{
+    btn.textContent = `${prefix}${labelCore}`;
+  });
+};
+MoneyPad.prototype.updateSignButtons = function(){
+  if(!this._signBtns) return;
+  const {minusBtn, plusBtn} = this._signBtns;
+  if(this.sign === -1){
+    minusBtn.classList.add('active');
+    plusBtn.classList.remove('active');
+  }else{
+    plusBtn.classList.add('active');
+    minusBtn.classList.remove('active');
+  }
+};
+MoneyPad.prototype.render = function(){
+  const addBox = document.getElementById(this.addBoxId);
+  const adjBox = document.getElementById(this.adjustBoxId);
+  addBox.innerHTML = '';
+  adjBox.innerHTML = '';
+
+  this._stepButtons = [];
+  this.steps.forEach(s=>{
+    const btn = document.createElement('button');
+    btn.type='button';
+    btn.className='chip';
+    const labelCore = (s.base.startsWith('+') || s.base.startsWith('-')) ? s.base.slice(1) : s.base;
+
+    btn.textContent = this.signMode ? ((this.sign===1?'+':'-') + labelCore) : s.base;
+    attachAutoRepeat(btn, ()=>this.add(s.v));
+    addBox.appendChild(btn);
+    this._stepButtons.push({btn, labelCore});
+  });
+
+  const clear = document.createElement('button');
+  clear.type='button';
+  clear.className='chip secondary';
+  clear.textContent='クリア';
+  clear.addEventListener('click', ()=>this.clear());
+  addBox.appendChild(clear);
+
+  const minus = document.createElement('button');
+  minus.type='button';
+  minus.className='chip danger';
+  minus.textContent='－';
+  attachAutoRepeat(minus, ()=>this.adjust(-1));
+  adjBox.appendChild(minus);
+
+  const plus = document.createElement('button');
+  plus.type='button';
+  plus.className='chip good';
+  plus.textContent='＋';
+  attachAutoRepeat(plus, ()=>this.adjust(+1));
+  adjBox.appendChild(plus);
+
+  this._signBtns = {minusBtn: minus, plusBtn: plus};
+  this.updateSignButtons();
+};
+
+/* 第1回定期支払年齢（契約年齢+1が主） */
+function renderStartAgeSpecial(){
+  const box = document.getElementById('startAgeSpecial');
+  box.innerHTML = '';
+
+  const plus1 = document.createElement('button');
+  plus1.type='button';
+  plus1.className='chip good';
+  plus1.textContent='契約年齢+1歳';
+  plus1.addEventListener('click', ()=>{
+    const a = parseIntSafe(document.getElementById('age').value);
+    if(a !== null) document.getElementById('startAge').value = String(a + 1);
+  });
+  box.appendChild(plus1);
+
+  const same = document.createElement('button');
+  same.type='button';
+  same.className='chip secondary';
+  same.textContent='契約年齢と同じ';
+  same.addEventListener('click', ()=>{
+    const a = parseIntSafe(document.getElementById('age').value);
+    if(a !== null) document.getElementById('startAge').value = String(a);
+  });
+  box.appendChild(same);
+
+  const clear = document.createElement('button');
+  clear.type='button';
+  clear.className='chip secondary';
+  clear.textContent='クリア';
+  clear.addEventListener('click', ()=>{
+    document.getElementById('startAge').value = '';
+    document.getElementById('startAgeDetail').innerHTML = '';
+  });
+  box.appendChild(clear);
+}
+
+/* 死亡保険金額：払込保険料と同額 */
+function renderDeathTopButtons(){
+  const box = document.getElementById('deathTop');
+  box.innerHTML = '';
+  const same = document.createElement('button');
+  same.type='button';
+  same.className='chip good';
+  same.textContent='払込保険料と同額';
+  same.addEventListener('click', ()=>{
+    const p = parseMoney(document.getElementById('premium').value);
+    if(p !== null) document.getElementById('death').value = nf.format(p);
+  });
+  box.appendChild(same);
+}
+
+/* 計算 */
+function calc(){
+  showMsg(null);
+
+  const age = parseIntSafe(document.getElementById('age').value);
+  const sex = document.getElementById('sex').value;
+  const premium = parseMoney(document.getElementById('premium').value);
+  const payment = parseMoney(document.getElementById('payment').value);
+  const deathIn = parseMoney(document.getElementById('death').value);
+  const startAgeIn = parseIntSafe(document.getElementById('startAge').value);
+
+  if(age === null || age < 0 || age > 130) return showMsg('「契約時年齢」を正しく入力してください。');
+  if(premium === null || premium < 0) return showMsg('「払込保険料相当額」を正しく入力してください。');
+  if(payment === null || payment < 0) return showMsg('「定期支払額」を正しく入力してください。');
+
+  const startAge = (startAgeIn === null) ? (age + 1) : startAgeIn;
+  if(startAge < 0 || startAge > 130) return showMsg('「第1回定期支払日時点の年齢」を正しく入力してください。');
+
+  const death = (deathIn === null) ? premium : deathIn;
+
+  const life = getLifeYears(sex, startAge);
+  if(!life && life !== 0) return showMsg(`余命年数表に存在しない年齢です：${startAge}歳`);
+
+  const total = payment * life;
+  const denom = total + death;
+  if(denom <= 0) return showMsg('計算の分母（受取予定総額＋死亡保険金額）が0以下です。入力を見直してください。');
+
+  const ratioRaw = premium / denom;
+  const ratio = roundUp2(ratioRaw);
+
+  const expense = Math.round(payment * ratio);
+  const taxable = Math.round(payment - expense);
+
+  let withholdText = '源泉徴収なし';
+  if(taxable >= 250000){
+    const w = Math.floor(taxable * 0.1021);
+    withholdText = `源泉徴収あり（概算）：${yen(w)} 円（10.21%）`;
+  }
+
+  document.getElementById('life').textContent = String(life);
+  document.getElementById('total').textContent = yen(total);
+  document.getElementById('ratio').innerHTML =
+    `${ratio.toFixed(2)}<span class="subline">（端数前：${ratioRaw.toFixed(6)}）</span>`;
+  document.getElementById('expense').textContent = yen(expense);
+  document.getElementById('taxable').textContent = yen(taxable);
+  document.getElementById('withhold').textContent = withholdText;
+}
+
+function resetAll(){
+  document.getElementById('age').value = '60';
+  document.getElementById('sex').value = 'female';
+  document.getElementById('premium').value = '10,000,000';
+  document.getElementById('payment').value = '430,000';
+  document.getElementById('death').value = '';
+  document.getElementById('startAge').value = '';
+  ['life','total','ratio','expense','taxable','withhold'].forEach(id => document.getElementById(id).textContent='—');
+  showMsg(null);
+  closeAllPanels();
+}
+
+/* 同意制御 */
+const CONSENT_KEY = 'teiki_keihi_consent_v7';
+function openConsent(){ document.getElementById('overlay').style.display='flex'; }
+function closeConsent(){ document.getElementById('overlay').style.display='none'; }
+document.getElementById('agreeBtn').addEventListener('click', ()=>{
+  localStorage.setItem(CONSENT_KEY, 'yes');
+  closeConsent();
+});
+document.getElementById('denyBtn').addEventListener('click', ()=> alert('同意がないため利用できません。'));
+
+/* 初期化 */
+const premiumPad = new MoneyPad('premium','premiumAdd','premiumAdjust',{
+  minValue:0,
+  signMode:true  /* ★これで “+100万 ↔ -100万” 表示が切替 */
+});
+const deathPad   = new MoneyPad('death','deathAdd','deathAdjust',{
+  minValue:0,
+  signMode:true  /* ★同上 */
+});
+const paymentPad = new MoneyPad('payment','paymentAdd','paymentAdjust',{
+  minValue:0,
+  signMode:true,
+  steps:[
+    {base:'+1万', v:10_000},
+    {base:'+10万', v:100_000},
+    {base:'+100万', v:1_000_000},
+    {base:'+1000万', v:10_000_000},
+    {base:'+1十', v:10},
+    {base:'+1百', v:100},
+    {base:'+1千', v:1000},
+  ]
+});
+
+premiumPad.render();
+paymentPad.render();
+deathPad.render();
+
+renderAgeDecade('ageDecade','ageDetail','age');
+renderAgeDecade('startAgeDecade','startAgeDetail','startAge');
+renderStartAgeSpecial();
+renderDeathTopButtons();
+
+document.getElementById('calcBtn').addEventListener('click', ()=>{
+  calc();
+  ['premium','payment','death'].forEach(id=>formatCommaInput(document.getElementById(id)));
+});
+document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+resetAll();
+
+if(localStorage.getItem(CONSENT_KEY) !== 'yes') openConsent();
+else closeConsent();
+</script>
+</body>
+</html>
