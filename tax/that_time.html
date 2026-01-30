@@ -1,0 +1,1039 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>市場データ可視化（複数比較 / 指数化 / 円ベース / FRED）</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0"></script>
+
+<!-- XLSX -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- PDF (jsPDF + autoTable) -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+  :root{
+    --bg:#f5f7fb; --card:#ffffff; --border:#d7dee8; --text:#0b1220; --muted:#5a6b85;
+    --primary:#1976d2; --primary2:#0ea5e9; --danger:#d32f2f; --ok:#16a34a;
+  }
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Sans","Noto Sans JP","Yu Gothic","Meiryo",sans-serif;}
+  .wrap{max-width:1200px;margin:0 auto;padding:18px;}
+  h1{font-size:18px;margin:0 0 10px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;}
+  .gridTop{display:grid;grid-template-columns:1fr;gap:12px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .field{min-width:220px;flex:1;}
+  label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;}
+  input[type="date"],input[type="text"],select{
+    width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:10px;
+    font-size:14px;background:#fff;min-width:0;
+  }
+  .btn{border:1px solid var(--border);background:#fff;border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:600;}
+  .btnPrimary{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .btnSecondary{background:var(--primary2);border-color:var(--primary2);color:#fff;}
+  .btnGhost{background:#fff;}
+  .btnSmall{padding:6px 10px;border-radius:999px;font-size:12px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:12px;background:#fff;}
+  .muted{color:var(--muted);font-size:12px;}
+  .sectionTitle{font-weight:800;margin:10px 0 8px;font-size:13px}
+  .hr{height:1px;background:var(--border);margin:12px 0;}
+  .leftCol{display:grid;grid-template-columns:1fr;gap:10px}
+  .actionsRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .arrowBadge{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;font-weight:900;font-size:18px;border:2px solid transparent}
+  .arrowUp{background:#ffe5e5;color:var(--danger);border-color:var(--danger)}
+  .arrowDown{background:#e8ffe8;color:var(--ok);border-color:var(--ok)}
+  .chartCard{background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px}
+  #chartWrap{width:100%}
+  #chart{width:100%;height:420px}
+  @media (max-width: 760px){
+    #chart{height:320px}
+  }
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{border-bottom:1px solid var(--border);padding:8px 10px;vertical-align:top}
+  thead th{background:#0ea27a;color:#fff;position:sticky;top:0;z-index:1}
+  .tblWrap{max-height:360px;overflow:auto;border:1px solid var(--border);border-radius:12px;background:#fff}
+  .legendHint{font-size:12px;color:var(--muted)}
+  .statusOn{color:var(--ok);font-weight:800}
+  .statusOff{color:var(--danger);font-weight:800}
+  .note{font-size:12px;color:var(--muted);line-height:1.45}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <h1>市場データ可視化（複数比較 / 指数化 / 円ベース / FRED）</h1>
+
+  <div class="card">
+    <div class="gridTop">
+
+      <!-- Dates -->
+      <div class="row">
+        <div class="field" style="max-width:240px">
+          <label>開始日</label>
+          <input id="startDate" type="date">
+          <div class="row" style="gap:8px;margin-top:8px">
+            <button class="btn btnSmall" data-quick="1">1年前</button>
+            <button class="btn btnSmall" data-quick="3">3年前</button>
+            <button class="btn btnSmall" data-quick="5">5年前</button>
+            <button class="btn btnSmall" data-quick="10">10年前</button>
+          </div>
+        </div>
+        <div class="field" style="max-width:240px">
+          <label>終了日</label>
+          <input id="endDate" type="date">
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <!-- Symbols -->
+      <div class="leftCol">
+        <div class="row">
+          <div class="field">
+            <label>銘柄①</label>
+            <select id="sym1"></select>
+          </div>
+          <div class="field">
+            <label>銘柄②</label>
+            <select id="sym2"></select>
+          </div>
+          <div class="field">
+            <label>銘柄③</label>
+            <select id="sym3"></select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>手入力（任意）</label>
+            <input id="manualInput" type="text" placeholder="例: aapl.us / 159a.jp / vnm.us / stw.au">
+            <div class="row" style="margin-top:8px">
+              <button id="btnManual1" class="btn btnSmall">手入力を①へ</button>
+              <button id="btnManual2" class="btn btnSmall">手入力を②へ</button>
+              <button id="btnManual3" class="btn btnSmall">手入力を③へ</button>
+            </div>
+            <div class="muted" style="margin-top:6px">Stooq形式：米国 aapl.us、日本 1321.jp/159a.jp/348a.jp、豪州 stw.au 等。</div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- FRED -->
+        <div>
+          <div class="row" style="align-items:center">
+            <div class="sectionTitle" style="margin:0">FRED（米日政策金利・GDP）</div>
+            <span class="chip" style="margin-left:auto">
+              <span class="muted">状態:</span>
+              <span id="fredStatus" class="statusOff">OFF</span>
+            </span>
+            <button id="fredInfoBtn" class="btn btnSmall" title="FREDのAPIキー取得手順">i</button>
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <div class="field">
+              <label>FRED APIキー（入力すると自動で有効化）</label>
+              <input id="fredKey" type="text" placeholder="（ここは空欄のまま）">
+            </div>
+          </div>
+
+          <div class="note" style="margin-top:6px">
+            仕様：金利/GDPは頻度が異なるため、期間内の日次に前方補完（前回発表値を次の発表日まで適用）してから、必要に応じて指数化します。<br>
+            使用系列：米 FEDFUNDS、米 GDP、日 IRSTCI01JPM156N（短期金利代理）、日 JPNNGDP。
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <label style="margin:0 0 6px;width:100%">FRED描画する系列</label>
+            <div class="row" style="gap:14px">
+              <label class="chip"><input type="checkbox" id="fred_ff" checked> 米政策金利（FF）</label>
+              <label class="chip"><input type="checkbox" id="fred_usgdp" checked> 米GDP</label>
+              <label class="chip"><input type="checkbox" id="fred_jprate" checked> 日本政策金利（代理）</label>
+              <label class="chip"><input type="checkbox" id="fred_jpgdp" checked> 日GDP</label>
+            </div>
+          </div>
+
+          <!-- Display options moved under FRED -->
+          <div class="hr"></div>
+          <div class="sectionTitle">表示オプション</div>
+          <div class="row">
+            <label class="chip"><input id="optIndex" type="checkbox" checked> 初日=100（指数化）</label>
+            <label class="chip"><input id="optFX" type="checkbox" checked> 為替データ（ドル円）を表示</label>
+            <label class="chip"><input id="optJPY" type="checkbox"> USD→円換算で表示</label>
+          </div>
+          <div class="muted" style="margin-top:6px">※ USD→円換算ON時は内部的にUSDJPYを取得します（為替の表示は別設定）。</div>
+
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- PDF Font -->
+        <div>
+          <div class="row" style="align-items:center">
+            <div class="sectionTitle" style="margin:0">PDF日本語フォント</div>
+            <span class="chip" style="margin-left:auto"><span id="pdfFontStatus" class="statusOff">未設定</span></span>
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <div class="field" style="flex:2">
+              <label>フォントファイル（TTF）</label>
+              <input id="fontFile" type="file" accept=".ttf" />
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-end">
+              <button id="btnFontClear" class="btn">フォント消去</button>
+            </div>
+          </div>
+          <div class="muted" style="margin-top:6px">※ フォントはこのブラウザに保存され、PDF出力時の日本語文字化けを防ぎます。</div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- Buttons between PDF font and chart -->
+        <div class="actionsRow">
+          <button id="btnFetch" class="btn btnPrimary">取得＆表示</button>
+          <button id="btnInvertFX" class="btn btnSecondary">為替反転</button>
+          <span id="fxArrow" class="arrowBadge arrowUp" title="円安方向">↑</span>
+          <span class="legendHint" id="fxHint">円安が上 / 円高が下</span>
+        </div>
+      </div>
+
+      <!-- Chart & table always at bottom -->
+      <div class="chartCard" style="margin-top:10px">
+        <div id="chartWrap"><canvas id="chart"></canvas></div>
+      </div>
+
+      <div class="tblWrap" style="margin-top:10px">
+        <table id="dataTable">
+          <thead><tr id="theadRow"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="actionsRow" style="justify-content:flex-end;margin-top:10px">
+        <button id="btnXLSX" class="btn">XLSX出力</button>
+        <button id="btnPDF" class="btn">PDF出力</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Simple modal -->
+<script>
+function showInfo(title, html){
+  const dlg = document.createElement('div');
+  dlg.style.position='fixed';dlg.style.inset='0';dlg.style.background='rgba(0,0,0,.35)';dlg.style.display='flex';dlg.style.alignItems='center';dlg.style.justifyContent='center';dlg.style.zIndex='9999';
+  dlg.innerHTML = `
+    <div style="width:min(720px,92vw);background:#fff;border-radius:14px;border:1px solid #d7dee8;padding:14px 14px 10px">
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="font-weight:900">${title}</div>
+        <button id="xClose" class="btn" style="margin-left:auto;padding:6px 10px">閉じる</button>
+      </div>
+      <div style="margin-top:10px;color:#0b1220;font-size:13px;line-height:1.55">${html}</div>
+    </div>`;
+  dlg.querySelector('#xClose').onclick=()=>dlg.remove();
+  dlg.onclick=(e)=>{ if(e.target===dlg) dlg.remove(); };
+  document.body.appendChild(dlg);
+}
+</script>
+
+<script>
+/* =========================
+   Settings / symbols
+========================= */
+const STOOQ_PROXY_BASE = "https://market-proxy.withover-re.workers.dev/?url="; // あなたのCloudflare Worker
+const DEFAULT_SYMBOLS = [
+  {name:"S&P500（SPY）", t:"spy.us", label:"S&P500"},
+  {name:"NASDAQ100（QQQ）", t:"qqq.us", label:"NASDAQ100"},
+  {name:"日経平均225（1321）", t:"1321.jp", label:"日経平均225"},
+  {name:"欧州株ETF（VGK）", t:"vgk.us", label:"欧州株ETF"},
+  {name:"全世界（VT）", t:"vt.us", label:"全世界"},
+];
+
+const FRED_SERIES = [
+  { id:"FEDFUNDS", name:"米政策金利(FF)", unit:"rate", checkboxId:"fred_ff" },
+  { id:"GDP", name:"米GDP", unit:"gdp", checkboxId:"fred_usgdp" },
+  { id:"IRSTCI01JPM156N", name:"日本政策金利(代理)", unit:"rate", checkboxId:"fred_jprate" },
+  { id:"JPNNGDP", name:"日GDP", unit:"gdp", checkboxId:"fred_jpgdp" }
+];
+
+const COLOR_FIXED = {
+  "銘柄①":"#1976d2",
+  "銘柄②":"#ef4444",
+  "銘柄③":"#f59e0b",
+  "USDJPY":"#eab308",
+  "米政策金利(FF)":"#7c3aed",
+  "米GDP":"#06b6d4",
+  "日本政策金利(代理)":"#10b981",
+  "日GDP":"#9333ea"
+};
+
+let chart = null;
+let fxInverted = false; // false: 円安上 / true: 円安下
+let lastResult = null; // {dates, cols, seriesMaps, rawMaps, meta}
+
+/* =========================
+   Utils
+========================= */
+function ymd(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${da}`;
+}
+function setDefaultDates(){
+  const end = new Date();
+  const start = new Date(); start.setFullYear(end.getFullYear()-1);
+  document.getElementById('startDate').value = ymd(start);
+  document.getElementById('endDate').value = ymd(end);
+}
+async function fetchViaProxy(targetUrl){
+  const url = STOOQ_PROXY_BASE + encodeURIComponent(targetUrl);
+  const res = await fetch(url, {cache:"no-store"});
+  return res;
+}
+
+/* =========================
+   Stooq CSV
+========================= */
+function parseStooqCSV(csvText){
+  const lines = csvText.trim().split(/\r?\n/);
+  if(lines.length < 2) return [];
+  const header = lines[0].split(",");
+  const dateIdx = header.findIndex(h=>h.toLowerCase()==="date");
+  const closeIdx = header.findIndex(h=>h.toLowerCase()==="close");
+  if(dateIdx<0 || closeIdx<0) return [];
+  const out = [];
+  for(let i=1;i<lines.length;i++){
+    const row = lines[i].split(",");
+    const d = row[dateIdx];
+    const c = row[closeIdx];
+    if(!d || !c) continue;
+    const v = Number(c);
+    if(!Number.isFinite(v)) continue;
+    out.push({date:d, value:v});
+  }
+  return out;
+}
+async function fetchStooqDailyCSV(ticker, start, end){
+  const baseUrl = `https://stooq.com/q/d/l/?s=${encodeURIComponent(ticker)}&i=d`;
+  let res = await fetchViaProxy(baseUrl);
+  if(!res.ok){
+    const txt = await res.text().catch(()=> "");
+    throw new Error(`Stooq取得失敗(${ticker}) HTTP ${res.status} ${txt.slice(0,80)}`);
+  }
+  let csv = await res.text();
+  let rows = parseStooqCSV(csv);
+
+  if(rows.length===0 && ticker.toLowerCase()==="usd/jpy"){
+    const alt = `https://stooq.com/q/d/l/?s=${encodeURIComponent("usdjpy")}&i=d`;
+    res = await fetchViaProxy(alt);
+    if(res.ok){
+      csv = await res.text();
+      rows = parseStooqCSV(csv);
+    }
+  }
+
+  rows = rows.filter(r => r.date>=start && r.date<=end);
+  return rows;
+}
+
+/* =========================
+   FRED
+========================= */
+async function fetchFREDSeries(seriesId, apiKey, start, end){
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${encodeURIComponent(seriesId)}&api_key=${encodeURIComponent(apiKey)}&file_type=json&observation_start=${start}&observation_end=${end}`;
+  let res;
+  try{
+    res = await fetch(url, {cache:"no-store"});
+    if(!res.ok) throw new Error(String(res.status));
+  }catch(_){
+    res = await fetchViaProxy(url);
+  }
+  if(!res.ok){
+    const body = await res.text().catch(()=> "");
+    throw new Error(`FRED取得失敗(${seriesId}) HTTP ${res.status} ${body.slice(0,120)}`);
+  }
+  const js = await res.json();
+  const obs = js.observations || [];
+  const out = [];
+  for(const o of obs){
+    const d = o.date;
+    const v = Number(o.value);
+    if(!d) continue;
+    if(!Number.isFinite(v)) continue;
+    out.push({date:d, value:v});
+  }
+  return out;
+}
+
+/* =========================
+   Alignment / forward fill
+========================= */
+function buildDateRange(start, end){
+  const out = [];
+  const s = new Date(start), e = new Date(end);
+  for(let d=new Date(s); d<=e; d.setDate(d.getDate()+1)){
+    out.push(ymd(d));
+  }
+  return out;
+}
+function toMap(rows){
+  const m = new Map();
+  for(const r of rows) m.set(r.date, r.value);
+  return m;
+}
+function alignMapsWithForwardFill(dates, maps){
+  const aligned = {};
+  for(const k of Object.keys(maps)){
+    const src = maps[k];
+    let last = null;
+    const m = new Map();
+    for(const d of dates){
+      if(src.has(d)){
+        last = src.get(d);
+        m.set(d, last);
+      }else if(last!==null){
+        m.set(d, last);
+      }else{
+        m.set(d, null);
+      }
+    }
+    aligned[k] = m;
+  }
+  return aligned;
+}
+function buildIndexFromAlignedMap(dates, alignedMap){
+  let base = null;
+  for(const d of dates){
+    const v = alignedMap.get(d);
+    if(Number.isFinite(v)){ base = v; break; }
+  }
+  const out = new Map();
+  for(const d of dates){
+    const v = alignedMap.get(d);
+    if(base===null || !Number.isFinite(v)) out.set(d, null);
+    else out.set(d, (v/base)*100.0);
+  }
+  return out;
+}
+function anyNullInMap(dates, m){
+  for(const d of dates){
+    const v = m.get(d);
+    if(v===null || !Number.isFinite(v)) return true;
+  }
+  return false;
+}
+
+/* =========================
+   Build combined dataset
+========================= */
+async function buildAllSeries(){
+  const start = document.getElementById('startDate').value;
+  const end   = document.getElementById('endDate').value;
+  if(!start || !end) throw new Error("開始日/終了日を入力してください。");
+  if(start > end) throw new Error("開始日が終了日より後です。");
+
+  const sym1 = document.getElementById('sym1').value;
+  const sym2 = document.getElementById('sym2').value;
+  const sym3 = document.getElementById('sym3').value;
+
+  const optIndex = document.getElementById('optIndex').checked;
+  const optFX = document.getElementById('optFX').checked;
+  const optJPY = document.getElementById('optJPY').checked;
+
+  const dates = buildDateRange(start, end);
+
+  const chosen = [
+    {slot:"銘柄①", t:sym1},
+    {slot:"銘柄②", t:sym2},
+    {slot:"銘柄③", t:sym3},
+  ].filter(x => !!x.t);
+
+  if(chosen.length===0) throw new Error("銘柄が未選択です。");
+
+  const priceRows = await Promise.all(chosen.map(x => fetchStooqDailyCSV(x.t, start, end)));
+
+  const priceMaps = {};
+  for(let i=0;i<chosen.length;i++){
+    priceMaps[chosen[i].slot] = toMap(priceRows[i]);
+  }
+
+  let fxRows = [];
+  if(optFX || optJPY){
+    fxRows = await fetchStooqDailyCSV("usd/jpy", start, end);
+    if(fxRows.length===0) throw new Error("Stooq CSVが空です(usd/jpy)");
+  }
+  const fxMap = toMap(fxRows);
+
+  const alignedPrices = {};
+  for(const k of Object.keys(priceMaps)){
+    const src = priceMaps[k];
+    const m = new Map();
+    for(const d of dates) m.set(d, src.has(d)? src.get(d) : null);
+    alignedPrices[k] = m;
+  }
+
+  const alignedFX = new Map();
+  for(const d of dates) alignedFX.set(d, fxMap.has(d)? fxMap.get(d): null);
+
+  const isUSD = (t)=> (t||"").toLowerCase().endsWith(".us");
+  const jpyPrices = {};
+  if(optJPY){
+    for(const k of Object.keys(alignedPrices)){
+      const ticker = chosen.find(c=>c.slot===k)?.t || "";
+      if(isUSD(ticker)){
+        const m = new Map();
+        for(const d of dates){
+          const p = alignedPrices[k].get(d);
+          const fx = alignedFX.get(d);
+          if(Number.isFinite(p) && Number.isFinite(fx)) m.set(d, p*fx);
+          else m.set(d, null);
+        }
+        jpyPrices[k] = m;
+      }else{
+        jpyPrices[k] = alignedPrices[k];
+      }
+    }
+  }
+
+  const fredKey = (document.getElementById('fredKey').value || "").trim();
+  const fredEnabled = fredKey.length>0;
+
+  const st = document.getElementById('fredStatus');
+  st.textContent = fredEnabled ? "ON" : "OFF";
+  st.className = fredEnabled ? "statusOn" : "statusOff";
+
+  let fredRawAligned = {};
+  if(fredEnabled){
+    const wanted = FRED_SERIES.filter(s => document.getElementById(s.checkboxId).checked);
+    const seriesRows = await Promise.all(wanted.map(s => fetchFREDSeries(s.id, fredKey, start, end)));
+    const rawMaps = {};
+    for(let i=0;i<wanted.length;i++){
+      rawMaps[wanted[i].id] = toMap(seriesRows[i]);
+    }
+    fredRawAligned = alignMapsWithForwardFill(dates, rawMaps);
+  }else{
+    fredRawAligned = {};
+  }
+
+  const baseMaps = optJPY ? jpyPrices : alignedPrices;
+
+  const seriesMaps = {};
+  const rawForTooltip = {};
+  const rawUnits = {};
+
+  for(const slot of Object.keys(baseMaps)){
+    if(optIndex){
+      const idxMap = buildIndexFromAlignedMap(dates, baseMaps[slot]);
+      seriesMaps[slot] = idxMap;
+      rawForTooltip[slot] = baseMaps[slot];
+      rawUnits[slot] = false;
+    }else{
+      seriesMaps[slot] = baseMaps[slot];
+      rawForTooltip[slot] = baseMaps[slot];
+      rawUnits[slot] = true;
+    }
+  }
+
+  if(optFX){
+    seriesMaps["USDJPY"] = alignedFX;
+    rawForTooltip["USDJPY"] = alignedFX;
+    rawUnits["USDJPY"] = true;
+  }
+
+  if(fredEnabled){
+    for(const s of FRED_SERIES){
+      if(!document.getElementById(s.checkboxId).checked) continue;
+      const rawMap = fredRawAligned[s.id];
+      if(!rawMap) continue;
+      const name = s.name;
+      if(optIndex){
+        seriesMaps[name] = buildIndexFromAlignedMap(dates, rawMap);
+        rawForTooltip[name] = rawMap;
+        rawUnits[name] = true;
+      }else{
+        seriesMaps[name] = rawMap;
+        rawForTooltip[name] = rawMap;
+        rawUnits[name] = true;
+      }
+    }
+  }
+
+  let cols = Object.keys(seriesMaps);
+  cols = cols.filter(col => !anyNullInMap(dates, seriesMaps[col]));
+  if(cols.length===0){
+    throw new Error("全ての列に欠損があり、表示できる列がありません（期間を短くする・銘柄を変える等が必要です）");
+  }
+
+  const okDates = dates.filter(d => cols.every(c => {
+    const v = seriesMaps[c].get(d);
+    return Number.isFinite(v);
+  }));
+
+  if(okDates.length===0){
+    throw new Error("表示対象の日付がありません（期間を短くする・銘柄を変える等が必要です）");
+  }
+
+  const seriesMaps2 = {};
+  const raw2 = {};
+  const rawUnits2 = {};
+  for(const c of cols){
+    const m = new Map();
+    const r = new Map();
+    for(const d of okDates){
+      m.set(d, seriesMaps[c].get(d));
+      r.set(d, rawForTooltip[c]?.get(d) ?? seriesMaps[c].get(d));
+    }
+    seriesMaps2[c] = m;
+    raw2[c] = r;
+    rawUnits2[c] = !!rawUnits[c];
+  }
+
+  const legendLabels = {};
+  const tickerToLabel = new Map(DEFAULT_SYMBOLS.map(s=>[s.t, s.label]));
+  for(const c of cols){
+    if(c==="USDJPY") legendLabels[c] = "USDJPY";
+    else if(c.startsWith("米") || c.startsWith("日")) legendLabels[c] = c;
+    else{
+      const ticker = chosen.find(x=>x.slot===c)?.t;
+      legendLabels[c] = tickerToLabel.get(ticker) || c;
+    }
+  }
+
+  return { start, end, dates: okDates, cols, seriesMaps: seriesMaps2, rawMaps: raw2, rawUnits: rawUnits2, legendLabels };
+}
+
+/* =========================
+   Chart
+========================= */
+function buildChart(result){
+  const {dates, cols, seriesMaps, rawMaps, legendLabels} = result;
+
+  const datasets = [];
+  for(const col of cols){
+    const data = dates.map(d => ({x:d, y: seriesMaps[col].get(d)}));
+    const yAxisID = (col==="USDJPY") ? "yFx" : "y";
+
+    let color = "#334155";
+    if(col==="USDJPY") color = COLOR_FIXED["USDJPY"];
+    else if(col==="銘柄①") color = COLOR_FIXED["銘柄①"];
+    else if(col==="銘柄②") color = COLOR_FIXED["銘柄②"];
+    else if(col==="銘柄③") color = COLOR_FIXED["銘柄③"];
+    else if(COLOR_FIXED[col]) color = COLOR_FIXED[col];
+
+    datasets.push({
+      label: legendLabels[col] || col,
+      data,
+      yAxisID,
+      borderColor: color,
+      backgroundColor: color,
+      tension: 0.15,
+      pointRadius: 0,
+      borderWidth: 2,
+      rawMap: rawMaps[col],
+      rawName: col
+    });
+  }
+
+  const ctx = document.getElementById('chart');
+  if(chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: { display:true },
+        tooltip: {
+          callbacks:{
+            title(items){ return items?.[0]?.raw?.x || ""; },
+            label(item){
+              const ds = item.dataset;
+              const date = item.raw.x;
+              const rawVal = ds.rawMap ? ds.rawMap.get(date) : item.raw.y;
+
+              if(ds.yAxisID==="yFx"){
+                return ` ${ds.label}: ${Number(rawVal).toFixed(3)}`;
+              }
+              const name = ds.rawName || ds.label;
+              if(name==="米政策金利(FF)" || name==="日本政策金利(代理)"){
+                return ` ${ds.label}: ${Number(rawVal).toFixed(3)} %`;
+              }
+              if(name==="米GDP" || name==="日GDP"){
+                return ` ${ds.label}: ${Number(rawVal).toLocaleString('en-US', {maximumFractionDigits:0})}`;
+              }
+              return ` ${ds.label}: ${Number(rawVal).toFixed(3)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { type: 'time', time: { unit: 'month' }, ticks: { maxRotation: 60, minRotation: 45 }, grid: { color: 'rgba(0,0,0,0.06)' } },
+        y: { position:'left', title: { display:true, text: document.getElementById('optIndex').checked ? 'INDEX（初日=100）' : 'Value' }, grid: { color: 'rgba(0,0,0,0.06)' } },
+        yFx: { position:'right', display: cols.includes("USDJPY"), title: { display:true, text:'USDJPY' }, grid: { drawOnChartArea:false }, reverse: fxInverted }
+      }
+    }
+  });
+}
+
+/* =========================
+   Table
+========================= */
+function renderTable(result){
+  const {dates, cols, seriesMaps, rawMaps, rawUnits, legendLabels} = result;
+  const theadRow = document.getElementById('theadRow');
+  const tbody = document.getElementById('tbody');
+  theadRow.innerHTML = "";
+  tbody.innerHTML = "";
+
+  const th0 = document.createElement('th');
+  th0.textContent = "Date";
+  theadRow.appendChild(th0);
+
+  for(const c of cols){
+    const th = document.createElement('th');
+    th.innerHTML = `${(legendLabels[c]||c)}<div style="font-weight:600;opacity:.9;font-size:11px">${c==="USDJPY"?"USDJPY":(c.startsWith("米")||c.startsWith("日")?c:"")}</div>`;
+    theadRow.appendChild(th);
+  }
+
+  for(const d of dates){
+    const tr = document.createElement('tr');
+    const td0 = document.createElement('td');
+    td0.textContent = d;
+    tr.appendChild(td0);
+
+    for(const c of cols){
+      const td = document.createElement('td');
+      const vPlot = seriesMaps[c].get(d);
+      const vRaw = rawMaps[c].get(d);
+      let show = rawUnits[c] ? vRaw : vPlot;
+
+      if(c==="USDJPY") td.textContent = Number(show).toFixed(3);
+      else if(c==="米政策金利(FF)" || c==="日本政策金利(代理)") td.textContent = Number(show).toFixed(3);
+      else if(c==="米GDP" || c==="日GDP") td.textContent = Number(show).toFixed(0);
+      else td.textContent = Number(show).toFixed(6);
+
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+}
+
+/* =========================
+   XLSX export
+========================= */
+function exportXLSX(){
+  if(!lastResult) return;
+  const {dates, cols, seriesMaps, rawMaps, rawUnits, legendLabels} = lastResult;
+
+  const header1 = ["表示名", ...cols.map(c => legendLabels[c]||c)];
+  const header2 = ["Date", ...cols.map(c => c==="USDJPY"?"USDJPY":(c.startsWith("米")||c.startsWith("日")?c:""))];
+  const rows = [header1, header2];
+
+  for(const d of dates){
+    const row = [d];
+    for(const c of cols){
+      const vPlot = seriesMaps[c].get(d);
+      const vRaw = rawMaps[c].get(d);
+      const show = rawUnits[c] ? vRaw : vPlot;
+      row.push(show);
+    }
+    rows.push(row);
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Data");
+  const fname = `market_data_${dates[0]}_${dates[dates.length-1]}.xlsx`;
+  XLSX.writeFile(wb, fname);
+}
+
+/* =========================
+   PDF export (Japanese font via jsPDF)
+========================= */
+let pdfFont = { name:null, base64:null };
+
+function updatePdfFontStatus(){
+  const el = document.getElementById('pdfFontStatus');
+  if(pdfFont.base64){
+    el.textContent = "設定済";
+    el.className = "statusOn";
+  }else{
+    el.textContent = "未設定";
+    el.className = "statusOff";
+  }
+}
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const r = new FileReader();
+    r.onload = ()=> {
+      const dataUrl = r.result;
+      const b64 = String(dataUrl).split(",")[1] || "";
+      resolve(b64);
+    };
+    r.onerror = ()=>reject(new Error("FileReader error"));
+    r.readAsDataURL(file);
+  });
+}
+function idbOpen(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open("market_tool_db", 1);
+    req.onupgradeneeded = ()=> {
+      const db = req.result;
+      if(!db.objectStoreNames.contains("kv")) db.createObjectStore("kv");
+    };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbSet(key, val){
+  const db = await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction("kv","readwrite");
+    tx.objectStore("kv").put(val, key);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+async function idbGet(key){
+  const db = await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction("kv","readonly");
+    const req = tx.objectStore("kv").get(key);
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbDel(key){
+  const db = await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction("kv","readwrite");
+    tx.objectStore("kv").delete(key);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+async function loadSavedFont(){
+  try{
+    const saved = await idbGet("pdf_font_ttf_base64");
+    if(saved && typeof saved==="string" && saved.length>1000){
+      pdfFont = { name:"NotoSansJP", base64:saved };
+    }
+  }catch(_){}
+  updatePdfFontStatus();
+}
+async function onFontFileSelected(file){
+  if(!file) return;
+  const b64 = await fileToBase64(file);
+  await idbSet("pdf_font_ttf_base64", b64);
+  pdfFont = { name: (file.name||"NotoSansJP").replace(/\W+/g,"_"), base64:b64 };
+  updatePdfFontStatus();
+}
+async function exportPDF(){
+  if(!lastResult) return;
+
+  if(!pdfFont.base64){
+    alert("PDF出力エラー：日本語フォントが未設定です（TTFファイルを選択してください）");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:"landscape", unit:"pt", format:"a4"});
+
+  try{
+    doc.addFileToVFS("jp.ttf", pdfFont.base64);
+    doc.addFont("jp.ttf", "JPFont", "normal");
+    doc.setFont("JPFont");
+  }catch(e){
+    alert("PDF出力エラー：フォント登録に失敗しました（TTFファイルを選び直してください）");
+    return;
+  }
+
+  const {dates, cols, seriesMaps, rawMaps, rawUnits, legendLabels} = lastResult;
+
+  const head1 = ["表示名", ...cols.map(c => legendLabels[c]||c)];
+  const head2 = ["Date", ...cols.map(c => c==="USDJPY"?"USDJPY":(c.startsWith("米")||c.startsWith("日")?c:""))];
+
+  const body = [];
+  for(const d of dates){
+    const row = [d];
+    for(const c of cols){
+      const vPlot = seriesMaps[c].get(d);
+      const vRaw = rawMaps[c].get(d);
+      const show = rawUnits[c] ? vRaw : vPlot;
+      row.push(show);
+    }
+    body.push(row);
+  }
+
+  doc.text("市場データ（抽出結果）", 40, 40);
+  doc.autoTable({
+    startY: 60,
+    head: [head1, head2],
+    body,
+    styles: { font:"JPFont", fontSize:9, cellPadding:4 },
+    headStyles: { fillColor:[14,162,122] },
+    theme: "striped"
+  });
+
+  doc.save(`market_data_${dates[0]}_${dates[dates.length-1]}.pdf`);
+}
+
+/* =========================
+   UI init
+========================= */
+function populateSelect(selId){
+  const sel = document.getElementById(selId);
+  sel.innerHTML = "";
+  const opt0 = document.createElement('option');
+  opt0.value = "";
+  opt0.textContent = "（未選択）";
+  sel.appendChild(opt0);
+  for(const s of DEFAULT_SYMBOLS){
+    const o = document.createElement('option');
+    o.value = s.t;
+    o.textContent = `${s.label} (${s.t.toUpperCase()})`;
+    sel.appendChild(o);
+  }
+}
+function setDefaultSymbols(){
+  document.getElementById('sym1').value = "spy.us";
+  document.getElementById('sym2').value = "qqq.us";
+  document.getElementById('sym3').value = "1321.jp";
+}
+function applyQuick(years){
+  const end = document.getElementById('endDate').value || ymd(new Date());
+  const e = new Date(end);
+  const s = new Date(e);
+  s.setFullYear(e.getFullYear() - years);
+  document.getElementById('startDate').value = ymd(s);
+}
+function updateFxArrow(){
+  const badge = document.getElementById('fxArrow');
+  const hint = document.getElementById('fxHint');
+  if(!fxInverted){
+    badge.textContent = "↑";
+    badge.className = "arrowBadge arrowUp";
+    hint.textContent = "円安が上 / 円高が下";
+  }else{
+    badge.textContent = "↓";
+    badge.className = "arrowBadge arrowDown";
+    hint.textContent = "円安が下 / 円高が上";
+  }
+}
+async function runFetch(){
+  try{
+    document.getElementById('btnFetch').disabled = true;
+    const res = await buildAllSeries();
+    lastResult = res;
+    buildChart(res);
+    renderTable(res);
+  }catch(e){
+    alert("エラー:\n" + (e?.message || String(e)));
+  }finally{
+    document.getElementById('btnFetch').disabled = false;
+  }
+}
+
+/* =========================
+   Events
+========================= */
+document.getElementById('btnFetch').addEventListener('click', runFetch);
+
+document.getElementById('btnInvertFX').addEventListener('click', ()=>{
+  fxInverted = !fxInverted;
+  updateFxArrow();
+  if(chart){
+    chart.options.scales.yFx.reverse = fxInverted;
+    chart.update();
+  }
+});
+
+document.querySelectorAll('[data-quick]').forEach(btn=>{
+  btn.addEventListener('click', ()=> applyQuick(Number(btn.dataset.quick)));
+});
+
+function applyManualTo(selId){
+  const v = (document.getElementById('manualInput').value || "").trim();
+  if(!v) return;
+  const sel = document.getElementById(selId);
+  const exists = [...sel.options].some(o=>o.value.toLowerCase()===v.toLowerCase());
+  if(!exists){
+    const o = document.createElement('option');
+    o.value = v;
+    o.textContent = `手入力: ${v}`;
+    sel.appendChild(o);
+  }
+  sel.value = v;
+}
+document.getElementById('btnManual1').onclick = ()=>applyManualTo('sym1');
+document.getElementById('btnManual2').onclick = ()=>applyManualTo('sym2');
+document.getElementById('btnManual3').onclick = ()=>applyManualTo('sym3');
+
+document.getElementById('fredKey').addEventListener('input', ()=>{
+  const v = (document.getElementById('fredKey').value || "").trim();
+  const st = document.getElementById('fredStatus');
+  st.textContent = v ? "ON" : "OFF";
+  st.className = v ? "statusOn" : "statusOff";
+});
+
+document.getElementById('fredInfoBtn').addEventListener('click', ()=>{
+  showInfo("FREDのAPIキー取得手順", `
+    <ol style="margin:0;padding-left:18px">
+      <li>FREDにログイン（アカウント未作成なら作成）</li>
+      <li>API Keyページで「Describe the application...」に簡単な説明を書いて申請</li>
+      <li>発行されたAPI Keyをこのツールに貼り付け</li>
+    </ol>
+    <div style="margin-top:10px">
+      手順の公式ページ：<a href="https://fred.stlouisfed.org/docs/api/api_key.html" target="_blank" rel="noreferrer">https://fred.stlouisfed.org/docs/api/api_key.html</a>
+    </div>
+    <div style="margin-top:10px;color:#5a6b85">
+      補足：ローカル(file://)で動かす場合、環境によってはFREDがCORSで弾かれることがあります。
+      その場合はこのツールの market-proxy が api.stlouisfed.org を許可する設定が必要です（403になる時）。
+    </div>
+  `);
+});
+
+document.getElementById('fontFile').addEventListener('change', async (e)=>{
+  const f = e.target.files?.[0];
+  try{
+    await onFontFileSelected(f);
+  }catch(err){
+    alert("フォント読込エラー:\n" + (err?.message || String(err)));
+  }
+});
+
+document.getElementById('btnFontClear').addEventListener('click', async ()=>{
+  try{
+    await idbDel("pdf_font_ttf_base64");
+  }catch(_){}
+  pdfFont = {name:null, base64:null};
+  updatePdfFontStatus();
+  document.getElementById('fontFile').value = "";
+});
+
+document.getElementById('btnXLSX').addEventListener('click', exportXLSX);
+document.getElementById('btnPDF').addEventListener('click', exportPDF);
+
+/* =========================
+   Init
+========================= */
+(function init(){
+  populateSelect('sym1');
+  populateSelect('sym2');
+  populateSelect('sym3');
+  setDefaultSymbols();
+  setDefaultDates();
+  updateFxArrow();
+  loadSavedFont();
+})();
+</script>
+
+</body>
+</html>
