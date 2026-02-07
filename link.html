@@ -87,8 +87,6 @@
         </div>
         <div id="authMsg" class="muted" style="margin-top:8px;"></div>
       </div>
-
-     
     </div>
 
     <div id="editorBox" class="hidden">
@@ -154,6 +152,16 @@
     const saveAllMsg = el("saveAllMsg");
     const diagEl = el("diag");
 
+    const on = (id, evt, handler) => {
+      const node = el(id);
+      if (!node) {
+        console.warn(`[bind] element not found: #${id}`);
+        return;
+      }
+      node.addEventListener(evt, handler);
+    };
+
+
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, (m) => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -196,9 +204,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
       getAuth, onAuthStateChanged,
-      signInWithEmailAndPassword, signOut,
-      createUserWithEmailAndPassword
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+      signInWithEmailAndPassword, signOut} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
       getFirestore, collection, doc, setDoc,
       getDocs, query, where, documentId, serverTimestamp
@@ -404,7 +410,7 @@
       // 一括保存
       if (!saveAllBtn.dataset.bound) {
         saveAllBtn.dataset.bound = "1";
-        saveAllBtn.addEventListener("click", async () => {
+        saveAllBtn && saveAllBtn.addEventListener("click", async () => {
           const cards = [...listEl.querySelectorAll(".item")];
           saveAllBtn.disabled = true;
           saveAllMsg.textContent = "一括保存中…";
@@ -449,34 +455,24 @@
       }
     }
 
-    loginBtn.addEventListener("click", () => {
+    on("loginBtn","click", () => {
       adminPanel.classList.toggle("hidden");
       if (!adminPanel.classList.contains("hidden")) {
         adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     });
 
-    logoutBtn.addEventListener("click", async () => {
+    on("logoutBtn","click", async () => {
       await signOut(auth);
     });
 
-    el("doLogin").addEventListener("click", async () => {
+    on("doLogin","click", async () => {
       try {
         el("authMsg").textContent = "ログイン中…";
         await signInWithEmailAndPassword(auth, el("email").value, el("pass").value);
         el("authMsg").textContent = "";
       } catch (e) {
         el("authMsg").textContent = "ログイン失敗: " + (e?.message ?? e);
-      }
-    });
-
-    el("doCreateUser").addEventListener("click", async () => {
-      try {
-        el("createMsg").textContent = "作成中…";
-        await createUserWithEmailAndPassword(auth, el("newEmail").value, el("newPass").value);
-        el("createMsg").textContent = "管理者ユーザーを作成しました（公開前に削除推奨）";
-      } catch (e) {
-        el("createMsg").textContent = "作成失敗: " + (e?.message ?? e);
       }
     });
 
@@ -544,13 +540,13 @@
       setStatus("完了");
     }
 
-    reloadBtn.addEventListener("click", () => loadAll().catch(err => {
+    on("reloadBtn","click", () => loadAll().catch(err => {
       console.error(err);
       setStatus("エラー: " + (err?.message ?? err));
     }));
 
-    qEl.addEventListener("input", applyFiltersAndRender);
-    catFilterEl.addEventListener("change", applyFiltersAndRender);
+    qEl && qEl.addEventListener("input", applyFiltersAndRender);
+    catFilterEl && catFilterEl.addEventListener("change", applyFiltersAndRender);
 
     onAuthStateChanged(auth, async (user) => {
       showAdminUI(user);
