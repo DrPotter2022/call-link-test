@@ -1,0 +1,344 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>青森市 除排雪工区デモ（A〜C）</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --line: #203040;
+      --muted: #5f6b7a;
+      --empty: #e5ebf2;
+    }
+    body {
+      margin: 0;
+      font-family: "BIZ UDPGothic", "Yu Gothic", sans-serif;
+      background: radial-gradient(circle at 20% 10%, #edf4ff 0, var(--bg) 45%, #eef3f8 100%);
+      color: #102030;
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid #d4deea;
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(25, 40, 60, 0.08);
+      padding: 14px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .legend-bar {
+      width: 160px;
+      height: 12px;
+      border-radius: 999px;
+      border: 1px solid #b9c7d8;
+      background: linear-gradient(90deg, #d7e4f7 0%, #7ba9d9 50%, #165a9f 100%);
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 14px;
+    }
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      background: #fbfdff;
+      border: 1px solid #d8e1ec;
+      border-radius: 12px;
+    }
+    .zone {
+      fill: var(--empty);
+      stroke: var(--line);
+      stroke-width: 1.5;
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.2s ease;
+      transform-origin: center;
+    }
+    .zone:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+    .zone.active {
+      stroke-width: 3;
+      stroke: #ff7a00;
+    }
+    .zone-label {
+      font-size: 11px;
+      fill: #122030;
+      pointer-events: none;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .table-wrap {
+      overflow: auto;
+      max-height: 540px;
+      border: 1px solid #d8e1ec;
+      border-radius: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border-bottom: 1px solid #e2eaf2;
+      padding: 8px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #f2f7fd;
+      z-index: 1;
+    }
+    .note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="panel">
+      <h1>青森市 除排雪工区デモ（A〜Cブロック）</h1>
+      <p class="sub">工区IDでSVGとデータを紐づけ、値に応じて色を変える試作です。背景地図はダミー配置です（本番はPDF地図トレースに差し替え）。</p>
+    </section>
+
+    <section class="panel controls">
+      <label for="metricSelect">表示指標:</label>
+      <select id="metricSelect">
+        <option value="progress">進捗率 (%)</option>
+        <option value="snowDepth">積雪深 (cm)</option>
+        <option value="alerts">通報件数</option>
+      </select>
+      <div class="legend">
+        <span>低</span><span class="legend-bar"></span><span>高</span>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="panel">
+        <svg id="map" viewBox="0 0 980 760" aria-label="A〜C工区マップ">
+          <g id="zones"></g>
+          <g id="labels"></g>
+        </svg>
+        <p class="note">クリックで右側に詳細表示。工区形状はデモ用ポリゴンです。</p>
+      </div>
+
+      <aside class="panel">
+        <h2 style="margin:0 0 8px;font-size:18px;">工区データ</h2>
+        <div id="detail" class="note" style="margin-bottom:8px;">工区をクリックしてください。</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>工区</th><th>事業者</th><th>進捗</th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const blocks = [
+      { id: "A-1", block: "A", contractor: "(株)市川土建", poly: [[90,80],[220,70],[250,160],[130,190],[70,140]] },
+      { id: "A-2", block: "A", contractor: "(株)堀川道路建設", poly: [[245,72],[360,82],[370,170],[250,162]] },
+      { id: "A-3", block: "A", contractor: "(株)市川土建", poly: [[365,84],[500,90],[500,182],[370,172]] },
+      { id: "A-4", block: "A", contractor: "(株)山崎建設", poly: [[505,88],[620,110],[598,205],[500,182]] },
+      { id: "A-5", block: "A", contractor: "(株)山崎建設", poly: [[618,108],[730,150],[700,240],[595,205]] },
+      { id: "A-6", block: "A", contractor: "齋藤商店", poly: [[730,150],[850,210],[790,280],[700,240]] },
+
+      { id: "B-1", block: "B", contractor: "(株)幸成工業", poly: [[110,210],[220,205],[250,290],[140,320],[85,260]] },
+      { id: "B-2-1", block: "B", contractor: "(株)佐藤渡辺", poly: [[220,205],[330,210],[330,300],[250,290]] },
+      { id: "B-2-2", block: "B", contractor: "(株)東北建設", poly: [[330,210],[450,220],[420,315],[330,300]] },
+      { id: "B-3-1", block: "B", contractor: "(有)藤本工業", poly: [[450,220],[560,235],[530,330],[420,315]] },
+      { id: "B-3-2", block: "B", contractor: "(有)藤本工業", poly: [[560,235],[670,260],[615,360],[530,330]] },
+      { id: "B-4-1", block: "B", contractor: "総合車輌(株)", poly: [[160,320],[250,292],[290,390],[180,420],[120,355]] },
+      { id: "B-4-2", block: "B", contractor: "ガーデン青森", poly: [[250,292],[330,300],[360,395],[290,390]] },
+      { id: "B-8", block: "B", contractor: "(株)幸成工業", poly: [[360,395],[470,380],[510,470],[390,500],[330,440]] },
+      { id: "B-11-1", block: "B", contractor: "齋藤商店", poly: [[470,380],[570,365],[620,455],[510,470]] },
+      { id: "B-11-2A", block: "B", contractor: "(有)ビー、ビケン", poly: [[570,365],[660,355],[690,430],[620,455]] },
+      { id: "B-11-2B", block: "B", contractor: "(株)柿城グループ", poly: [[660,355],[750,360],[760,430],[690,430]] },
+      { id: "B-12-1", block: "B", contractor: "(有)三内造園土木", poly: [[760,430],[830,460],[790,530],[730,510]] },
+      { id: "B-12-2", block: "B", contractor: "(有)三内造園土木", poly: [[730,510],[790,530],[760,610],[690,600]] },
+      { id: "B-13", block: "B", contractor: "(有)ビック", poly: [[390,500],[510,470],[560,560],[430,590]] },
+
+      { id: "C-1-1", block: "C", contractor: "(株)西澤建設", poly: [[130,430],[180,420],[220,500],[150,540],[100,490]] },
+      { id: "C-1-2", block: "C", contractor: "奈良岡建設", poly: [[180,420],[290,390],[315,490],[220,500]] },
+      { id: "C-2-1", block: "C", contractor: "(株)幸成工業", poly: [[315,490],[430,590],[340,620],[260,570]] },
+      { id: "C-2-2", block: "C", contractor: "(株)武田建設", poly: [[430,590],[560,560],[510,650],[400,660]] },
+      { id: "C-3-1", block: "C", contractor: "(株)武田建設", poly: [[560,560],[690,600],[640,690],[510,650]] },
+      { id: "C-3-2", block: "C", contractor: "(有)松建工業", poly: [[690,600],[760,610],[730,700],[640,690]] },
+      { id: "C-4-1", block: "C", contractor: "(株)武田建設", poly: [[100,490],[150,540],[130,640],[70,615]] },
+      { id: "C-4-2", block: "C", contractor: "まるしょう自動車(株)", poly: [[150,540],[260,570],[240,680],[130,640]] },
+      { id: "C-5", block: "C", contractor: "相互建設工業(株)", poly: [[260,570],[340,620],[320,710],[240,680]] },
+      { id: "C-6", block: "C", contractor: "青森市緑化事業協同組合", poly: [[340,620],[400,660],[400,735],[320,710]] },
+      { id: "C-7", block: "C", contractor: "(株)渡邊工務店", poly: [[400,660],[510,650],[530,740],[400,735]] },
+      { id: "C-8", block: "C", contractor: "(株)中正組", poly: [[530,740],[640,690],[730,700],[700,755],[560,755]] }
+    ];
+
+    const metricData = {
+      "A-1": { progress: 42, snowDepth: 91, alerts: 6 }, "A-2": { progress: 58, snowDepth: 104, alerts: 2 },
+      "A-3": { progress: 67, snowDepth: 98, alerts: 4 }, "A-4": { progress: 51, snowDepth: 110, alerts: 5 },
+      "A-5": { progress: 72, snowDepth: 120, alerts: 3 }, "A-6": { progress: 64, snowDepth: 116, alerts: 2 },
+
+      "B-1": { progress: 44, snowDepth: 88, alerts: 8 }, "B-2-1": { progress: 55, snowDepth: 96, alerts: 4 },
+      "B-2-2": { progress: 62, snowDepth: 100, alerts: 3 }, "B-3-1": { progress: 59, snowDepth: 108, alerts: 5 },
+      "B-3-2": { progress: 71, snowDepth: 112, alerts: 3 }, "B-4-1": { progress: 36, snowDepth: 85, alerts: 7 },
+      "B-4-2": { progress: 49, snowDepth: 90, alerts: 6 }, "B-8": { progress: 65, snowDepth: 105, alerts: 4 },
+      "B-11-1": { progress: 73, snowDepth: 109, alerts: 2 }, "B-11-2A": { progress: 78, snowDepth: 115, alerts: 2 },
+      "B-11-2B": { progress: 61, snowDepth: 103, alerts: 5 }, "B-12-1": { progress: 57, snowDepth: 100, alerts: 4 },
+      "B-12-2": { progress: 54, snowDepth: 96, alerts: 5 }, "B-13": { progress: 69, snowDepth: 111, alerts: 3 },
+
+      "C-1-1": { progress: 33, snowDepth: 83, alerts: 9 }, "C-1-2": { progress: 40, snowDepth: 87, alerts: 8 },
+      "C-2-1": { progress: 47, snowDepth: 92, alerts: 6 }, "C-2-2": { progress: 52, snowDepth: 99, alerts: 6 },
+      "C-3-1": { progress: 60, snowDepth: 107, alerts: 4 }, "C-3-2": { progress: 63, snowDepth: 110, alerts: 4 },
+      "C-4-1": { progress: 31, snowDepth: 80, alerts: 10 }, "C-4-2": { progress: 38, snowDepth: 86, alerts: 8 },
+      "C-5": { progress: 46, snowDepth: 95, alerts: 7 }, "C-6": { progress: 50, snowDepth: 97, alerts: 6 },
+      "C-7": { progress: 56, snowDepth: 102, alerts: 5 }, "C-8": { progress: 61, snowDepth: 109, alerts: 4 }
+    };
+
+    const metricLabel = {
+      progress: "進捗率",
+      snowDepth: "積雪深",
+      alerts: "通報件数"
+    };
+
+    const zonesG = document.getElementById("zones");
+    const labelsG = document.getElementById("labels");
+    const select = document.getElementById("metricSelect");
+    const rows = document.getElementById("rows");
+    const detail = document.getElementById("detail");
+
+    const allValues = (metric) => blocks.map((z) => metricData[z.id]?.[metric] ?? 0);
+
+    function interpolate(v, min, max) {
+      if (max <= min) return "#d7e4f7";
+      const t = (v - min) / (max - min);
+      const c1 = [215, 228, 247];
+      const c2 = [22, 90, 159];
+      const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
+      const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
+      const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function centroid(poly) {
+      const n = poly.length;
+      let x = 0;
+      let y = 0;
+      for (let i = 0; i < n; i += 1) {
+        x += poly[i][0];
+        y += poly[i][1];
+      }
+      return [x / n, y / n];
+    }
+
+    function renderMap(metric) {
+      zonesG.innerHTML = "";
+      labelsG.innerHTML = "";
+
+      const vals = allValues(metric);
+      const min = Math.min(...vals);
+      const max = Math.max(...vals);
+
+      blocks.forEach((z) => {
+        const value = metricData[z.id]?.[metric] ?? 0;
+        const points = z.poly.map((p) => `${p[0]},${p[1]}`).join(" ");
+
+        const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        poly.setAttribute("class", "zone");
+        poly.setAttribute("id", `zone-${z.id}`);
+        poly.setAttribute("data-zone", z.id);
+        poly.setAttribute("points", points);
+        poly.setAttribute("fill", interpolate(value, min, max));
+        poly.addEventListener("click", () => selectZone(z.id, metric));
+        zonesG.appendChild(poly);
+
+        const [cx, cy] = centroid(z.poly);
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("class", "zone-label");
+        text.setAttribute("x", cx);
+        text.setAttribute("y", cy);
+        text.textContent = z.id;
+        labelsG.appendChild(text);
+      });
+    }
+
+    function renderTable(metric) {
+      rows.innerHTML = "";
+      blocks.forEach((z) => {
+        const d = metricData[z.id] || {};
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${z.id}</td><td>${z.contractor}</td><td>${d[metric] ?? "-"}</td>`;
+        tr.addEventListener("click", () => selectZone(z.id, metric));
+        rows.appendChild(tr);
+      });
+    }
+
+    function selectZone(zoneId, metric) {
+      document.querySelectorAll(".zone").forEach((el) => el.classList.remove("active"));
+      const target = document.getElementById(`zone-${zoneId}`);
+      if (target) target.classList.add("active");
+
+      const z = blocks.find((b) => b.id === zoneId);
+      const d = metricData[zoneId] || {};
+      detail.innerHTML = [
+        `<strong>${zoneId}</strong> (${z.block}ブロック)`,
+        `事業者: ${z.contractor}`,
+        `${metricLabel[metric]}: ${d[metric] ?? "-"}`,
+        `進捗率: ${d.progress ?? "-"}% / 積雪深: ${d.snowDepth ?? "-"}cm / 通報件数: ${d.alerts ?? "-"}`
+      ].join("<br>");
+    }
+
+    function render(metric) {
+      renderMap(metric);
+      renderTable(metric);
+    }
+
+    select.addEventListener("change", (e) => {
+      const metric = e.target.value;
+      render(metric);
+    });
+
+    render(select.value);
+  </script>
+</body>
+</html>
