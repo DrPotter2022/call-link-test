@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
@@ -322,9 +322,11 @@
   <div id="consentOverlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
     <div class="consent-card">
       <h2 id="consentTitle">ご利用にあたっての了承事項</h2>
-      <p>本ページはCodex-GPT5.3で作成しました。不備が生じている場合があることを了承ください。</p>
-      <p>公開情報のPDFをExcelファイルへ変換し、それを更にJSONファイルに読み直させて表示。</p>
-      <p>各工区はGoogleMapでシェイプを手動で行ったため、<br>工区境界などは誤差が発生していることがあります。</p>
+      <p>本ページは青森市の<a href="https://www.city.aomori.aomori.jp/gikai/kaisaijoukyou/1007125.html" target="_blank" rel="noopener noreferrer">公開資料PDF</a>を基にChatGPT/Codex-GPT5.3で作成しました。</p>
+      <p>✅不備が生じている場合がある場合があります。</p>
+      <p>✅各工区はGoogleMapでシェイプを手動で行ったため、<br>　 境界などは誤差が発生していることがあります。</p>
+      <p>✅本ツールは2025年度における青森市における除排雪の実態を<br>　視覚的にわかりやすくする目的で作成しています。</p>
+      <p>✅市役所・市職員・市議会・商工会・除排雪業者への批判や<br>　  誹謗中傷を行うことはしないでください。</p>
       <div class="agree-row">
         <button id="agreeBtn" type="button">了承しました</button>
       </div>
@@ -426,9 +428,11 @@
     </section>
   </main>
   <footer class="footer-note">
-    <div>本ページはCodex-GPT5.3で作成しました。不備が生じている場合があることを了承ください。</div>
-    <div>公開情報のPDFをExcelファイルへ変換し、それを更にJSONファイルに読み直させて表示。</div>
-    <div>各工区はGoogleMapでシェイプを手動で行ったため、工区境界などは誤差が発生していることがあります。</div>
+    <div>本ページは青森市の<a href="https://www.city.aomori.aomori.jp/gikai/kaisaijoukyou/1007125.html" target="_blank" rel="noopener noreferrer">公開資料PDF</a>を基にChatGPT/Codex-GPT5.3で作成しました。</div>
+    <div>✅不備が生じている場合がある場合があります。</div>
+    <div>✅各工区はGoogleMapでシェイプを手動で行ったため、境界などは誤差が発生していることがあります。</div>
+    <div>✅本ツールは2025年度における青森市における除排雪の実態を視覚的にわかりやすくする目的で作成しています。</div>
+    <div>✅市役所・市職員・市議会・商工会・除排雪業者への批判や誹謗中傷を行うことはしないでください。</div>
   </footer>
 
   <script
@@ -779,7 +783,7 @@
       decoders.forEach((enc) => {
         try {
           const text = new TextDecoder(enc).decode(buffer);
-          const mojibakeHits = (text.match(/[�蜀螂蛹鬟蠕]/g) || []).length;
+          const mojibakeHits = (text.match(/[ 蜀螂蛹鬟蠕]/g) || []).length;
           if (mojibakeHits < bestScore) {
             bestScore = mojibakeHits;
             bestText = text;
@@ -806,7 +810,7 @@
       } else if (typeHint === "kml") {
         const hasKmlTag = /<kml[\s>]/i.test(utf8);
         const placemarkCount = (utf8.match(/<Placemark\b/g) || []).length;
-        const replacementCount = (utf8.match(/�/g) || []).length;
+        const replacementCount = (utf8.match(/ /g) || []).length;
         if (hasKmlTag && placemarkCount >= 50 && replacementCount < 5) {
           return utf8;
         }
