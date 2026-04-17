@@ -1689,19 +1689,23 @@
       });
       const ordered = PRIMARY_ORDER.filter((p) => groups[p]);
       zonePrimaryEl.innerHTML = ordered.map((p) => `<option value="${p}">${p}</option>`).join("");
-      const syncBranch = () => {
-        const p = zonePrimaryEl.value;
-        const arr = Array.from(groups[p] || []).sort((a, b) => String(a).localeCompare(String(b), "ja", { numeric: true }));
-        zoneBranchEl.innerHTML = arr.map((b) => `<option value="${b}">${b}</option>`).join("");
-      };
-      zonePrimaryEl.onchange = syncBranch;
-      syncBranch();
-      zoneBranchEl.onchange = () => {
+      const applyBranchSelection = () => {
         const zone = findZoneByPicker(zonePrimaryEl.value, zoneBranchEl.value);
         if (!zone) return;
         if (!selectedZoneIds.includes(zone)) selectedZoneIds.push(zone);
         selectedZoneId = zone;
         refreshAll();
+      };
+      const syncBranch = () => {
+        const p = zonePrimaryEl.value;
+        const arr = Array.from(groups[p] || []).sort((a, b) => String(a).localeCompare(String(b), "ja", { numeric: true }));
+        zoneBranchEl.innerHTML = arr.map((b) => `<option value="${b}">${b}</option>`).join("");
+        applyBranchSelection();
+      };
+      zonePrimaryEl.onchange = syncBranch;
+      syncBranch();
+      zoneBranchEl.onchange = () => {
+        applyBranchSelection();
       };
     }
 
@@ -2028,11 +2032,32 @@
       const ua = navigator.userAgent || "";
       const isBrave = /Brave/i.test(ua);
       if (isBrave) {
-        const ok = window.confirm("利用条件に同意して表示を開始しますか？");
-        if (ok) {
+        document.body.classList.add("preconsent");
+        overlay.style.display = "flex";
+        overlay.style.position = "fixed";
+        overlay.style.inset = "0";
+        overlay.style.pointerEvents = "auto";
+        overlay.style.touchAction = "auto";
+        overlay.style.zIndex = "2147483647";
+        overlay.innerHTML = `
+          <div class="consent-card" style="max-width:92vw;">
+            <h2>ご利用にあたっての了承事項</h2>
+            <p>内容をご確認のうえ、了承しましたを押してください。</p>
+            <div class="agree-row"><button id="agreeBtnBrave" type="button">了承しました</button></div>
+          </div>
+        `;
+        const braveBtn = document.getElementById("agreeBtnBrave");
+        const acceptBrave = () => {
           document.body.classList.remove("preconsent");
           overlay.style.display = "none";
           startApp();
+        };
+        if (braveBtn) {
+          braveBtn.addEventListener("click", acceptBrave);
+          braveBtn.addEventListener("touchend", (ev) => {
+            ev.preventDefault();
+            acceptBrave();
+          }, { passive: false });
         }
         return;
       }
