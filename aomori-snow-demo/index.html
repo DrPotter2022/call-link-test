@@ -167,6 +167,13 @@
       font-size: 20px;
       padding: 0;
     }
+    .note-content {
+      padding: 0;
+      margin: 0;
+      font-size: 14px;
+      color: #34516b;
+      line-height: 1.65;
+    }
     .zone-picker {
       display: grid !important;
       visibility: visible;
@@ -413,6 +420,7 @@
       z-index: 12000;
       background: rgba(255, 255, 255, 0.96);
       border-top: 1px solid #d4deea;
+      box-shadow: 0 -6px 16px rgba(15, 23, 42, 0.08);
       padding: 8px calc(8px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
       backdrop-filter: blur(6px);
     }
@@ -426,7 +434,7 @@
       font-size: 14px;
       padding: 4px 6px;
     }
-    main.wrap { padding-bottom: 90px; }
+    main.wrap { padding-bottom: 108px; }
 
     @media (max-width: 1180px) {
       .layout { grid-template-columns: 1fr; }
@@ -553,7 +561,7 @@
         <strong>注意事項</strong>
         <button id="closeNoteBtn" class="modal-close" type="button">×</button>
       </div>
-      <div id="notePanel" class="footer-note open">
+      <div id="notePanel" class="note-content">
         <div>本ページは青森市の<a href="https://www.city.aomori.aomori.jp/gikai/kaisaijoukyou/1007125.html" target="_blank" rel="noopener noreferrer">公開資料PDF</a>を基にChatGPT/Codex-GPT5.3で作成しました。</div>
         <div>✅不備が生じている場合がある場合があります。</div>
         <div>✅各工区はGoogleMapでシェイプを手動で行ったため、境界などは誤差が発生していることがあります。</div>
