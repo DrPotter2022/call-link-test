@@ -1,4 +1,4 @@
-<!doctype html>
+!doctype html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
@@ -953,12 +953,12 @@
       }
 
       const utf8ReplacementCount = (utf8.match(/ /g) || []).length;
-      const utf8MojibakeHits = (utf8.match(/[蜀螂蛹鬟蠕]/g) || []).length;
+      const utf8MojibakeHits = (utf8.match(/[蜀螂蛹鬟蠕繧縺譌譯驛]/g) || []).length;
 
       try {
         const sjis = new TextDecoder("shift-jis").decode(buffer);
         const sjisReplacementCount = (sjis.match(/ /g) || []).length;
-        const sjisMojibakeHits = (sjis.match(/[蜀螂蛹鬟蠕]/g) || []).length;
+        const sjisMojibakeHits = (sjis.match(/[蜀螂蛹鬟蠕繧縺譌譯驛]/g) || []).length;
 
         if (typeHint === "json") {
           let utf8JsonOk = false;
@@ -1815,11 +1815,9 @@
       // Fallback for browsers where overlay rendering/touch hit testing is unstable.
       setTimeout(() => {
         if (!document.body.classList.contains("preconsent")) return;
-        const ua = navigator.userAgent || "";
-        const isBrave = /Brave/i.test(ua);
         const rect = overlay.getBoundingClientRect();
         const hidden = rect.width < 120 || rect.height < 120 || getComputedStyle(overlay).display === "none";
-        if (!isBrave && !hidden) return;
+        if (!hidden) return;
         const ok = window.confirm("利用条件に同意して表示を開始しますか？");
         if (ok) acceptConsent();
       }, 450);
