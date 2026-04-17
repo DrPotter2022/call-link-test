@@ -13,6 +13,8 @@
         const touch = navigator.maxTouchPoints > 0;
         const narrow = Math.min(window.screen.width || 9999, window.innerWidth || 9999) <= 900;
         if (mobileUa || (touch && narrow)) {
+          const ok = window.confirm("スマホ向けページ（index_mobile.html）へ切り替えますか？");
+          if (!ok) return;
           const next = new URL("index_mobile.html", url);
           url.searchParams.forEach((v, k) => next.searchParams.set(k, v));
           next.hash = url.hash;
