@@ -579,7 +579,6 @@
         <span><span class="chip green">緑</span>除排雪指令継続</span>
         <span>点滅=除排雪実施</span>
       </div>
-      <div class="small" style="margin-top:6px;">現在日付: <strong id="currentDateBadge">-</strong></div>
       <div class="top-tools">
         <button id="toggleCalendarBtn" class="icon-btn" type="button" title="カレンダー">📅</button>
         <button id="toggleSnowBtn" class="icon-btn" type="button" title="降雪・積雪">⛄</button>
@@ -684,6 +683,7 @@
   </footer>
 
   <div class="fixed-nav">
+    <div class="small" style="text-align:center; margin-bottom:6px;">現在日付: <strong id="currentDateBadge">-</strong></div>
     <div class="controls">
       <button id="prevMonthBtn" type="button">前月</button>
       <button id="prevDayBtn" type="button">前日</button>
@@ -770,7 +770,7 @@
     const addZoneBtnEl = document.getElementById("addZoneBtn");
     const selectedZoneTagsEl = document.getElementById("selectedZoneTags");
 
-    const PRIMARY_ORDER = ["A","B","C","D","E","F","G","H","I","その他"];
+    const PRIMARY_ORDER = ["A","B","C","D","E","F","G","H","I","J","K","L","その他"];
 
     function fmtDate(date) {
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -1663,7 +1663,7 @@
 
     function extractPrimaryLabel(zoneId) {
       const n = normalizeZoneId(zoneId);
-      const m = n.match(/^([A-I])-(\d+)/);
+      const m = n.match(/^([A-L])-(\d+)/);
       if (m) return m[1];
       return "その他";
     }
@@ -1672,7 +1672,7 @@
       const primary = extractPrimaryLabel(zoneId);
       if (primary === "その他") return String(zoneId);
       const n = normalizeZoneId(zoneId);
-      const m = n.match(/^([A-I])-(\d+)(?:-(\d+))?/);
+      const m = n.match(/^([A-L])-(\d+)(?:-(\d+))?/);
       if (m) return m[3] ? `${m[2]}-${m[3]}` : m[2];
       const d = n.match(/(\d+)/);
       return d ? d[1] : "1";
