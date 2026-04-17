@@ -459,6 +459,7 @@
     let blinkOn = true;
     let map = null;
     let zoneAlias = {};
+    let zoneAliasLoose = {};
     let knownZoneIds = new Set();
     let contractorByFingerprint = {};
     let contractorEval = {};
@@ -482,6 +483,16 @@
       "螂･蜀・ｷ･蛹ｺ1": "奥内1工区",
       "螂･蜀・ｷ･蛹ｺ2": "奥内2工区",
       "鬟幃ｳ･蟾･蛹ｺ": "飛鳥工区"
+    };
+    const manualZoneSynonyms = {
+      "奥内２工区": "奥内2工区",
+      "横内１工区": "横内1工区",
+      "横内２工区": "横内2工区",
+      "金浜・上野工区": "金浜･上野工区",
+      "幸畑阿倍野工区": "幸畑阿部野工区",
+      "松元台工区": "松元台団地工区",
+      "鶴ヶ坂・孫内工区": "鶴ｹ坂･孫内工区",
+      "白幡野工区": "白旗野工区"
     };
 
     let contractors = {};
@@ -518,16 +529,6 @@
         .replace(/\s+/g, "")
         .replace(/[‐‑‒–—―ー−－ｰ]/g, "-")
         .replace(/[・･]/g, "・")
-        .replace(/[一壱]/g, "1")
-        .replace(/[二弐]/g, "2")
-        .replace(/[三参]/g, "3")
-        .replace(/[四]/g, "4")
-        .replace(/[五]/g, "5")
-        .replace(/[六]/g, "6")
-        .replace(/[七]/g, "7")
-        .replace(/[八]/g, "8")
-        .replace(/[九]/g, "9")
-        .replace(/[〇零]/g, "0")
         .replace(/A\s*-\s*/i, "A-")
         .replace(/B\s*-\s*/i, "B-")
         .replace(/工区(\d)$/u, "$1工区")
@@ -542,12 +543,28 @@
         normalized = `${parts[0]}-${parts.slice(1).join("-")}`;
       }
 
-      return mojibakeNameMap[normalized] || normalized;
+      const mapped = manualZoneSynonyms[normalized] || normalized;
+      return mojibakeNameMap[mapped] || mapped;
+    }
+
+    function looseZoneKey(name) {
+      return String(name || "")
+        .normalize("NFKC")
+        .replace(/\s+/g, "")
+        .replace(/[・･]/g, "")
+        .replace(/[‐‑‒–—―ー−－ｰ]/g, "")
+        .replace(/[\uFFFD]/g, "")
+        .replace(/[^\p{L}\p{N}]/gu, "")
+        .toUpperCase();
     }
 
     function canonicalZoneId(zoneId) {
       const n = normalizeZoneId(zoneId);
-      return zoneAlias[n] || n;
+      if (zoneAlias[n]) return zoneAlias[n];
+      if (/^[A-L]-\d/i.test(n)) return n;
+      const lk = looseZoneKey(zoneId);
+      if (lk && zoneAliasLoose[lk]) return zoneAliasLoose[lk];
+      return n;
     }
 
     function normalizeDailyOps(rawOps) {
@@ -1530,10 +1547,19 @@
 
         if (rawAlias) {
           const normalizedAlias = {};
+          const normalizedAliasLoose = {};
           for (const [k, v] of Object.entries(rawAlias || {})) {
-            normalizedAlias[normalizeZoneId(k)] = normalizeZoneId(v);
+            const nk = normalizeZoneId(k);
+            const nv = normalizeZoneId(v);
+            normalizedAlias[nk] = nv;
+            normalizedAlias[nv] = nv;
+            const lk = looseZoneKey(k);
+            if (lk && !normalizedAliasLoose[lk]) normalizedAliasLoose[lk] = nv;
+            const lv = looseZoneKey(v);
+            if (lv && !normalizedAliasLoose[lv]) normalizedAliasLoose[lv] = nv;
           }
           zoneAlias = normalizedAlias;
+          zoneAliasLoose = normalizedAliasLoose;
         }
         dailyOps = canonicalizeDailyOps(normalizeDailyOps(rawOps || {}));
         contractors = canonicalizeContractors(rawContractors || {});
