@@ -1,4 +1,4 @@
-!doctype html>
+<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
@@ -139,6 +139,73 @@
       gap: 8px;
       align-items: center;
       flex-wrap: wrap;
+    }
+    .top-tools {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .icon-btn {
+      min-width: 42px;
+      min-height: 42px;
+      border-radius: 999px;
+      font-size: 20px;
+      padding: 0;
+    }
+    .toggle-panel { display: none; }
+    .toggle-panel.open { display: block; }
+    .fixed-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 12000;
+      background: rgba(255, 255, 255, 0.96);
+      border-top: 1px solid #d4deea;
+      padding: 8px calc(8px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
+      backdrop-filter: blur(6px);
+    }
+    .fixed-nav .controls {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .fixed-nav button {
+      min-height: 40px;
+      font-size: 14px;
+      padding: 4px 6px;
+    }
+    .zone-picker {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .zone-picker-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .wheel-select {
+      height: 42px;
+      border: 1px solid #b8cbe0;
+      border-radius: 22px;
+      padding: 0 12px;
+      font-size: 16px;
+      background: #fff;
+    }
+    .selected-zone-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .selected-zone-tag {
+      border: 1px solid #c9d7e8;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 13px;
+      background: #f8fbff;
     }
     h1 { font-size: clamp(26px, 7.2vw, 34px) !important; line-height: 1.28; }
     h2 { font-size: clamp(24px, 6.6vw, 32px) !important; line-height: 1.3; }
@@ -340,11 +407,13 @@
     .footer-note {
       padding: 16px;
       max-width: 1440px;
-      margin: 0 auto 20px;
+      margin: 0 auto 96px;
       font-size: 14px;
       color: #34516b;
       line-height: 1.65;
+      display: none;
     }
+    .footer-note.open { display: block; }
 
     @media (max-width: 1180px) {
       .layout { grid-template-columns: 1fr; }
@@ -472,6 +541,11 @@
         <span><span class="chip green">緑</span>除排雪指令継続</span>
         <span>点滅=除排雪実施</span>
       </div>
+      <div class="top-tools">
+        <button id="toggleCalendarBtn" class="icon-btn" type="button" title="カレンダー">📅</button>
+        <button id="toggleSnowBtn" class="icon-btn" type="button" title="降雪・積雪">⛄</button>
+        <button id="toggleNoteBtn" class="icon-btn" type="button" title="注意事項">⚠️</button>
+      </div>
     </section>
 
     <section class="layout">
@@ -479,14 +553,11 @@
         <div id="map"></div>
       </div>
       <aside class="panel">
-        <h2 style="margin:0 0 6px;font-size:30px;">カレンダー</h2>
-        <div><strong id="currentDateLabel" style="font-size:30px;">日付: -</strong></div>
-        <div id="calendar" class="calendar"></div>
-        <div class="controls" style="margin-top:8px; margin-bottom:6px;">
-          <button id="prevMonthBtn" type="button">前月</button>
-          <button id="prevDayBtn" type="button">前日</button>
-          <button id="nextDayBtn" type="button">翌日</button>
-          <button id="nextMonthBtn" type="button">翌月</button>
+        <div id="calendarPanel" class="toggle-panel">
+          <h2 style="margin:0 0 6px;font-size:30px;">カレンダー</h2>
+          <div><strong id="currentDateLabel" style="font-size:30px;">日付: -</strong></div>
+          <input id="calendarPicker" type="date" style="margin:8px 0; font-size:16px; min-height:38px;" />
+          <div id="calendar" class="calendar"></div>
         </div>
 
         <div id="status" class="small" style="margin-top:6px;">読込中...</div>
@@ -507,7 +578,7 @@
       <div id="selectedZonesCards" class="selected-zone-cards"></div>
     </section>
 
-    <section class="panel">
+    <section id="snowPanel" class="panel toggle-panel">
       <div id="commonSnowfallLabel" class="metrics">降雪量: -</div>
       <div id="commonSnowDepthLabel" class="metrics">積雪量: -</div>
       <div class="chart-wrap">
@@ -523,6 +594,14 @@
 
     <section class="panel">
       <h2 style="margin:0 0 6px;font-size:30px;">工区詳細</h2>
+      <div class="zone-picker">
+        <div class="zone-picker-row">
+          <select id="zonePrimary" class="wheel-select"></select>
+          <select id="zoneBranch" class="wheel-select"></select>
+          <button id="addZoneBtn" type="button">追加</button>
+        </div>
+        <div id="selectedZoneTags" class="selected-zone-tags"></div>
+      </div>
       <div class="controls" style="margin-bottom:6px;">
         <button id="toggleCostColsBtn" type="button">＋ F〜Oを表示</button>
       </div>
@@ -557,13 +636,22 @@
       </div>
     </section>
   </main>
-  <footer class="footer-note">
+  <footer id="notePanel" class="footer-note">
     <div>本ページは青森市の<a href="https://www.city.aomori.aomori.jp/gikai/kaisaijoukyou/1007125.html" target="_blank" rel="noopener noreferrer">公開資料PDF</a>を基にChatGPT/Codex-GPT5.3で作成しました。</div>
     <div>✅不備が生じている場合がある場合があります。</div>
     <div>✅各工区はGoogleMapでシェイプを手動で行ったため、境界などは誤差が発生していることがあります。</div>
     <div>✅本ツールは2025年度における青森市における除排雪の実態を視覚的にわかりやすくする目的で作成しています。</div>
     <div>✅市役所・市職員・市議会・商工会・除排雪業者への批判や誹謗中傷を行うことはしないでください。</div>
   </footer>
+
+  <div class="fixed-nav">
+    <div class="controls">
+      <button id="prevMonthBtn" type="button">前月</button>
+      <button id="prevDayBtn" type="button">前日</button>
+      <button id="nextDayBtn" type="button">翌日</button>
+      <button id="nextMonthBtn" type="button">翌月</button>
+    </div>
+  </div>
 
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -622,12 +710,25 @@
     const detailEl = document.getElementById("detail");
     const calendarEl = document.getElementById("calendar");
     const dateLabelEl = document.getElementById("currentDateLabel");
+    const calendarPickerEl = document.getElementById("calendarPicker");
+    const calendarPanelEl = document.getElementById("calendarPanel");
+    const snowPanelEl = document.getElementById("snowPanel");
+    const notePanelEl = document.getElementById("notePanel");
+    const toggleCalendarBtnEl = document.getElementById("toggleCalendarBtn");
+    const toggleSnowBtnEl = document.getElementById("toggleSnowBtn");
+    const toggleNoteBtnEl = document.getElementById("toggleNoteBtn");
     const commonSnowfallLabelEl = document.getElementById("commonSnowfallLabel");
     const commonSnowDepthLabelEl = document.getElementById("commonSnowDepthLabel");
     const snowChartCanvas = document.getElementById("snowChart");
     const detailTableEl = document.getElementById("detailTable");
     const toggleCostColsBtnEl = document.getElementById("toggleCostColsBtn");
     const selectedZonesCardsEl = document.getElementById("selectedZonesCards");
+    const zonePrimaryEl = document.getElementById("zonePrimary");
+    const zoneBranchEl = document.getElementById("zoneBranch");
+    const addZoneBtnEl = document.getElementById("addZoneBtn");
+    const selectedZoneTagsEl = document.getElementById("selectedZoneTags");
+
+    const PRIMARY_ORDER = ["A","B","C","D","E","F","G","H","I","J","K","L","後潟","内真部","奥内","飛鳥"];
 
     function fmtDate(date) {
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -1429,7 +1530,8 @@
     function refreshRows() {
       const dateStr = fmtDate(currentDate);
       rowsEl.innerHTML = "";
-      const list = visibleZoneIds.map((zoneId) => {
+      const sourceZoneIds = selectedZoneIds.length ? selectedZoneIds.slice() : visibleZoneIds.slice();
+      const list = sourceZoneIds.map((zoneId) => {
         const d = getDayOps(dateStr, zoneId);
         const timing = buildZoneTiming(zoneId, currentDate);
         const zoneEval = zoneEvalByZone[normalizeZoneId(zoneId)] || null;
@@ -1510,6 +1612,64 @@
         });
         calendarEl.appendChild(c);
       }
+      if (calendarPickerEl) calendarPickerEl.value = dateStr;
+    }
+
+    function extractPrimaryLabel(zoneId) {
+      const n = normalizeZoneId(zoneId);
+      const m = n.match(/^([A-L])-(\d+)/);
+      if (m) return m[1];
+      if (n.includes("後潟")) return "後潟";
+      if (n.includes("内真部")) return "内真部";
+      if (n.includes("奥内")) return "奥内";
+      if (n.includes("飛鳥")) return "飛鳥";
+      return "その他";
+    }
+
+    function extractBranchLabel(zoneId) {
+      const n = normalizeZoneId(zoneId);
+      const m = n.match(/^[A-L]-\d+(?:-(\d+))?/);
+      if (m) return m[1] || "1";
+      const d = n.match(/(\d+)/);
+      return d ? d[1] : "1";
+    }
+
+    function buildZonePicker() {
+      if (!zonePrimaryEl || !zoneBranchEl) return;
+      const groups = {};
+      visibleZoneIds.forEach((z) => {
+        const p = extractPrimaryLabel(z);
+        const b = extractBranchLabel(z);
+        if (!groups[p]) groups[p] = new Set();
+        groups[p].add(b);
+      });
+      const ordered = Object.keys(groups).sort((a, b) => {
+        const ai = PRIMARY_ORDER.indexOf(a);
+        const bi = PRIMARY_ORDER.indexOf(b);
+        if (ai >= 0 && bi >= 0) return ai - bi;
+        if (ai >= 0) return -1;
+        if (bi >= 0) return 1;
+        return a.localeCompare(b, "ja");
+      });
+      zonePrimaryEl.innerHTML = ordered.map((p) => `<option value="${p}">${p}</option>`).join("");
+      const syncBranch = () => {
+        const p = zonePrimaryEl.value;
+        const arr = Array.from(groups[p] || ["1"]).sort((a, b) => Number(a) - Number(b));
+        zoneBranchEl.innerHTML = arr.map((b) => `<option value="${b}">${b}</option>`).join("");
+      };
+      zonePrimaryEl.onchange = syncBranch;
+      syncBranch();
+    }
+
+    function findZoneByPicker(primary, branch) {
+      const candidates = visibleZoneIds.filter((z) => extractPrimaryLabel(z) === primary);
+      const byBranch = candidates.find((z) => extractBranchLabel(z) === branch);
+      return byBranch || candidates[0] || null;
+    }
+
+    function refreshSelectedZoneTags() {
+      if (!selectedZoneTagsEl) return;
+      selectedZoneTagsEl.innerHTML = selectedZoneIds.map((z) => `<span class="selected-zone-tag">${z}</span>`).join("");
     }
 
     function buildDateRangeKeys() {
@@ -1626,6 +1786,7 @@
         renderSelectedZoneCards();
       }
 
+      refreshSelectedZoneTags();
       applyZoneVisuals();
       updateSnowChartHighlight();
     }
@@ -1656,12 +1817,14 @@
       });
 
       if (latlngsAll.length > 0) {
-        map.fitBounds(L.latLngBounds(latlngsAll), { padding: [20, 20] });
+        map.fitBounds(L.latLngBounds(latlngsAll), { padding: [8, 8] });
       }
+      map.setView([40.8222, 140.7474], 12);
       if (visibleZoneIds.length > 0) {
         selectedZoneId = null;
         selectedZoneIds = [];
       }
+      buildZonePicker();
       refreshAll();
       statusEl.textContent = `KML読込成功: ${zones.length}工区を表示中`;
     }
@@ -1733,7 +1896,7 @@
     }
 
     function initMap() {
-      map = L.map("map", { zoomControl: true }).setView([40.88064687, 140.82661618], 12);
+      map = L.map("map", { zoomControl: true }).setView([40.8222, 140.7474], 12);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap contributors"
@@ -1754,6 +1917,25 @@
     });
     document.getElementById("nextMonthBtn").addEventListener("click", () => {
       currentDate = clampDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate()));
+      refreshAll();
+    });
+    if (calendarPickerEl) {
+      calendarPickerEl.min = "2025-12-01";
+      calendarPickerEl.max = "2026-03-31";
+      calendarPickerEl.addEventListener("change", () => {
+        if (!calendarPickerEl.value) return;
+        currentDate = clampDate(new Date(calendarPickerEl.value));
+        refreshAll();
+      });
+    }
+    toggleCalendarBtnEl?.addEventListener("click", () => calendarPanelEl.classList.toggle("open"));
+    toggleSnowBtnEl?.addEventListener("click", () => snowPanelEl.classList.toggle("open"));
+    toggleNoteBtnEl?.addEventListener("click", () => notePanelEl.classList.toggle("open"));
+    addZoneBtnEl?.addEventListener("click", () => {
+      const zone = findZoneByPicker(zonePrimaryEl.value, zoneBranchEl.value);
+      if (!zone) return;
+      if (!selectedZoneIds.includes(zone)) selectedZoneIds.push(zone);
+      selectedZoneId = zone;
       refreshAll();
     });
     toggleCostColsBtnEl.addEventListener("click", () => {
