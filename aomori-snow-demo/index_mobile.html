@@ -296,7 +296,7 @@
       font-weight: 700;
     }
     table {
-      width: max-content;
+      width: 100%;
       min-width: 100%;
       border-collapse: collapse;
       font-size: 14px;
@@ -361,6 +361,8 @@
     .table-wrap {
       max-height: 360px;
       overflow: auto;
+      width: 100%;
+      max-width: 100%;
       border: 1px solid #d9e2ee;
       border-radius: 8px;
       margin-top: 10px;
@@ -368,13 +370,15 @@
     .table-wrap.wide {
       max-height: 420px;
       overflow: auto;
+      width: 100%;
+      max-width: 100%;
       cursor: grab;
     }
     .table-wrap.wide.dragging {
       cursor: grabbing;
     }
     .selected-zone-cards {
-      display: grid;
+      display: none;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
       margin-top: 10px;
@@ -636,28 +640,7 @@
       <div class="table-wrap wide">
         <table id="detailTable">
           <thead>
-            <tr>
-              <th>工区</th>
-              <th>評点・評価</th>
-              <th>D 除排雪延長</th>
-              <th>E ①当初契約額</th>
-              <th class="cost-extra">F ②工区延長</th>
-              <th class="cost-extra">G ③1/25~2/5降雪量見合(147cm)</th>
-              <th class="cost-extra">H ④2/6~2/21降雪量見合い(72cm)</th>
-              <th class="cost-extra">I ⑤2/6~2/21時間単価見合 合計</th>
-              <th class="cost-extra">J 市負担</th>
-              <th class="cost-extra">K ⑤県負担</th>
-              <th class="cost-extra">L ⑥2/22~3/14降雪量見合(17cm)</th>
-              <th class="cost-extra">M ⑦応援除雪</th>
-              <th class="cost-extra">N ⑧市民雪寄せ場排雪業務</th>
-              <th class="cost-extra">O ①~⑧変更後委託料</th>
-              <th>指令</th>
-              <th>回数</th>
-              <th>継続</th>
-              <th>実施</th>
-              <th>解除日数</th>
-              <th>当期の解除に要した最大日数</th>
-            </tr>
+            <tr id="detailHeaderRow"><th>項目</th></tr>
           </thead>
           <tbody id="rows"></tbody>
         </table>
@@ -1589,58 +1572,55 @@
     function refreshRows() {
       const dateStr = fmtDate(currentDate);
       rowsEl.innerHTML = "";
-      const sourceZoneIds = selectedZoneIds.length ? selectedZoneIds.slice() : [];
-      const list = sourceZoneIds.map((zoneId) => {
-        const d = getDayOps(dateStr, zoneId);
-        const timing = buildZoneTiming(zoneId, currentDate);
-        const zoneEval = zoneEvalByZone[normalizeZoneId(zoneId)] || null;
-        const cost = zoneCostByZone[normalizeZoneId(zoneId)] || null;
-        return {
-          zoneId,
-          d,
-          timing,
-          zoneEval,
-          evalScore: zoneEval?.score ?? null,
-          evalGrade: zoneEval?.grade ?? "",
-          cost
-        };
-      }).sort(compareRows);
+      const headerRow = document.getElementById("detailHeaderRow");
+      const zones = selectedZoneIds.slice();
 
-      if (!list.length) {
+      if (headerRow) {
+        headerRow.innerHTML = "<th>項目</th>" + zones.map((z) => `<th>${z}</th>`).join("");
+      }
+
+      if (!zones.length) {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="20">工区を選択してください（複数選択可）</td>`;
+        tr.innerHTML = `<td>工区を選択してください（複数選択可）</td>`;
         rowsEl.appendChild(tr);
         return;
       }
 
-      list.forEach((row) => {
-          const { zoneId, d, timing, zoneEval, cost } = row;
-          const tr = document.createElement("tr");
-          if (isSelectedZone(zoneId)) tr.classList.add("selected-row");
-          tr.innerHTML =
-            `<td>${zoneId}</td>` +
-            `<td>${zoneEval ? `${zoneEval.score ?? "-"}・${zoneEval.grade ?? "-"}` : ""}</td>` +
-            `<td class="money-cell">${cost ? fmtCost(cost.d) : ""}</td>` +
-            `<td class="money-cell">${cost ? fmtCost(cost.e) : ""}</td>` +
-            `<td class="cost-extra money-cell">${cost ? fmtCost(cost.f) : ""}</td>` +
-            `<td class="cost-extra money-cell">${cost ? fmtCost(cost.g) : ""}</td>` +
-            `<td class="cost-extra money-cell">${cost ? fmtCost(cost.h) : ""}</td>` +
-            `<td class="cost-extra money-cell">${cost ? fmtCost(cost.i) : ""}</td>` +
-            `<td class="cost-extra money-cell">${cost ? fmtCost(cost.j) : ""}</td>` +
-            `<td class="cost-extra money-cell">${cost ? fmtCost(cost.k) : ""}</td>` +
-            `<td class="cost-extra money-cell">${cost ? fmtCost(cost.l) : ""}</td>` +
-            `<td class="cost-extra money-cell">${cost ? fmtCost(cost.m) : ""}</td>` +
-            `<td class="cost-extra money-cell">${cost ? fmtCost(cost.n) : ""}</td>` +
-            `<td class="cost-extra money-cell">${cost ? fmtCost(cost.o) : ""}</td>` +
-            `<td>${d.command ? "赤" : ""}</td>` +
-            `<td>${d.commandCount || ""}</td>` +
-            `<td>${d.continued ? `緑（${timing.continuedDays}日）` : ""}</td>` +
-            `<td>${d.executed ? `<b>実施（${timing.daysToExecution}日）</b>` : ""}</td>` +
-            `<td>${timing.daysToGreenClear !== null ? ((timing.seasonMaxClearDays !== null && timing.daysToGreenClear === timing.seasonMaxClearDays) ? `<span class="alert-red">解除(${timing.daysToGreenClear}日)</span>` : `${timing.daysToGreenClear}日`) : ""}</td>` +
-            `<td>${timing.seasonMaxClearDays !== null ? `${timing.seasonMaxClearDays}日` : ""}</td>`;
-          tr.addEventListener("click", () => selectZone(zoneId));
-          rowsEl.appendChild(tr);
-        });
+      const zoneData = zones.map((zoneId) => {
+        const d = getDayOps(dateStr, zoneId);
+        const timing = buildZoneTiming(zoneId, currentDate);
+        const zoneEval = zoneEvalByZone[normalizeZoneId(zoneId)] || null;
+        const cost = zoneCostByZone[normalizeZoneId(zoneId)] || null;
+        return { zoneId, d, timing, zoneEval, cost };
+      });
+
+      const metrics = [
+        { label: "評点・評価", get: (x) => x.zoneEval ? `${x.zoneEval.score ?? "-"}・${x.zoneEval.grade ?? "-"}` : "" },
+        { label: "D 除排雪延長", get: (x) => x.cost ? fmtCost(x.cost.d) : "" },
+        { label: "E ①当初契約額", get: (x) => x.cost ? fmtCost(x.cost.e) : "" },
+        { label: "F ②工区延長", get: (x) => x.cost ? fmtCost(x.cost.f) : "" },
+        { label: "G ③1/25~2/5降雪量見合(147cm)", get: (x) => x.cost ? fmtCost(x.cost.g) : "" },
+        { label: "H ④2/6~2/21降雪量見合い(72cm)", get: (x) => x.cost ? fmtCost(x.cost.h) : "" },
+        { label: "I ⑤2/6~2/21時間単価見合 合計", get: (x) => x.cost ? fmtCost(x.cost.i) : "" },
+        { label: "J 市負担", get: (x) => x.cost ? fmtCost(x.cost.j) : "" },
+        { label: "K ⑤県負担", get: (x) => x.cost ? fmtCost(x.cost.k) : "" },
+        { label: "L ⑥2/22~3/14降雪量見合(17cm)", get: (x) => x.cost ? fmtCost(x.cost.l) : "" },
+        { label: "M ⑦応援除雪", get: (x) => x.cost ? fmtCost(x.cost.m) : "" },
+        { label: "N ⑧市民雪寄せ場排雪業務", get: (x) => x.cost ? fmtCost(x.cost.n) : "" },
+        { label: "O ⑧変更後委託料", get: (x) => x.cost ? fmtCost(x.cost.o) : "" },
+        { label: "指令", get: (x) => x.d.command ? "赤" : "" },
+        { label: "回数", get: (x) => String(x.d.commandCount || "") },
+        { label: "継続", get: (x) => x.d.continued ? `緑（${x.timing.continuedDays}日）` : "" },
+        { label: "実施", get: (x) => x.d.executed ? `実施（${x.timing.daysToExecution}日）` : "" },
+        { label: "解除日数", get: (x) => x.timing.daysToGreenClear !== null ? `${x.timing.daysToGreenClear}日` : "" },
+        { label: "当期の解除に要した最大日数", get: (x) => x.timing.seasonMaxClearDays !== null ? `${x.timing.seasonMaxClearDays}日` : "" }
+      ];
+
+      metrics.forEach((m) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${m.label}</td>` + zoneData.map((z) => `<td>${m.get(z)}</td>`).join("");
+        rowsEl.appendChild(tr);
+      });
     }
 
     function refreshCalendar() {
@@ -1694,8 +1674,8 @@
 
     function extractBranchLabel(zoneId) {
       const n = normalizeZoneId(zoneId);
-      const m = n.match(/^[A-L]-\d+(?:-(\d+))?/);
-      if (m) return m[1] || "1";
+      const m = n.match(/^([A-L])-(\d+)(?:-(\d+))?/);
+      if (m) return m[3] ? `${m[2]}-${m[3]}` : m[2];
       const d = n.match(/(\d+)/);
       return d ? d[1] : "1";
     }
@@ -1720,7 +1700,7 @@
       zonePrimaryEl.innerHTML = ordered.map((p) => `<option value="${p}">${p}</option>`).join("");
       const syncBranch = () => {
         const p = zonePrimaryEl.value;
-        const arr = Array.from(groups[p] || ["1"]).sort((a, b) => Number(a) - Number(b));
+        const arr = Array.from(groups[p] || ["1"]).sort((a, b) => String(a).localeCompare(String(b), "ja", { numeric: true }));
         zoneBranchEl.innerHTML = arr.map((b) => `<option value="${b}">${b}</option>`).join("");
       };
       zonePrimaryEl.onchange = syncBranch;
@@ -2034,9 +2014,6 @@
       async function startApp() {
         if (started) return;
         started = true;
-        enableDetailTableSort();
-        enableDetailTableColumnResize();
-        enableDetailTableDragScroll();
         initMap();
         await loadDailyData();
         await loadFixedKml();
@@ -2083,8 +2060,21 @@
         const rect = overlay.getBoundingClientRect();
         const hidden = rect.width < 120 || rect.height < 120 || getComputedStyle(overlay).display === "none";
         if (!hidden) return;
-        const ok = window.confirm("利用条件に同意して表示を開始しますか？");
-        if (ok) acceptConsent();
+        overlay.innerHTML = `
+          <div class="consent-card" style="max-width:92vw;">
+            <h2>ご利用にあたっての了承事項</h2>
+            <p>表示不具合時のフォールバック画面です。内容に同意の上で続行してください。</p>
+            <div class="agree-row"><button id="agreeBtnFallback" type="button">了承しました</button></div>
+          </div>
+        `;
+        const fb = document.getElementById("agreeBtnFallback");
+        if (fb) {
+          fb.addEventListener("click", () => acceptConsent());
+          fb.addEventListener("touchend", (ev) => {
+            ev.preventDefault();
+            acceptConsent();
+          }, { passive: false });
+        }
       }, 450);
     })();
   </script>
