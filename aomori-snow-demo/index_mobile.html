@@ -54,6 +54,8 @@
       line-height: 1.45;
       overflow-x: hidden;
       width: 100%;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
     }
     body.preconsent main,
     body.preconsent footer {
@@ -151,13 +153,15 @@
     }
     button:hover { background: #f2f7ff; }
     .calendar {
+      width: 100%;
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 4px;
       margin-top: 8px;
     }
     .day-head,
     .day-cell {
+      min-width: 0;
       border: 1px solid #d9e2ee;
       border-radius: 6px;
       padding: 8px 5px;
@@ -965,6 +969,9 @@
           if (utf8JsonOk && !sjisJsonOk) return utf8;
           if (!utf8JsonOk && sjisJsonOk) return sjis;
           if (!utf8JsonOk && !sjisJsonOk) return utf8;
+          const utf8Score = utf8ReplacementCount + utf8MojibakeHits * 3;
+          const sjisScore = sjisReplacementCount + sjisMojibakeHits * 3;
+          return sjisScore < utf8Score ? sjis : utf8;
         } else if (typeHint === "kml") {
           const utf8Score = utf8ReplacementCount + utf8MojibakeHits * 3;
           const sjisScore = sjisReplacementCount + sjisMojibakeHits * 3;
@@ -1808,9 +1815,11 @@
       // Fallback for browsers where overlay rendering/touch hit testing is unstable.
       setTimeout(() => {
         if (!document.body.classList.contains("preconsent")) return;
+        const ua = navigator.userAgent || "";
+        const isBrave = /Brave/i.test(ua);
         const rect = overlay.getBoundingClientRect();
         const hidden = rect.width < 120 || rect.height < 120 || getComputedStyle(overlay).display === "none";
-        if (!hidden) return;
+        if (!isBrave && !hidden) return;
         const ok = window.confirm("利用条件に同意して表示を開始しますか？");
         if (ok) acceptConsent();
       }, 450);
