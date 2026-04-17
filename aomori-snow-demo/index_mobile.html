@@ -2034,34 +2034,12 @@
       const ua = navigator.userAgent || "";
       const isBrave = /Brave/i.test(ua);
       if (isBrave) {
-        document.body.classList.add("preconsent");
-        overlay.classList.add("open");
-        overlay.style.position = "fixed";
-        overlay.style.inset = "0";
-        overlay.style.pointerEvents = "auto";
-        overlay.style.touchAction = "auto";
-        overlay.style.zIndex = "2147483647";
-        overlay.innerHTML = `
-          <div class="consent-card" style="max-width:92vw;">
-            <h2>ご利用にあたっての了承事項</h2>
-            <p>内容をご確認のうえ、了承しましたを押してください。</p>
-            <div class="agree-row"><button id="agreeBtnBrave" type="button">了承しました</button></div>
-          </div>
-        `;
-        const braveBtn = document.getElementById("agreeBtnBrave");
-        const acceptBrave = () => {
-          document.body.classList.remove("preconsent");
-          overlay.classList.remove("open");
-          overlay.style.display = "none";
-          startApp();
-        };
-        if (braveBtn) {
-          braveBtn.addEventListener("click", acceptBrave);
-          braveBtn.addEventListener("touchend", (ev) => {
-            ev.preventDefault();
-            acceptBrave();
-          }, { passive: false });
-        }
+        // Brave on iOS has unstable hit-testing with full-screen overlays in this page.
+        // Prioritize opening the app reliably.
+        document.body.classList.remove("preconsent");
+        overlay.classList.remove("open");
+        overlay.style.display = "none";
+        startApp();
         return;
       }
 
