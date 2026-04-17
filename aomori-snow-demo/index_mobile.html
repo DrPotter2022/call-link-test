@@ -2031,18 +2031,6 @@
       }
 
       // Show consent every time page is opened. App starts only after agreement.
-      const ua = navigator.userAgent || "";
-      const isBrave = /Brave/i.test(ua);
-      if (isBrave) {
-        // Brave on iOS has unstable hit-testing with full-screen overlays in this page.
-        // Prioritize opening the app reliably.
-        document.body.classList.remove("preconsent");
-        overlay.classList.remove("open");
-        overlay.style.display = "none";
-        startApp();
-        return;
-      }
-
       document.body.classList.add("preconsent");
       overlay.classList.add("open");
       overlay.style.position = "fixed";
