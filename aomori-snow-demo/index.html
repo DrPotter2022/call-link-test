@@ -392,6 +392,7 @@
       border-radius: 8px;
       padding: 8px;
       height: 300px;
+      position: relative;
     }
     #snowChart {
       width: 100%;
@@ -401,6 +402,21 @@
     .source-link {
       margin-top: 8px;
       font-size: 15px;
+    }
+    .panel-close-btn {
+      min-width: 34px;
+      min-height: 34px;
+      padding: 0 10px;
+      border-radius: 8px;
+      font-size: 22px;
+      line-height: 1;
+    }
+    .chart-close-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.95);
     }
     .footer-note {
       padding: 16px;
@@ -499,6 +515,7 @@
       <div id="commonSnowfallLabel" class="metrics">降雪量: -</div>
       <div id="commonSnowDepthLabel" class="metrics">積雪量: -</div>
       <div class="chart-wrap">
+        <button id="hideSnowBtn" class="panel-close-btn chart-close-btn" type="button" title="降雪・積雪パネルを閉じる">-</button>
         <canvas id="snowChart"></canvas>
       </div>
       <div class="source-link small">
@@ -664,6 +681,7 @@
     const closeNoteBtnEl = document.getElementById("closeNoteBtn");
     const toggleCalendarBtnEl = document.getElementById("toggleCalendarBtn");
     const toggleSnowBtnEl = document.getElementById("toggleSnowBtn");
+    const hideSnowBtnEl = document.getElementById("hideSnowBtn");
     const toggleNoteBtnEl = document.getElementById("toggleNoteBtn");
     const commonSnowfallLabelEl = document.getElementById("commonSnowfallLabel");
     const commonSnowDepthLabelEl = document.getElementById("commonSnowDepthLabel");
@@ -675,6 +693,8 @@
     const zoneBranchEl = document.getElementById("zoneBranch");
     const selectedZoneTagsEl = document.getElementById("selectedZoneTags");
     const PRIMARY_ORDER = ["A","B","C","D","E","F","G","H","I","J","K","L","その他"];
+    const DEFAULT_CITY_CENTER = [40.8226, 140.7474];
+    const DEFAULT_CITY_ZOOM = 13;
 
     function fmtDate(date) {
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -1814,7 +1834,7 @@
       });
 
       if (latlngsAll.length > 0) {
-        map.fitBounds(L.latLngBounds(latlngsAll), { padding: [20, 20] });
+        map.setView(DEFAULT_CITY_CENTER, DEFAULT_CITY_ZOOM);
       }
       if (visibleZoneIds.length > 0) {
         selectedZoneId = null;
@@ -1929,6 +1949,7 @@
     }
     toggleCalendarBtnEl?.addEventListener("click", () => calendarModalEl.classList.add("open"));
     toggleSnowBtnEl?.addEventListener("click", () => snowPanelEl.classList.toggle("open"));
+    hideSnowBtnEl?.addEventListener("click", () => snowPanelEl.classList.remove("open"));
     toggleNoteBtnEl?.addEventListener("click", () => noteModalEl.classList.add("open"));
     closeCalendarBtnEl?.addEventListener("click", () => calendarModalEl.classList.remove("open"));
     closeNoteBtnEl?.addEventListener("click", () => noteModalEl.classList.remove("open"));
