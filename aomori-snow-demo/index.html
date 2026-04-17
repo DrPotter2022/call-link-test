@@ -404,6 +404,29 @@
       line-height: 1.65;
       display: none;
     }
+    .footer-note.open { display: block; }
+    .fixed-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 12000;
+      background: rgba(255, 255, 255, 0.96);
+      border-top: 1px solid #d4deea;
+      padding: 8px calc(8px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
+      backdrop-filter: blur(6px);
+    }
+    .fixed-nav .controls {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .fixed-nav button {
+      min-height: 40px;
+      font-size: 14px;
+      padding: 4px 6px;
+    }
+    main.wrap { padding-bottom: 90px; }
 
     @media (max-width: 1180px) {
       .layout { grid-template-columns: 1fr; }
@@ -459,12 +482,6 @@
         <div id="map"></div>
       </div>
       <aside class="panel">
-        <div class="controls" style="margin-top:8px; margin-bottom:6px;">
-          <button id="prevMonthBtn" type="button">前月</button>
-          <button id="prevDayBtn" type="button">前日</button>
-          <button id="nextDayBtn" type="button">翌日</button>
-          <button id="nextMonthBtn" type="button">翌月</button>
-        </div>
 
         <div id="status" class="small" style="margin-top:6px;">読込中...</div>
 
@@ -566,6 +583,15 @@
     <div>✅市役所・市職員・市議会・商工会・除排雪業者への批判や誹謗中傷を行うことはしないでください。</div>
   </footer>
 
+  <div class="fixed-nav">
+    <div class="controls">
+      <button id="prevMonthBtn" type="button">前月</button>
+      <button id="prevDayBtn" type="button">前日</button>
+      <button id="nextDayBtn" type="button">翌日</button>
+      <button id="nextMonthBtn" type="button">翌月</button>
+    </div>
+  </div>
+
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -578,6 +604,7 @@
     let currentDate = new Date("2025-12-01");
     let selectedZoneId = null;
     let selectedZoneIds = [];
+    let detailSort = { key: null, dir: 1 };
     let rowSort = { key: "zone", dir: 1 };
     let dailyOps = {};
     let dailyOpsByDateFingerprint = {};
@@ -1464,32 +1491,53 @@
       });
 
       const metrics = [
-        { label: "評点・評価", get: (x) => x.zoneEval ? `${x.zoneEval.score ?? "-"}・${x.zoneEval.grade ?? "-"}` : "" },
-        { label: "D 除排雪延長", get: (x) => x.cost ? fmtCost(x.cost.d) : "" },
-        { label: "E ①当初契約額", get: (x) => x.cost ? fmtCost(x.cost.e) : "" },
-        { label: "F ②工区延長", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.f) : "" },
-        { label: "G ③1/25~2/5降雪量見合(147cm)", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.g) : "" },
-        { label: "H ④2/6~2/21降雪量見合い(72cm)", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.h) : "" },
-        { label: "I ⑤2/6~2/21時間単価見合 合計", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.i) : "" },
-        { label: "J 市負担", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.j) : "" },
-        { label: "K ⑤県負担", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.k) : "" },
-        { label: "L ⑥2/22~3/14降雪量見合(17cm)", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.l) : "" },
-        { label: "M ⑦応援除雪", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.m) : "" },
-        { label: "N ⑧市民雪寄せ場排雪業務", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.n) : "" },
-        { label: "O ①~⑧変更後委託料", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.o) : "" },
-        { label: "指令", get: (x) => x.d.command ? "赤" : "" },
-        { label: "回数", get: (x) => String(x.d.commandCount || "") },
-        { label: "継続", get: (x) => x.d.continued ? `緑（${x.timing.continuedDays}日）` : "" },
-        { label: "実施", get: (x) => x.d.executed ? `実施（${x.timing.daysToExecution}日）` : "" },
-        { label: "解除日数", get: (x) => x.timing.daysToGreenClear !== null ? `${x.timing.daysToGreenClear}日` : "" },
-        { label: "当期の解除に要した最大日数", get: (x) => x.timing.seasonMaxClearDays !== null ? `${x.timing.seasonMaxClearDays}日` : "" }
+        { key: "eval", label: "評点・評価", get: (x) => x.zoneEval ? `${x.zoneEval.score ?? "-"}・${x.zoneEval.grade ?? "-"}` : "", sort: (x) => Number(x.zoneEval?.score ?? -1) },
+        { key: "d", label: "D 除排雪延長", get: (x) => x.cost ? fmtCost(x.cost.d) : "", sort: (x) => Number(x.cost?.d ?? -1) },
+        { key: "e", label: "E ①当初契約額", get: (x) => x.cost ? fmtCost(x.cost.e) : "", sort: (x) => Number(x.cost?.e ?? -1) },
+        { key: "f", label: "F ②工区延長", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.f) : "", sort: (x) => Number(x.cost?.f ?? -1) },
+        { key: "g", label: "G ③1/25~2/5降雪量見合(147cm)", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.g) : "", sort: (x) => Number(x.cost?.g ?? -1) },
+        { key: "h", label: "H ④2/6~2/21降雪量見合い(72cm)", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.h) : "", sort: (x) => Number(x.cost?.h ?? -1) },
+        { key: "i", label: "I ⑤2/6~2/21時間単価見合 合計", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.i) : "", sort: (x) => Number(x.cost?.i ?? -1) },
+        { key: "j", label: "J 市負担", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.j) : "", sort: (x) => Number(x.cost?.j ?? -1) },
+        { key: "k", label: "K ⑤県負担", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.k) : "", sort: (x) => Number(x.cost?.k ?? -1) },
+        { key: "l", label: "L ⑥2/22~3/14降雪量見合(17cm)", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.l) : "", sort: (x) => Number(x.cost?.l ?? -1) },
+        { key: "m", label: "M ⑦応援除雪", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.m) : "", sort: (x) => Number(x.cost?.m ?? -1) },
+        { key: "n", label: "N ⑧市民雪寄せ場排雪業務", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.n) : "", sort: (x) => Number(x.cost?.n ?? -1) },
+        { key: "o", label: "O ①~⑧変更後委託料", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.o) : "", sort: (x) => Number(x.cost?.o ?? -1) },
+        { key: "command", label: "指令", get: (x) => x.d.command ? "赤" : "", sort: (x) => x.d.command ? 1 : 0 },
+        { key: "count", label: "回数", get: (x) => String(x.d.commandCount || ""), sort: (x) => Number(x.d.commandCount || 0) },
+        { key: "continued", label: "継続", get: (x) => x.d.continued ? `緑（${x.timing.continuedDays}日）` : "", sort: (x) => x.d.continued ? Number(x.timing.continuedDays || 0) : -1 },
+        { key: "executed", label: "実施", get: (x) => x.d.executed ? `実施（${x.timing.daysToExecution}日）` : "", sort: (x) => x.d.executed ? Number(x.timing.daysToExecution || 0) : -1 },
+        { key: "clear", label: "解除日数", get: (x) => x.timing.daysToGreenClear !== null ? `${x.timing.daysToGreenClear}日` : "", sort: (x) => Number(x.timing.daysToGreenClear ?? -1) },
+        { key: "seasonClear", label: "当期の解除に要した最大日数", get: (x) => x.timing.seasonMaxClearDays !== null ? `${x.timing.seasonMaxClearDays}日` : "", sort: (x) => Number(x.timing.seasonMaxClearDays ?? -1) }
       ];
+
+      if (detailSort.key) {
+        const metric = metrics.find((m) => m.key === detailSort.key);
+        if (metric) {
+          zoneData.sort((a, b) => {
+            const va = metric.sort(a);
+            const vb = metric.sort(b);
+            if (va === vb) return compareZoneIds(a.zoneId, b.zoneId);
+            return (va - vb) * detailSort.dir;
+          });
+        }
+      }
 
       metrics.forEach((m) => {
         if (m.costDetail && !showCostDetails) return;
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${m.label}</td>` + zoneData.map((z) => `<td>${m.get(z)}</td>`).join("");
+        const arrow = detailSort.key === m.key ? (detailSort.dir === 1 ? " ←" : " →") : "";
+        tr.innerHTML = `<td class="metric-label" data-metric-key="${m.key}" style="cursor:pointer;">${m.label}${arrow}</td>` + zoneData.map((z) => `<td>${m.get(z)}</td>`).join("");
         rowsEl.appendChild(tr);
+        const labelCell = tr.querySelector(".metric-label");
+        if (labelCell) {
+          labelCell.addEventListener("click", () => {
+            if (detailSort.key === m.key) detailSort.dir *= -1;
+            else detailSort = { key: m.key, dir: 1 };
+            refreshRows();
+          });
+        }
       });
     }
 
