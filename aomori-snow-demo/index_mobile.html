@@ -154,6 +154,40 @@
     }
     .toggle-panel { display: none; }
     .toggle-panel.open { display: block; }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(12, 26, 44, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      z-index: 22000;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      width: min(720px, 96vw);
+      max-height: 88vh;
+      overflow: auto;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #d4deea;
+      padding: 14px;
+      box-shadow: 0 14px 32px rgba(11, 42, 74, 0.2);
+    }
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .modal-close {
+      min-width: 34px;
+      min-height: 34px;
+      border-radius: 999px;
+      font-size: 20px;
+      padding: 0;
+    }
     .fixed-nav {
       position: fixed;
       left: 0;
@@ -182,7 +216,7 @@
     }
     .zone-picker-row {
       display: grid;
-      grid-template-columns: 1fr 1fr auto;
+      grid-template-columns: 1fr;
       gap: 8px;
       align-items: center;
     }
@@ -541,6 +575,7 @@
         <span><span class="chip green">緑</span>除排雪指令継続</span>
         <span>点滅=除排雪実施</span>
       </div>
+      <div class="small" style="margin-top:6px;">現在日付: <strong id="currentDateBadge">-</strong></div>
       <div class="top-tools">
         <button id="toggleCalendarBtn" class="icon-btn" type="button" title="カレンダー">📅</button>
         <button id="toggleSnowBtn" class="icon-btn" type="button" title="降雪・積雪">⛄</button>
@@ -553,13 +588,6 @@
         <div id="map"></div>
       </div>
       <aside class="panel">
-        <div id="calendarPanel" class="toggle-panel">
-          <h2 style="margin:0 0 6px;font-size:30px;">カレンダー</h2>
-          <div><strong id="currentDateLabel" style="font-size:30px;">日付: -</strong></div>
-          <input id="calendarPicker" type="date" style="margin:8px 0; font-size:16px; min-height:38px;" />
-          <div id="calendar" class="calendar"></div>
-        </div>
-
         <div id="status" class="small" style="margin-top:6px;">読込中...</div>
 
         <section class="panel" style="margin-top:10px;">
@@ -636,7 +664,35 @@
       </div>
     </section>
   </main>
-  <footer id="notePanel" class="footer-note">
+  <div id="noteModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <strong>注意事項</strong>
+        <button id="closeNoteBtn" class="modal-close" type="button">×</button>
+      </div>
+      <div id="notePanel" class="footer-note open">
+        <div>本ページは青森市の<a href="https://www.city.aomori.aomori.jp/gikai/kaisaijoukyou/1007125.html" target="_blank" rel="noopener noreferrer">公開資料PDF</a>を基にChatGPT/Codex-GPT5.3で作成しました。</div>
+        <div>✅不備が生じている場合がある場合があります。</div>
+        <div>✅各工区はGoogleMapでシェイプを手動で行ったため、境界などは誤差が発生していることがあります。</div>
+        <div>✅本ツールは2025年度における青森市における除排雪の実態を視覚的にわかりやすくする目的で作成しています。</div>
+        <div>✅市役所・市職員・市議会・商工会・除排雪業者への批判や誹謗中傷を行うことはしないでください。</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="calendarModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <strong>日付を選択</strong>
+        <button id="closeCalendarBtn" class="modal-close" type="button">×</button>
+      </div>
+      <div><strong id="currentDateLabel" style="font-size:28px;">日付: -</strong></div>
+      <input id="calendarPicker" type="date" style="margin:8px 0; font-size:16px; min-height:38px;" />
+      <div id="calendar" class="calendar"></div>
+    </div>
+  </div>
+
+  <footer class="footer-note">
     <div>本ページは青森市の<a href="https://www.city.aomori.aomori.jp/gikai/kaisaijoukyou/1007125.html" target="_blank" rel="noopener noreferrer">公開資料PDF</a>を基にChatGPT/Codex-GPT5.3で作成しました。</div>
     <div>✅不備が生じている場合がある場合があります。</div>
     <div>✅各工区はGoogleMapでシェイプを手動で行ったため、境界などは誤差が発生していることがあります。</div>
@@ -710,10 +766,13 @@
     const detailEl = document.getElementById("detail");
     const calendarEl = document.getElementById("calendar");
     const dateLabelEl = document.getElementById("currentDateLabel");
+    const currentDateBadgeEl = document.getElementById("currentDateBadge");
     const calendarPickerEl = document.getElementById("calendarPicker");
-    const calendarPanelEl = document.getElementById("calendarPanel");
+    const calendarModalEl = document.getElementById("calendarModal");
+    const closeCalendarBtnEl = document.getElementById("closeCalendarBtn");
     const snowPanelEl = document.getElementById("snowPanel");
-    const notePanelEl = document.getElementById("notePanel");
+    const noteModalEl = document.getElementById("noteModal");
+    const closeNoteBtnEl = document.getElementById("closeNoteBtn");
     const toggleCalendarBtnEl = document.getElementById("toggleCalendarBtn");
     const toggleSnowBtnEl = document.getElementById("toggleSnowBtn");
     const toggleNoteBtnEl = document.getElementById("toggleNoteBtn");
@@ -1530,7 +1589,7 @@
     function refreshRows() {
       const dateStr = fmtDate(currentDate);
       rowsEl.innerHTML = "";
-      const sourceZoneIds = selectedZoneIds.length ? selectedZoneIds.slice() : visibleZoneIds.slice();
+      const sourceZoneIds = selectedZoneIds.length ? selectedZoneIds.slice() : [];
       const list = sourceZoneIds.map((zoneId) => {
         const d = getDayOps(dateStr, zoneId);
         const timing = buildZoneTiming(zoneId, currentDate);
@@ -1546,6 +1605,13 @@
           cost
         };
       }).sort(compareRows);
+
+      if (!list.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="20">工区を選択してください（複数選択可）</td>`;
+        rowsEl.appendChild(tr);
+        return;
+      }
 
       list.forEach((row) => {
           const { zoneId, d, timing, zoneEval, cost } = row;
@@ -1775,6 +1841,7 @@
     function refreshAll() {
       const dateStr = fmtDate(currentDate);
       dateLabelEl.textContent = `日付: ${dateStr}`;
+      if (currentDateBadgeEl) currentDateBadgeEl.textContent = dateStr;
       commonSnowfallLabelEl.textContent = `降雪量: ${Number(snowfallByDate[dateStr] ?? 0)} cm`;
       commonSnowDepthLabelEl.textContent = `積雪量: ${Number(snowDepthByDate[dateStr] ?? 0)} cm`;
 
@@ -1928,9 +1995,17 @@
         refreshAll();
       });
     }
-    toggleCalendarBtnEl?.addEventListener("click", () => calendarPanelEl.classList.toggle("open"));
+    toggleCalendarBtnEl?.addEventListener("click", () => calendarModalEl.classList.add("open"));
     toggleSnowBtnEl?.addEventListener("click", () => snowPanelEl.classList.toggle("open"));
-    toggleNoteBtnEl?.addEventListener("click", () => notePanelEl.classList.toggle("open"));
+    toggleNoteBtnEl?.addEventListener("click", () => noteModalEl.classList.add("open"));
+    closeCalendarBtnEl?.addEventListener("click", () => calendarModalEl.classList.remove("open"));
+    closeNoteBtnEl?.addEventListener("click", () => noteModalEl.classList.remove("open"));
+    calendarModalEl?.addEventListener("click", (ev) => {
+      if (ev.target === calendarModalEl) calendarModalEl.classList.remove("open");
+    });
+    noteModalEl?.addEventListener("click", (ev) => {
+      if (ev.target === noteModalEl) noteModalEl.classList.remove("open");
+    });
     addZoneBtnEl?.addEventListener("click", () => {
       const zone = findZoneByPicker(zonePrimaryEl.value, zoneBranchEl.value);
       if (!zone) return;
@@ -1972,6 +2047,14 @@
       }
 
       // Show consent every time page is opened. App starts only after agreement.
+      const ua = navigator.userAgent || "";
+      const isBrave = /Brave/i.test(ua);
+      if (isBrave) {
+        const ok = window.confirm("利用条件に同意して表示を開始しますか？");
+        if (ok) startApp();
+        return;
+      }
+
       document.body.classList.add("preconsent");
       overlay.style.display = "flex";
       overlay.style.position = "fixed";
