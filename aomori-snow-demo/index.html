@@ -488,13 +488,6 @@
     <section class="layout">
       <div class="panel">
         <div id="map"></div>
-        <div class="small" style="margin-top:10px;">
-          工区詳細PDF:
-          <a href="https://www.city.aomori.aomori.jp/_res/projects/default_project/_page_/001/007/125/r08-z1-05-01.05-02.pdf" target="_blank" rel="noopener noreferrer">
-            青森市 除排雪工区資料
-          </a>
-        </div>
-        <div id="detail" class="small" style="display:none;"></div>
       </div>
     </section>
 
@@ -1443,7 +1436,7 @@
       if (shouldToggle) toggleZoneSelection(zoneId);
       else selectedZoneId = zoneId;
       if (!selectedZoneId) {
-        detailEl.textContent = "";
+        if (detailEl) detailEl.textContent = "";
         refreshRows();
         applyZoneVisuals();
         renderSelectedZoneCards();
@@ -1457,7 +1450,7 @@
       }
       zoneId = selectedZoneId;
       syncPickerToZone(zoneId);
-      detailEl.innerHTML = "";
+      if (detailEl) detailEl.innerHTML = "";
       refreshRows();
       applyZoneVisuals();
       renderSelectedZoneCards();
@@ -1786,7 +1779,7 @@
       refreshRows();
       if (selectedZoneId) selectZone(selectedZoneId, { toggle: false });
       else {
-        detailEl.textContent = "";
+        if (detailEl) detailEl.textContent = "";
         renderSelectedZoneCards();
       }
 
