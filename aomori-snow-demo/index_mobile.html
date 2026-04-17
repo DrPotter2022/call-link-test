@@ -770,7 +770,7 @@
     const addZoneBtnEl = document.getElementById("addZoneBtn");
     const selectedZoneTagsEl = document.getElementById("selectedZoneTags");
 
-    const PRIMARY_ORDER = ["A","B","C","D","E","F","G","H","I","J","K","L","後潟","内真部","奥内","飛鳥"];
+    const PRIMARY_ORDER = ["A","B","C","D","E","F","G","H","I","その他"];
 
     function fmtDate(date) {
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -1663,18 +1663,16 @@
 
     function extractPrimaryLabel(zoneId) {
       const n = normalizeZoneId(zoneId);
-      const m = n.match(/^([A-L])-(\d+)/);
+      const m = n.match(/^([A-I])-(\d+)/);
       if (m) return m[1];
-      if (n.includes("後潟")) return "後潟";
-      if (n.includes("内真部")) return "内真部";
-      if (n.includes("奥内")) return "奥内";
-      if (n.includes("飛鳥")) return "飛鳥";
       return "その他";
     }
 
     function extractBranchLabel(zoneId) {
+      const primary = extractPrimaryLabel(zoneId);
+      if (primary === "その他") return String(zoneId);
       const n = normalizeZoneId(zoneId);
-      const m = n.match(/^([A-L])-(\d+)(?:-(\d+))?/);
+      const m = n.match(/^([A-I])-(\d+)(?:-(\d+))?/);
       if (m) return m[3] ? `${m[2]}-${m[3]}` : m[2];
       const d = n.match(/(\d+)/);
       return d ? d[1] : "1";
@@ -1689,18 +1687,11 @@
         if (!groups[p]) groups[p] = new Set();
         groups[p].add(b);
       });
-      const ordered = Object.keys(groups).sort((a, b) => {
-        const ai = PRIMARY_ORDER.indexOf(a);
-        const bi = PRIMARY_ORDER.indexOf(b);
-        if (ai >= 0 && bi >= 0) return ai - bi;
-        if (ai >= 0) return -1;
-        if (bi >= 0) return 1;
-        return a.localeCompare(b, "ja");
-      });
+      const ordered = PRIMARY_ORDER.filter((p) => groups[p]);
       zonePrimaryEl.innerHTML = ordered.map((p) => `<option value="${p}">${p}</option>`).join("");
       const syncBranch = () => {
         const p = zonePrimaryEl.value;
-        const arr = Array.from(groups[p] || ["1"]).sort((a, b) => String(a).localeCompare(String(b), "ja", { numeric: true }));
+        const arr = Array.from(groups[p] || []).sort((a, b) => String(a).localeCompare(String(b), "ja", { numeric: true }));
         zoneBranchEl.innerHTML = arr.map((b) => `<option value="${b}">${b}</option>`).join("");
       };
       zonePrimaryEl.onchange = syncBranch;
@@ -2028,7 +2019,11 @@
       const isBrave = /Brave/i.test(ua);
       if (isBrave) {
         const ok = window.confirm("利用条件に同意して表示を開始しますか？");
-        if (ok) startApp();
+        if (ok) {
+          document.body.classList.remove("preconsent");
+          overlay.style.display = "none";
+          startApp();
+        }
         return;
       }
 
