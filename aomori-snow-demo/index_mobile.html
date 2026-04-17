@@ -2016,6 +2016,8 @@
     (function initConsent() {
       const overlay = document.getElementById("consentOverlay");
       const agreeBtn = document.getElementById("agreeBtn");
+      const ua = navigator.userAgent || "";
+      const isBrave = /Brave/i.test(ua);
       let started = false;
 
       async function startApp() {
@@ -2043,12 +2045,33 @@
         document.body.classList.remove("preconsent");
         overlay.classList.remove("open");
         overlay.style.display = "none";
+        const emergency = document.getElementById("consentOverlayEmergency");
+        if (emergency) emergency.remove();
         startApp();
       }
 
-      agreeBtn.addEventListener("click", () => {
-        acceptConsent();
-      });
+      // Brave: skip overlay rendering path and show emergency consent card immediately.
+      if (isBrave) {
+        document.body.classList.add("preconsent");
+        overlay.classList.remove("open");
+        overlay.style.display = "none";
+        const emergency = document.createElement("div");
+        emergency.id = "consentOverlayEmergency";
+        emergency.style.cssText = "position:fixed;inset:0;z-index:2147483647;background:rgba(12,26,44,.72);display:flex;align-items:center;justify-content:center;padding:16px;";
+        emergency.innerHTML = "<div style='width:min(92vw,680px);background:#fff;border:1px solid #d4deea;border-radius:14px;padding:16px;'><h2 style='margin:0 0 8px;'>ご利用にあたっての了承事項</h2><p style='margin:0 0 12px;'>内容をご確認のうえ、了承しましたを押してください。</p><div style='display:flex;justify-content:flex-end;'><button id='agreeBtnEmergency' type='button' style='min-height:38px;padding:6px 12px;border:1px solid #b8cbe0;border-radius:6px;background:#fff;'>了承しました</button></div></div>";
+        document.body.appendChild(emergency);
+        const eb = document.getElementById("agreeBtnEmergency");
+        if (eb) {
+          eb.addEventListener("click", () => acceptConsent());
+          eb.addEventListener("touchend", (ev) => {
+            ev.preventDefault();
+            acceptConsent();
+          }, { passive: false });
+        }
+        return;
+      }
+
+      agreeBtn.addEventListener("click", () => { acceptConsent(); });
       agreeBtn.addEventListener("touchend", (ev) => {
         ev.preventDefault();
         acceptConsent();
@@ -2076,6 +2099,27 @@
           }, { passive: false });
         }
       }, 450);
+
+      // Brave/iOS fallback: inject a plain fixed consent card if overlay rendering is still unavailable.
+      setTimeout(() => {
+        if (!document.body.classList.contains("preconsent")) return;
+        const rect = overlay.getBoundingClientRect();
+        const hidden = rect.width < 120 || rect.height < 120 || getComputedStyle(overlay).display === "none";
+        if (!hidden) return;
+        const emergency = document.createElement("div");
+        emergency.id = "consentOverlayEmergency";
+        emergency.style.cssText = "position:fixed;inset:0;z-index:2147483647;background:rgba(12,26,44,.72);display:flex;align-items:center;justify-content:center;padding:16px;";
+        emergency.innerHTML = "<div style='width:min(92vw,680px);background:#fff;border:1px solid #d4deea;border-radius:14px;padding:16px;'><h2 style='margin:0 0 8px;'>ご利用にあたっての了承事項</h2><p style='margin:0 0 12px;'>内容をご確認のうえ、了承しましたを押してください。</p><div style='display:flex;justify-content:flex-end;'><button id='agreeBtnEmergency' type='button' style='min-height:38px;padding:6px 12px;border:1px solid #b8cbe0;border-radius:6px;background:#fff;'>了承しました</button></div></div>";
+        document.body.appendChild(emergency);
+        const eb = document.getElementById("agreeBtnEmergency");
+        if (eb) {
+          eb.addEventListener("click", () => acceptConsent());
+          eb.addEventListener("touchend", (ev) => {
+            ev.preventDefault();
+            acceptConsent();
+          }, { passive: false });
+        }
+      }, 900);
     })();
   </script>
 </body>
