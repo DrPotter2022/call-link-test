@@ -168,7 +168,9 @@
       padding: 0;
     }
     .zone-picker {
-      display: grid;
+      display: grid !important;
+      visibility: visible;
+      opacity: 1;
       gap: 8px;
       margin-bottom: 10px;
     }
@@ -1441,11 +1443,16 @@
       const dateStr = fmtDate(currentDate);
       rowsEl.innerHTML = "";
       const headerRow = document.getElementById("detailHeaderRow");
-      const zones = selectedZoneIds.length ? selectedZoneIds.slice() : visibleZoneIds.slice().sort(compareZoneIds);
+      const zones = selectedZoneIds.slice();
       if (headerRow) {
         headerRow.innerHTML = "<th>項目</th>" + zones.map((z) => `<th>${z}</th>`).join("");
       }
-      if (!zones.length) return;
+      if (!zones.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>工区を選択してください（複数選択可）</td>`;
+        rowsEl.appendChild(tr);
+        return;
+      }
 
       const showCostDetails = detailTableEl.classList.contains("show-cost-extra");
       const zoneData = zones.map((zoneId) => {
