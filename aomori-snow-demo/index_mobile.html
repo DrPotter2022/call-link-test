@@ -25,7 +25,7 @@
       } catch {}
     })();
   </script>
-  <title>青森市 除排雪 可視化（スマホ縦持ち）</title>
+  <title>青森市 除排雪 可視化（スマホ縦持ち v2）</title>
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -347,8 +347,13 @@
     }
     @media (max-width: 700px) {
       body { font-size: 17px; }
-      .wrap { padding: 10px; }
-      .panel { padding: 10px; }
+      .wrap { padding: 0; gap: 8px; }
+      .panel {
+        padding: 10px;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
       #map { height: 52vh; min-height: 340px; }
       .day-head, .day-cell { font-size: 15px; padding: 7px 4px; }
       table { font-size: 16px; }
@@ -364,13 +369,12 @@
       }
       .wrap {
         gap: 8px;
-        padding:
-          max(8px, env(safe-area-inset-top))
-          8px
-          max(10px, env(safe-area-inset-bottom));
+        padding: max(4px, env(safe-area-inset-top)) 0 max(8px, env(safe-area-inset-bottom));
       }
       .panel {
-        border-radius: 10px;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
         padding: 9px;
       }
       .consent-card {
@@ -391,7 +395,7 @@
         gap: 6px;
       }
       #map {
-        height: 46vh;
+        height: 45vh;
         min-height: 280px;
       }
       .calendar {
