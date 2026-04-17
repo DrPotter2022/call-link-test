@@ -98,7 +98,7 @@
     }
     .layout {
       display: grid;
-      grid-template-columns: 1fr 420px;
+      grid-template-columns: 1fr;
       gap: 12px;
     }
     #map {
@@ -488,21 +488,14 @@
     <section class="layout">
       <div class="panel">
         <div id="map"></div>
+        <div class="small" style="margin-top:10px;">
+          工区詳細PDF:
+          <a href="https://www.city.aomori.aomori.jp/_res/projects/default_project/_page_/001/007/125/r08-z1-05-01.05-02.pdf" target="_blank" rel="noopener noreferrer">
+            青森市 除排雪工区資料
+          </a>
+        </div>
+        <div id="detail" class="small" style="display:none;"></div>
       </div>
-      <aside class="panel">
-
-        <div id="status" class="small" style="margin-top:6px;">読込中...</div>
-
-        <section class="panel" style="margin-top:10px;">
-          <div class="small" style="margin:0 0 6px;">
-            工区詳細PDF:
-            <a href="https://www.city.aomori.aomori.jp/_res/projects/default_project/_page_/001/007/125/r08-z1-05-01.05-02.pdf" target="_blank" rel="noopener noreferrer">
-              青森市 除排雪工区資料
-            </a>
-          </div>
-          <div id="detail" class="small">工区をクリックしてください。</div>
-        </section>
-      </aside>
     </section>
 
     <section class="panel">
@@ -1454,6 +1447,7 @@
         refreshRows();
         applyZoneVisuals();
         renderSelectedZoneCards();
+        refreshSelectedZoneTags();
         if (zonePrimaryEl) zonePrimaryEl.value = "";
         if (zoneBranchEl) {
           zoneBranchEl.innerHTML = `<option value="">枝番を選択</option>`;
@@ -1467,6 +1461,7 @@
       refreshRows();
       applyZoneVisuals();
       renderSelectedZoneCards();
+      refreshSelectedZoneTags();
       const selectedRow = rowsEl.querySelector("tr.selected-row");
       if (selectedRow) {
         const tableScroller = rowsEl.closest(".table-wrap");
@@ -1834,7 +1829,7 @@
       }
       buildZonePicker();
       refreshAll();
-      statusEl.textContent = `KML読込成功: ${zones.length}工区を表示中`;
+      if (statusEl) statusEl.textContent = `KML読込成功: ${zones.length}工区を表示中`;
     }
 
     async function loadFixedKml() {
@@ -1843,7 +1838,7 @@
         const zones = parseKmlText(kmlText);
         renderZones(zones);
       } catch (e) {
-        statusEl.textContent = `KML読込失敗: ${e.message}`;
+        if (statusEl) statusEl.textContent = `KML読込失敗: ${e.message}`;
       }
     }
 
@@ -1892,14 +1887,14 @@
             snowfallByDate[d] = Number(v.snowfallCm ?? 0);
             snowDepthByDate[d] = Number(v.snowDepthCm ?? 0);
           }
-          statusEl.textContent = "気象庁データ（降雪量/積雪量）を読込済み";
+          if (statusEl) statusEl.textContent = "気象庁データ（降雪量/積雪量）を読込済み";
         } else {
           if (snowfallRaw) snowfallByDate = snowfallRaw;
           if (depthRaw) snowDepthByDate = depthRaw;
-          statusEl.textContent = "気象庁データ（分割JSON）を読込済み";
+          if (statusEl) statusEl.textContent = "気象庁データ（分割JSON）を読込済み";
         }
       } catch {
-        statusEl.textContent = "気象データ読込に失敗（表示は0として継続）";
+        if (statusEl) statusEl.textContent = "気象データ読込に失敗（表示は0として継続）";
       }
 
       buildOrUpdateSnowChart();
