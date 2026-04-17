@@ -629,7 +629,6 @@
         <div class="zone-picker-row">
           <select id="zonePrimary" class="wheel-select"></select>
           <select id="zoneBranch" class="wheel-select"></select>
-          <button id="addZoneBtn" type="button">追加</button>
         </div>
         <div id="selectedZoneTags" class="selected-zone-tags"></div>
       </div>
@@ -722,6 +721,7 @@
     let contractorEval = {};
     let zoneEvalByZone = {};
     let zoneCostByZone = {};
+    let showCostDetails = false;
     const mojibakeAreaFallback = [
       "後潟工区",
       "内真部工区",
@@ -767,7 +767,6 @@
     const selectedZonesCardsEl = document.getElementById("selectedZonesCards");
     const zonePrimaryEl = document.getElementById("zonePrimary");
     const zoneBranchEl = document.getElementById("zoneBranch");
-    const addZoneBtnEl = document.getElementById("addZoneBtn");
     const selectedZoneTagsEl = document.getElementById("selectedZoneTags");
 
     const PRIMARY_ORDER = ["A","B","C","D","E","F","G","H","I","J","K","L","その他"];
@@ -1598,16 +1597,16 @@
         { label: "評点・評価", get: (x) => x.zoneEval ? `${x.zoneEval.score ?? "-"}・${x.zoneEval.grade ?? "-"}` : "" },
         { label: "D 除排雪延長", get: (x) => x.cost ? fmtCost(x.cost.d) : "" },
         { label: "E ①当初契約額", get: (x) => x.cost ? fmtCost(x.cost.e) : "" },
-        { label: "F ②工区延長", get: (x) => x.cost ? fmtCost(x.cost.f) : "" },
-        { label: "G ③1/25~2/5降雪量見合(147cm)", get: (x) => x.cost ? fmtCost(x.cost.g) : "" },
-        { label: "H ④2/6~2/21降雪量見合い(72cm)", get: (x) => x.cost ? fmtCost(x.cost.h) : "" },
-        { label: "I ⑤2/6~2/21時間単価見合 合計", get: (x) => x.cost ? fmtCost(x.cost.i) : "" },
-        { label: "J 市負担", get: (x) => x.cost ? fmtCost(x.cost.j) : "" },
-        { label: "K ⑤県負担", get: (x) => x.cost ? fmtCost(x.cost.k) : "" },
-        { label: "L ⑥2/22~3/14降雪量見合(17cm)", get: (x) => x.cost ? fmtCost(x.cost.l) : "" },
-        { label: "M ⑦応援除雪", get: (x) => x.cost ? fmtCost(x.cost.m) : "" },
-        { label: "N ⑧市民雪寄せ場排雪業務", get: (x) => x.cost ? fmtCost(x.cost.n) : "" },
-        { label: "O ⑧変更後委託料", get: (x) => x.cost ? fmtCost(x.cost.o) : "" },
+        { label: "F ②工区延長", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.f) : "" },
+        { label: "G ③1/25~2/5降雪量見合(147cm)", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.g) : "" },
+        { label: "H ④2/6~2/21降雪量見合い(72cm)", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.h) : "" },
+        { label: "I ⑤2/6~2/21時間単価見合 合計", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.i) : "" },
+        { label: "J 市負担", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.j) : "" },
+        { label: "K ⑤県負担", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.k) : "" },
+        { label: "L ⑥2/22~3/14降雪量見合(17cm)", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.l) : "" },
+        { label: "M ⑦応援除雪", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.m) : "" },
+        { label: "N ⑧市民雪寄せ場排雪業務", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.n) : "" },
+        { label: "O ⑧変更後委託料", costDetail: true, get: (x) => x.cost ? fmtCost(x.cost.o) : "" },
         { label: "指令", get: (x) => x.d.command ? "赤" : "" },
         { label: "回数", get: (x) => String(x.d.commandCount || "") },
         { label: "継続", get: (x) => x.d.continued ? `緑（${x.timing.continuedDays}日）` : "" },
@@ -1617,6 +1616,7 @@
       ];
 
       metrics.forEach((m) => {
+        if (m.costDetail && !showCostDetails) return;
         const tr = document.createElement("tr");
         tr.innerHTML = `<td>${m.label}</td>` + zoneData.map((z) => `<td>${m.get(z)}</td>`).join("");
         rowsEl.appendChild(tr);
@@ -1696,6 +1696,13 @@
       };
       zonePrimaryEl.onchange = syncBranch;
       syncBranch();
+      zoneBranchEl.onchange = () => {
+        const zone = findZoneByPicker(zonePrimaryEl.value, zoneBranchEl.value);
+        if (!zone) return;
+        if (!selectedZoneIds.includes(zone)) selectedZoneIds.push(zone);
+        selectedZoneId = zone;
+        refreshAll();
+      };
     }
 
     function findZoneByPicker(primary, branch) {
@@ -1706,7 +1713,17 @@
 
     function refreshSelectedZoneTags() {
       if (!selectedZoneTagsEl) return;
-      selectedZoneTagsEl.innerHTML = selectedZoneIds.map((z) => `<span class="selected-zone-tag">${z}</span>`).join("");
+      selectedZoneTagsEl.innerHTML = selectedZoneIds
+        .map((z) => `<span class="selected-zone-tag">${z} <button type="button" data-zone-remove="${z}" style="border:0;background:transparent;cursor:pointer;font-size:14px;line-height:1;">×</button></span>`)
+        .join("");
+      selectedZoneTagsEl.querySelectorAll("button[data-zone-remove]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const zone = btn.getAttribute("data-zone-remove");
+          selectedZoneIds = selectedZoneIds.filter((z) => z !== zone);
+          selectedZoneId = selectedZoneIds.length ? selectedZoneIds[selectedZoneIds.length - 1] : null;
+          refreshAll();
+        });
+      });
     }
 
     function buildDateRangeKeys() {
@@ -1977,17 +1994,10 @@
     noteModalEl?.addEventListener("click", (ev) => {
       if (ev.target === noteModalEl) noteModalEl.classList.remove("open");
     });
-    addZoneBtnEl?.addEventListener("click", () => {
-      const zone = findZoneByPicker(zonePrimaryEl.value, zoneBranchEl.value);
-      if (!zone) return;
-      if (!selectedZoneIds.includes(zone)) selectedZoneIds.push(zone);
-      selectedZoneId = zone;
-      refreshAll();
-    });
     toggleCostColsBtnEl.addEventListener("click", () => {
-      const show = !detailTableEl.classList.contains("show-cost-extra");
-      detailTableEl.classList.toggle("show-cost-extra", show);
-      toggleCostColsBtnEl.textContent = show ? "－ F〜Oを隠す" : "＋ F〜Oを表示";
+      showCostDetails = !showCostDetails;
+      toggleCostColsBtnEl.textContent = showCostDetails ? "－ F〜Oを隠す" : "＋ F〜Oを表示";
+      refreshRows();
     });
 
     setInterval(() => {
