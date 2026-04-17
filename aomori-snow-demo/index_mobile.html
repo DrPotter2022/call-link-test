@@ -1548,6 +1548,7 @@
         refreshRows();
         applyZoneVisuals();
         renderSelectedZoneCards();
+        refreshSelectedZoneTags();
         return;
       }
       zoneId = selectedZoneId;
@@ -1556,6 +1557,7 @@
       refreshRows();
       applyZoneVisuals();
       renderSelectedZoneCards();
+      refreshSelectedZoneTags();
       const selectedRow = rowsEl.querySelector("tr.selected-row");
       if (selectedRow) {
         const tableScroller = rowsEl.closest(".table-wrap");
