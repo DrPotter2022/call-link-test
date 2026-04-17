@@ -621,6 +621,7 @@
     let snowChart = null;
     let chartBlinkOn = true;
     let visibleZoneIds = [];
+    let zonePickerGroups = {};
     let zoneLayers = new Map();
     let blinkOn = true;
     let map = null;
@@ -1453,9 +1454,15 @@
         refreshRows();
         applyZoneVisuals();
         renderSelectedZoneCards();
+        if (zonePrimaryEl) zonePrimaryEl.value = "";
+        if (zoneBranchEl) {
+          zoneBranchEl.innerHTML = `<option value="">枝番を選択</option>`;
+          zoneBranchEl.value = "";
+        }
         return;
       }
       zoneId = selectedZoneId;
+      syncPickerToZone(zoneId);
       detailEl.innerHTML = "";
       refreshRows();
       applyZoneVisuals();
@@ -1610,6 +1617,18 @@
       return byBranch || candidates[0] || null;
     }
 
+    function syncPickerToZone(zoneId) {
+      if (!zonePrimaryEl || !zoneBranchEl || !zoneId) return;
+      const primary = extractPrimaryLabel(zoneId);
+      const branch = extractBranchLabel(zoneId);
+      const branches = Array.from(zonePickerGroups[primary] || []).sort((a, b) =>
+        String(a).localeCompare(String(b), "ja", { numeric: true })
+      );
+      zonePrimaryEl.value = primary;
+      zoneBranchEl.innerHTML = `<option value="">枝番を選択</option>` + branches.map((b) => `<option value="${b}">${b}</option>`).join("");
+      zoneBranchEl.value = branch;
+    }
+
     function refreshSelectedZoneTags() {
       if (!selectedZoneTagsEl) return;
       selectedZoneTagsEl.innerHTML = selectedZoneIds
@@ -1634,10 +1653,11 @@
         if (!groups[p]) groups[p] = new Set();
         groups[p].add(b);
       });
+      zonePickerGroups = groups;
       const ordered = PRIMARY_ORDER.filter((p) => groups[p]);
-      zonePrimaryEl.innerHTML = ordered.map((p) => `<option value="${p}">${p}</option>`).join("");
+      zonePrimaryEl.innerHTML = `<option value="">工区を選択</option>` + ordered.map((p) => `<option value="${p}">${p}</option>`).join("");
       const applyBranchSelection = () => {
-        if (!zoneBranchEl.value) return;
+        if (!zonePrimaryEl.value || !zoneBranchEl.value) return;
         const zone = findZoneByPicker(zonePrimaryEl.value, zoneBranchEl.value);
         if (!zone) return;
         if (!selectedZoneIds.includes(zone)) selectedZoneIds.push(zone);
@@ -1646,6 +1666,11 @@
       };
       const syncBranch = () => {
         const p = zonePrimaryEl.value;
+        if (!p) {
+          zoneBranchEl.innerHTML = `<option value="">枝番を選択</option>`;
+          zoneBranchEl.value = "";
+          return;
+        }
         const arr = Array.from(groups[p] || []).sort((a, b) => String(a).localeCompare(String(b), "ja", { numeric: true }));
         zoneBranchEl.innerHTML = `<option value="">枝番を選択</option>` + arr.map((b) => `<option value="${b}">${b}</option>`).join("");
         zoneBranchEl.value = "";
