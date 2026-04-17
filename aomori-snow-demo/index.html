@@ -814,36 +814,49 @@
     }
 
     function decodeTextFromBuffer(buffer, typeHint = "text") {
-      const utf8 = new TextDecoder("utf-8").decode(buffer);
-
-      // Prefer UTF-8 when it is structurally valid. Most project artifacts are UTF-8.
-      if (typeHint === "json") {
-        try {
-          JSON.parse(utf8);
-          return utf8;
-        } catch {
-          // Fallback below.
-        }
-      } else if (typeHint === "kml") {
-        const hasKmlTag = /<kml[\s>]/i.test(utf8);
-        const placemarkCount = (utf8.match(/<Placemark\b/g) || []).length;
-        const replacementCount = (utf8.match(/ /g) || []).length;
-        if (hasKmlTag && placemarkCount >= 50 && replacementCount < 5) {
-          return utf8;
-        }
-      } else {
-        return utf8;
+      let utf8 = "";
+      let utf8Valid = false;
+      try {
+        utf8 = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+        utf8Valid = true;
+      } catch {
+        utf8 = new TextDecoder("utf-8").decode(buffer);
       }
 
-      // Conservative fallback: try Shift_JIS only when UTF-8 is not structurally valid.
+      const utf8ReplacementCount = (utf8.match(/ /g) || []).length;
+      const utf8MojibakeHits = (utf8.match(/[蜀螂蛹鬟蠕]/g) || []).length;
+
       try {
         const sjis = new TextDecoder("shift-jis").decode(buffer);
+        const sjisReplacementCount = (sjis.match(/ /g) || []).length;
+        const sjisMojibakeHits = (sjis.match(/[蜀螂蛹鬟蠕]/g) || []).length;
+
         if (typeHint === "json") {
-          JSON.parse(sjis);
+          let utf8JsonOk = false;
+          let sjisJsonOk = false;
+          try { JSON.parse(utf8); utf8JsonOk = true; } catch {}
+          try { JSON.parse(sjis); sjisJsonOk = true; } catch {}
+
+          if (utf8JsonOk && !sjisJsonOk) return utf8;
+          if (!utf8JsonOk && sjisJsonOk) return sjis;
+          if (!utf8JsonOk && !sjisJsonOk) return utf8;
         } else if (typeHint === "kml") {
-          if (!/<kml[\s>]/i.test(sjis)) return utf8;
+          const utf8Score = utf8ReplacementCount + utf8MojibakeHits * 3;
+          const sjisScore = sjisReplacementCount + sjisMojibakeHits * 3;
+          const utf8HasKml = /<kml[\s>]/i.test(utf8);
+          const sjisHasKml = /<kml[\s>]/i.test(sjis);
+          if (!utf8HasKml && sjisHasKml) return sjis;
+          if (utf8HasKml && !sjisHasKml) return utf8;
+          return sjisScore < utf8Score ? sjis : utf8;
+        } else {
+          if (!utf8Valid) return sjis;
+          const utf8Score = utf8ReplacementCount + utf8MojibakeHits * 3;
+          const sjisScore = sjisReplacementCount + sjisMojibakeHits * 3;
+          return sjisScore < utf8Score ? sjis : utf8;
         }
-        return sjis;
+
+        if (!utf8Valid) return sjis;
+        return utf8;
       } catch {
         return utf8;
       }
