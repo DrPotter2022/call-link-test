@@ -1551,6 +1551,7 @@
         return;
       }
       zoneId = selectedZoneId;
+      syncPickerToZone(zoneId);
       detailEl.innerHTML = "";
       refreshRows();
       applyZoneVisuals();
@@ -1715,6 +1716,18 @@
       const candidates = visibleZoneIds.filter((z) => extractPrimaryLabel(z) === primary);
       const byBranch = candidates.find((z) => extractBranchLabel(z) === branch);
       return byBranch || candidates[0] || null;
+    }
+
+    function syncPickerToZone(zoneId) {
+      if (!zonePrimaryEl || !zoneBranchEl || !zoneId) return;
+      const primary = extractPrimaryLabel(zoneId);
+      const branch = extractBranchLabel(zoneId);
+      if (zonePrimaryEl.value !== primary) {
+        zonePrimaryEl.value = primary;
+        if (typeof zonePrimaryEl.onchange === "function") zonePrimaryEl.onchange();
+      }
+      const hasBranch = Array.from(zoneBranchEl.options || []).some((opt) => opt.value === branch);
+      if (hasBranch) zoneBranchEl.value = branch;
     }
 
     function refreshSelectedZoneTags() {
