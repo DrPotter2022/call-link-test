@@ -146,35 +146,59 @@ function donutArcPath(cx,cy,rOuter,rInner,startAngle,endAngle){
   const p4=polarToCartesian(cx,cy,rInner,endAngle);
   return `M ${p1.x} ${p1.y} A ${rOuter} ${rOuter} 0 ${largeArc} 0 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rInner} ${rInner} 0 ${largeArc} 1 ${p4.x} ${p4.y} Z`;
 }
+
+function splitRowsByYearForComposition(rows, series){
+  const years=[...new Set(series.map(s=>s.year))];
+  const answers=[...new Set(series.map(s=>s.answer))].filter(a=>!hiddenSeries.has(a));
+  const newSeries=answers.map((ans,i)=>({year:'',answer:ans,label:ans,origIndex:i}));
+  const newRows=[];
+  rows.forEach(r=>{
+    years.forEach(y=>{
+      const vals=answers.map((ans,idx)=>{
+        const found=r.values.find(v=>v.year===y && v.answer===ans);
+        if(!found) return {seriesIndex:idx,value:null,n:null,category:r.category,label:(years.length>1?y+' / ':'')+r.label,sheet:'',answer:ans,year:y};
+        return {...found,seriesIndex:idx,label:(years.length>1?y+' / ':'')+r.label,answer:ans,year:y};
+      });
+      if(vals.some(v=>typeof v.value==='number')){
+        newRows.push({...r,key:y+'||'+r.key,label:(years.length>1?y+' / ':'')+r.label,values:vals});
+      }
+    });
+  });
+  return {rows:newRows,series:newSeries};
+}
+
+
 function drawDonutChart(displayRows, visibleSeries, colors, mode, autoStack){
   chart.innerHTML='';
   tooltip.style.display='none';
   const wrap=$('chartWrap');
   const w=Math.max(520,Math.floor(wrap.clientWidth||1000));
   const rowCount=Math.max(1,displayRows.length);
-  const cols=w>1100?3:(w>760?2:1);
+  const cols=w>1120?3:(w>760?2:1);
   const cellW=w/cols;
-  const cellH=210;
-  const h=Math.max(360,Math.ceil(rowCount/cols)*cellH+60);
+  const cellH=250;
+  const h=Math.max(380,Math.ceil(rowCount/cols)*cellH+42);
   chart.setAttribute('viewBox',`0 0 ${w} ${h}`);
 
   displayRows.forEach((r,idx)=>{
-    const col=idx%cols, row=Math.floor(idx/cols);
-    const x0=col*cellW, y0=row*cellH;
-    const cx=x0+cellW/2, cy=y0+92;
-    const outer=Math.min(70,cellW*.25), inner=outer*.56;
+    const col=idx%cols, gridRow=Math.floor(idx/cols);
+    const x0=col*cellW, y0=gridRow*cellH;
+    const cx=x0+cellW/2;
+    const cy=y0+125;
+    const outer=Math.min(74,cellW*.24);
+    const inner=outer*.58;
     const vals=r.values.map((v,si)=>({v,si,ser:visibleSeries[si]})).filter(x=>typeof x.v.value==='number' && x.v.value>0);
     const total=vals.reduce((a,x)=>a+x.v.value,0);
     let angle=-90;
 
     const title=document.createElementNS('http://www.w3.org/2000/svg','text');
     title.setAttribute('x',cx);
-    title.setAttribute('y',y0+24);
+    title.setAttribute('y',y0+26);
     title.setAttribute('text-anchor','middle');
     title.setAttribute('font-size','12');
     title.setAttribute('font-weight','700');
     title.setAttribute('fill','#344054');
-    title.textContent=(r.label.length>28?r.label.slice(0,27)+'…':r.label);
+    title.textContent=(r.label.length>34?r.label.slice(0,33)+'…':r.label);
     chart.appendChild(title);
 
     if(!total){
@@ -185,6 +209,9 @@ function drawDonutChart(displayRows, visibleSeries, colors, mode, autoStack){
       chart.appendChild(empty);
       return;
     }
+
+    let maxItem=null;
+    vals.forEach(x=>{if(!maxItem || x.v.value>maxItem.v.value) maxItem=x;});
 
     vals.forEach(({v,si,ser})=>{
       const delta=(v.value/total)*360;
@@ -207,14 +234,17 @@ function drawDonutChart(displayRows, visibleSeries, colors, mode, autoStack){
       angle+=delta;
     });
 
+    const main=maxItem?.v?.answer||'';
+    const mainShort=main.length>8?main.slice(0,7)+'…':main;
     const c1=document.createElementNS('http://www.w3.org/2000/svg','text');
-    c1.setAttribute('x',cx); c1.setAttribute('y',cy-2); c1.setAttribute('class','donutCenterText');
-    c1.textContent='合計';
+    c1.setAttribute('x',cx); c1.setAttribute('y',cy-4); c1.setAttribute('class','donutCenterText');
+    c1.setAttribute('font-weight','700');
+    c1.textContent=mainShort;
     chart.appendChild(c1);
     const c2=document.createElementNS('http://www.w3.org/2000/svg','text');
     c2.setAttribute('x',cx); c2.setAttribute('y',cy+14); c2.setAttribute('class','donutCenterText');
-    c2.setAttribute('font-weight','700');
-    c2.textContent=fmt(total)+'%';
+    c2.setAttribute('font-weight','800');
+    c2.textContent=fmt(maxItem?.v?.value||0)+'%';
     chart.appendChild(c2);
   });
 
@@ -229,7 +259,16 @@ function drawDonutChart(displayRows, visibleSeries, colors, mode, autoStack){
   $('legend').querySelectorAll('[data-series]').forEach(el=>el.addEventListener('click',()=>{const k=el.getAttribute('data-series'); hiddenSeries.has(k)?hiddenSeries.delete(k):hiddenSeries.add(k); render();}));
 }
 
-function drawChart(rows,series){chart.innerHTML=''; tooltip.style.display='none'; const mode=(document.querySelector('input[name="chartMode"]:checked')||{}).value||'overlay'; const colors=colorList(); const baseVisibleSeries=series.map((s,i)=>({...s,origIndex:i})).filter(s=>!hiddenSeries.has(s.label)); const baseDisplayRows=rows.map(r=>({...r,values:r.values.filter((v,i)=>!hiddenSeries.has(series[i]?.label))})); let visibleSeries=baseVisibleSeries, displayRows=baseDisplayRows; const warn=$('stackWarn'); warn.innerHTML=''; let autoStack=false, excluded=[]; if(mode==='stack'||mode==='donut'){const sums=baseDisplayRows.map(r=>r.values.reduce((a,v)=>a+(typeof v.value==='number'?v.value:0),0)); if(sums.some(v=>v>101)){const subset=findHundredPercentSubset(baseDisplayRows,baseVisibleSeries); if(subset){const keep=new Set(subset.idx); excluded=baseVisibleSeries.filter((_,i)=>!keep.has(i)).map(s=>s.label); visibleSeries=baseVisibleSeries.filter((_,i)=>keep.has(i)); displayRows=baseDisplayRows.map(r=>({...r,values:r.values.filter((_,i)=>keep.has(i))})); autoStack=true; warn.innerHTML=`<details class="warnIcon"><summary title="積み上げ表示の自動補正">⚠️</summary><div><b>積み上げ表示の自動補正：</b>選択項目の合計が100%を超えたため、重複集計項目を除外し、100%構成になる回答項目のみで表示しています。<div style="font-weight:800;margin-top:6px">除外項目</div><ul>${excluded.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></details>`;}else{warn.innerHTML='<details class="warnIcon"><summary title="積み上げ表示の注意">⚠️</summary><div><b>積み上げ表示の注意：</b>選択された回答項目に重複集計項目が含まれている可能性があります。100%構成になる組み合わせを自動判定できませんでした。</div></details>';}}}
+function drawChart(rows,series){chart.innerHTML=''; tooltip.style.display='none'; const mode=(document.querySelector('input[name="chartMode"]:checked')||{}).value||'overlay'; const colors=colorList(); let baseVisibleSeries=series.map((s,i)=>({...s,origIndex:i})).filter(s=>!hiddenSeries.has(s.label) && !hiddenSeries.has(s.answer));
+let baseDisplayRows=rows.map(r=>({...r,values:r.values.filter((v,i)=>!hiddenSeries.has(series[i]?.label) && !hiddenSeries.has(series[i]?.answer))}));
+let visibleSeries=baseVisibleSeries, displayRows=baseDisplayRows;
+if(mode==='stack'||mode==='donut'){
+  const split=splitRowsByYearForComposition(rows, series);
+  visibleSeries=split.series.filter(s=>!hiddenSeries.has(s.label));
+  displayRows=split.rows.map(r=>({...r,values:r.values.filter((v,i)=>!hiddenSeries.has(split.series[i]?.label))}));
+  baseVisibleSeries=visibleSeries;
+  baseDisplayRows=displayRows;
+} const warn=$('stackWarn'); warn.innerHTML=''; let autoStack=false, excluded=[]; if(mode==='stack'||mode==='donut'){const sums=baseDisplayRows.map(r=>r.values.reduce((a,v)=>a+(typeof v.value==='number'?v.value:0),0)); if(sums.some(v=>v>101)){const subset=findHundredPercentSubset(baseDisplayRows,baseVisibleSeries); if(subset){const keep=new Set(subset.idx); excluded=baseVisibleSeries.filter((_,i)=>!keep.has(i)).map(s=>s.label); visibleSeries=baseVisibleSeries.filter((_,i)=>keep.has(i)); displayRows=baseDisplayRows.map(r=>({...r,values:r.values.filter((_,i)=>keep.has(i))})); autoStack=true; warn.innerHTML=`<details class="warnIcon"><summary title="積み上げ表示の自動補正">⚠️</summary><div><b>積み上げ表示の自動補正：</b>選択項目の合計が100%を超えたため、重複集計項目を除外し、100%構成になる回答項目のみで表示しています。<div style="font-weight:800;margin-top:6px">除外項目</div><ul>${excluded.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></details>`;}else{warn.innerHTML='<details class="warnIcon"><summary title="積み上げ表示の注意">⚠️</summary><div><b>積み上げ表示の注意：</b>選択された回答項目に重複集計項目が含まれている可能性があります。100%構成になる組み合わせを自動判定できませんでした。</div></details>';}}}
 if(mode==='donut'){drawDonutChart(displayRows,visibleSeries,colors,mode,autoStack);return;}
 const wrap=$('chartWrap'); const w=Math.max(520,Math.floor(wrap.clientWidth||1000)), h=560, ml=92, mr=28, mt=28, mb=80; chart.setAttribute('viewBox',`0 0 ${w} ${h}`); const nums=[]; displayRows.forEach(r=>r.values.forEach(v=>{if(typeof v.value==='number')nums.push(v.value)})); const max=mode==='stack'?100:Math.max(100,...nums,1); const plotW=w-ml-mr, plotH=h-mt-mb, n=displayRows.length, gap=8; const slotH=Math.max(26,Math.min(54,(plotH-(n-1)*gap)/Math.max(n,1))); const groupGap=2; const barH=mode==='stack'?Math.max(8,slotH*.72):Math.max(4,Math.min(14,(slotH-groupGap*Math.max(0,visibleSeries.length-1))/Math.max(1,visibleSeries.length))); const scale=v=>ml+(Math.min(v,max)/max)*plotW; function line(x1,y1,x2,y2,stroke='#d0d5dd'){const e=document.createElementNS('http://www.w3.org/2000/svg','line'); e.setAttribute('x1',x1);e.setAttribute('y1',y1);e.setAttribute('x2',x2);e.setAttribute('y2',y2);e.setAttribute('stroke',stroke);chart.appendChild(e);}
 for(let t=0;t<=max;t+=20){const x=scale(t); line(x,mt,x,mt+plotH,'#edf1f7'); const tx=document.createElementNS('http://www.w3.org/2000/svg','text'); tx.setAttribute('x',x);tx.setAttribute('y',mt+plotH+22);tx.setAttribute('text-anchor','middle');tx.setAttribute('font-size','11');tx.setAttribute('fill','#667085');tx.textContent=t+'%'; chart.appendChild(tx);} line(ml,mt+plotH,w-mr,mt+plotH,'#98a2b3');
