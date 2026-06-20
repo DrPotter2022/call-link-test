@@ -91,6 +91,44 @@ label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}select,inpu
   #chartWrap{padding-left:20px}
 }
 
+
+.chartGroupTitle{
+  margin:12px 0 2px;
+  text-align:center;
+  font-size:15px;
+  font-weight:800;
+  color:#344054;
+}
+.chartBottomControls{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin:8px 0 4px;
+  flex-wrap:wrap;
+}
+
+
+.attrSection{
+  cursor:pointer;
+  user-select:none;
+  border-radius:8px;
+  padding:6px 6px 6px 2px;
+}
+.attrSection:hover{
+  background:#eef4ff;
+  color:#1849a9;
+}
+.attrSection::after{
+  content:"  全選択";
+  font-size:11px;
+  font-weight:700;
+  color:#1f6feb;
+  opacity:0;
+}
+.attrSection:hover::after{
+  opacity:1;
+}
+
 </style>
 </head>
 <body class="consent-pending">
@@ -126,9 +164,11 @@ label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}select,inpu
 <section class="card">
 <div class="row" style="justify-content:space-between">
   <div><span id="qBadge" class="pill"></span><h2 id="chartTitle" style="font-size:18px;margin:8px 0 0"></h2><div id="chartSub" class="small"></div><div id="stackWarn" style="margin-top:8px"></div></div>
-  <div class="row"><button class="primary" id="sortBtn">値順に並替</button><button id="resetSort">元の順序</button></div>
+  
 </div>
+<div id="chartGroupTitle" class="chartGroupTitle"></div>
 <div id="chartWrap"><svg id="chart"></svg><div id="tooltip" class="tooltip"></div></div>
+<div class="chartBottomControls"><button class="primary" id="sortBtn">値順に並替</button><button id="resetSort">元の順序</button></div>
 <div id="legend" class="legend"></div>
 <div class="tablewrap"><table id="dataTable"></table></div>
 </section>
@@ -165,7 +205,7 @@ function populateQuestions(){const items=filteredQuestions(); qSel.innerHTML=ite
 function populateSheets(){const q=currentQ(); sheetOrder=q?.sheets?.map((_,i)=>i)||[]; sheetChecks.innerHTML=(q?.sheets||[]).map((s,i)=>`<label class="check" title="${esc(sheetHelpText(s.sheet))}"><input type="checkbox" value="${i}" ${i===0?'checked':''}> <span>${esc(sheetDisplayName(s.sheet))} <span class="small">${s.rows.length}属性</span></span></label>`).join('') || '<div class="empty">集計対象がありません。</div>'; sheetOrder=[0]; populateAnswers();}
 function populateAnswers(){const sheets=selectedSheets(); const ans=allAnswersForSheets(sheets.length?sheets:[currentQ()?.sheets?.[0]].filter(Boolean)); const prev=new Set(answerOrder.length?answerOrder:ans.slice(0,1)); answerChecks.innerHTML=ans.map((a,i)=>`<label class="check"><input type="checkbox" value="${esc(a)}" ${prev.has(a)||(!answerOrder.length&&i===0)?'checked':''}> <span>${esc(a)}</span></label>`).join('') || '<div class="empty">選択可能な回答項目がありません。</div>'; answerOrder=[...answerChecks.querySelectorAll('input:checked')].map(i=>i.value); populateChecks(true);}
 function visibleRows(){const kw=filterText.value.trim().toLowerCase(); const q=currentQ(); const rows=[]; const seen=new Set(); selectedSheetIndexes().forEach(si=>{const sheet=q?.sheets?.[si]; if(!sheet)return; sheet.rows.forEach(r=>{const key=si+'||'+r.category+'||'+r.label; const search=(sheet.sheet+' '+r.category+' '+r.label).toLowerCase(); if(kw&&!search.includes(kw))return; if(seen.has(key))return; seen.add(key); rows.push({sheetIndex:si,sheet:sheet.sheet,category:r.category,label:r.label,n:r.n,key});});}); return rows;}
-function populateChecks(initial){const rows=visibleRows(); const prev=new Set([...checks.querySelectorAll('input:checked')].map(i=>i.value)); let out='', last=''; rows.forEach((r,idx)=>{const section=(selectedSheetIndexes().length>1?sheetDisplayName(r.sheet)+' / ':'')+r.category; if(section!==last){out+=`<div class="section">${esc(section)}</div>`; last=section;} const checked=initial?idx===0:prev.has(r.key); out+=`<label class="check"><input type="checkbox" value="${esc(r.key)}" ${checked?'checked':''}> <span>${esc(r.label)} <span class="small">N=${esc(r.n)}</span></span></label>`;}); checks.innerHTML=out||'<div class="empty">該当する属性がありません。</div>'; render();}
+function populateChecks(initial){const rows=visibleRows(); const prev=new Set([...checks.querySelectorAll('input:checked')].map(i=>i.value)); let out='', last=''; rows.forEach((r,idx)=>{const section=(selectedSheetIndexes().length>1?sheetDisplayName(r.sheet)+' / ':'')+r.category; if(section!==last){out+=`<div class="section attrSection" data-section="${esc(section)}" title="クリックでこの属性区分を全選択">${esc(section)}</div>`; last=section;} const checked=initial?idx===0:prev.has(r.key); out+=`<label class="check"><input type="checkbox" value="${esc(r.key)}" ${checked?'checked':''}> <span>${esc(r.label)} <span class="small">N=${esc(r.n)}</span></span></label>`;}); checks.innerHTML=out||'<div class="empty">該当する属性がありません。</div>'; enableAttributeSectionSelect(); render();}
 function selectedAttrKeys(){return [...checks.querySelectorAll('input:checked')].map(i=>i.value);}
 function makeSeries(){const q=currentQ(); const id=q?.id; const answers=answerOrder.filter(a=>selectedAnswers().includes(a)); const years=selectedYears(); const list=[]; years.forEach(y=>{const qy=questionInYear(y,id); if(!qy)return; answers.forEach(ans=>{const exists=selectedSheetIndexes().some(si=>{const baseSheet=q.sheets[si]; const sy=sheetByDisplay(qy,sheetDisplayName(baseSheet.sheet)); return sy&&sy.rows.some(r=>typeof r.values?.[ans]==='number');}); if(exists){const label=(years.length>1?y+' / ':'')+ans; list.push({year:y,answer:ans,label});}});}); return list;}
 function collectRows(){const q=currentQ(); const keys=selectedAttrKeys(); const series=makeSeries(); let rows=keys.map(key=>{const parts=key.split('||'); const baseSi=+parts[0]; const category=parts[1]||''; const rawLabel=parts.slice(2).join('||')||''; const baseSheet=q.sheets[baseSi]; const displayLabel=(selectedSheetIndexes().length>1?sheetDisplayName(baseSheet.sheet)+' / ':'')+rawLabel; const vals=series.map((ser,idx)=>{const qy=questionInYear(ser.year,q.id); const sy=sheetByDisplay(qy,sheetDisplayName(baseSheet.sheet)); const row=sy?.rows?.find(r=>r.category===category&&r.label===rawLabel); return {seriesIndex:idx,value:row&&typeof row.values?.[ser.answer]==='number'?row.values[ser.answer]:null,n:row?row.n:null,category,label:displayLabel,sheet:sy?sheetDisplayName(sy.sheet):sheetDisplayName(baseSheet.sheet),answer:ser.answer,year:ser.year};}); return {key,category,label:displayLabel,values:vals};}); if(sortMode&&series[0])rows=rows.slice().sort((a,b)=>(b.values[0].value??-Infinity)-(a.values[0].value??-Infinity)); return {rows,series};}
@@ -302,6 +342,37 @@ function drawDonutChart(displayRows, visibleSeries, colors, mode, autoStack, all
   $('legend').querySelectorAll('[data-series]').forEach(el=>el.addEventListener('click',()=>{const k=el.getAttribute('data-series'); hiddenSeries.has(k)?hiddenSeries.delete(k):hiddenSeries.add(k); render();}));
 }
 
+
+
+function enableAttributeSectionSelect(){
+  checks.querySelectorAll('.attrSection').forEach(sec=>{
+    sec.addEventListener('click',()=>{
+      let el=sec.nextElementSibling;
+      while(el && !el.classList.contains('section')){
+        const cb=el.querySelector ? el.querySelector('input[type="checkbox"]') : null;
+        if(cb) cb.checked=true;
+        el=el.nextElementSibling;
+      }
+      render();
+    });
+  });
+}
+
+function selectedCategoryTitle(rows){
+  const cats=[...new Set((rows||[]).map(r=>r.category).filter(Boolean))];
+  if(cats.length===1) return cats[0];
+  if(cats.length>1) return cats.join('・');
+  const checked=[...checks.querySelectorAll('input:checked')];
+  const sections=[];
+  checked.forEach(cb=>{
+    let el=cb.closest('label');
+    let prev=el?el.previousElementSibling:null;
+    while(prev && !prev.classList?.contains('section')) prev=prev.previousElementSibling;
+    if(prev && !sections.includes(prev.textContent.trim())) sections.push(prev.textContent.trim());
+  });
+  return sections.join('・');
+}
+
 function drawChart(rows,series){chart.innerHTML=''; tooltip.style.display='none'; const mode=(document.querySelector('input[name="chartMode"]:checked')||{}).value||'overlay'; const colors=colorList(); let baseVisibleSeries=series.map((s,i)=>({...s,origIndex:i})).filter(s=>!hiddenSeries.has(s.label) && !hiddenSeries.has(s.answer));
 let baseDisplayRows=rows.map(r=>({...r,values:r.values.filter((v,i)=>!hiddenSeries.has(series[i]?.label) && !hiddenSeries.has(series[i]?.answer))}));
 let visibleSeries=baseVisibleSeries, displayRows=baseDisplayRows;
@@ -347,7 +418,7 @@ function drawTable(rows,series){
       r.values.map(v=>`<td>${typeof v.value==='number'?fmt(v.value)+'%':'-'}</td><td>${v.n??'-'}</td>`).join('')+
     '</tr>').join('')+'</tbody>';
 }
-function render(){if(!DATA)return; sheetOrder=updateOrder(sheetChecks,sheetOrder,true); answerOrder=updateOrder(answerChecks,answerOrder,false); const q=currentQ(); const {rows,series}=collectRows(); $('qBadge').textContent=`${q?.id||''} / ${selectedYears().join('・')}年度`; $('chartTitle').textContent=q?.title||''; $('chartSub').textContent=`選択属性 ${rows.length}件 / 集計対象 ${selectedSheetIndexes().length}件 / 回答項目 ${selectedAnswers().length}件 / 系列 ${series.length}件`; drawChart(rows,series); drawTable(rows,series);}
+function render(){if(!DATA)return; sheetOrder=updateOrder(sheetChecks,sheetOrder,true); answerOrder=updateOrder(answerChecks,answerOrder,false); const q=currentQ(); const {rows,series}=collectRows(); const groupTitle=selectedCategoryTitle(rows); $('chartGroupTitle').textContent=groupTitle||''; $('qBadge').textContent=`${q?.id||''} / ${selectedYears().join('・')}年度`; $('chartTitle').textContent=q?.title||''; $('chartSub').textContent=`選択属性 ${rows.length}件 / 集計対象 ${selectedSheetIndexes().length}件 / 回答項目 ${selectedAnswers().length}件 / 系列 ${series.length}件`; drawChart(rows,series); drawTable(rows,series);}
 async function loadAll(){const msg=$('loadMsg'); const promises=YEAR_ORDER.map(async y=>{try{const r=await fetch(FILES[y],{cache:'no-store'}); if(!r.ok)throw new Error(r.status); DATASETS[y]=await r.json(); DATASETS[y].year=y;}catch(e){DATASETS[y]={year:y,questions:[],unsupported:[],loadError:String(e)}}}); await Promise.all(promises); if(!DATASETS["2025"]?.questions?.length){document.body.classList.add('loadError'); msg.style.display='block'; msg.textContent='JSONを自動読込できませんでした。GitHub Pages等で公開するか、ローカル表示ではJSONファイルを手動選択してください。';} initUI();}
 function initUI(){populateYears(); const y=baseYear.value||YEAR_ORDER.find(y=>DATASETS[y]?.questions?.length); if(y)setBaseYear(y);}
 baseYear.addEventListener('change',()=>{yearChecks.querySelectorAll('input').forEach(i=>{if(i.value===baseYear.value)i.checked=true}); setBaseYear(baseYear.value);});
