@@ -129,6 +129,17 @@ label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}select,inpu
   opacity:1;
 }
 
+
+#yearGroupToggle:hover{
+  color:#1f6feb;
+}
+
+
+.chartSizeBox{display:flex;justify-content:center;align-items:center;gap:8px;margin:8px 0}
+#chartScale{width:220px}
+#chartWrap{text-align:center}
+#chart{margin:0 auto;display:block}
+
 </style>
 </head>
 <body class="consent-pending">
@@ -145,7 +156,7 @@ label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}select,inpu
 <div class="grid">
 <aside class="card" id="sidebar">
 <label>基準年度</label><select id="baseYear"></select>
-<label>比較年度（複数選択）</label><div id="yearChecks" class="checks"></div>
+<label id="yearGroupToggle" style="cursor:pointer" title="クリックで全選択 / 全解除">比較年度（複数選択）</label><div id="yearChecks" class="checks"></div>
 <label>大分類（章）</label><select id="chapterSelect"></select>
 <label>設問</label><select id="questionSelect"></select>
 <label>集計対象（複数選択）</label><div class="toolrow"><button id="sheetAll">全選択</button><button id="sheetClear">全解除</button></div><div class="small" style="margin:4px 0 8px;line-height:1.5">集計対象は母集団です。各項目にマウスを重ねると説明を表示します。</div><div id="sheetChecks" class="checks"></div>
@@ -166,7 +177,7 @@ label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}select,inpu
   <div><span id="qBadge" class="pill"></span><h2 id="chartTitle" style="font-size:18px;margin:8px 0 0"></h2><div id="chartSub" class="small"></div><div id="stackWarn" style="margin-top:8px"></div></div>
   
 </div>
-<div id="chartGroupTitle" class="chartGroupTitle"></div>
+<div id="chartGroupTitle" class="chartGroupTitle"></div><div class="chartSizeBox">グラフサイズ <input id="chartScale" type="range" min="60" max="200" value="100"><span id="chartScaleVal">100%</span></div>
 <div id="chartWrap"><svg id="chart"></svg><div id="tooltip" class="tooltip"></div></div>
 <div class="chartBottomControls"><button class="primary" id="sortBtn">値順に並替</button><button id="resetSort">元の順序</button></div>
 <div id="legend" class="legend"></div>
@@ -441,5 +452,17 @@ window.addEventListener('resize',()=>{try{render()}catch(e){}});
 loadAll();
 })();
 </script>
-</body>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const yearToggle=document.getElementById('yearGroupToggle');
+  if(yearToggle){
+    yearToggle.addEventListener('click',()=>{
+      const boxes=[...document.querySelectorAll('#years input[type="checkbox"]')];
+      const allChecked=boxes.length>0 && boxes.every(cb=>cb.checked);
+      boxes.forEach(cb=>cb.checked=!allChecked);
+      if(typeof render==='function') render();
+    });
+  }
+});
+</script></body>
 </html>
