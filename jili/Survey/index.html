@@ -74,6 +74,15 @@ label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}select,inpu
   min-width:110px;
 }
 
+
+#legend [data-series].off{
+  opacity:.35!important;
+  text-decoration:line-through;
+}
+#legend [data-series]{
+  cursor:pointer;
+}
+
 </style>
 </head>
 <body class="consent-pending">
@@ -189,7 +198,7 @@ function splitRowsByYearForComposition(rows, series){
 }
 
 
-function drawDonutChart(displayRows, visibleSeries, colors, mode, autoStack){
+function drawDonutChart(displayRows, visibleSeries, colors, mode, autoStack, allSeries){
   chart.innerHTML='';
   tooltip.style.display='none';
   const wrap=$('chartWrap');
@@ -280,7 +289,8 @@ function drawDonutChart(displayRows, visibleSeries, colors, mode, autoStack){
     chart.appendChild(tx);
   }
 
-  $('legend').innerHTML=visibleSeries.map((s,i)=>`<span data-series="${esc(s.label)}" class="${hiddenSeries.has(s.label)?'off':''}"><span class="sw" style="background:${colors[(s.origIndex??i)%colors.length]};opacity:${hiddenSeries.has(s.label)?.25:.9}"></span>${esc(s.label)}</span>`).join('')+(autoStack?'<span class="small">※100%構成に自動補正中</span>':'');
+  const legendSource=(allSeries||visibleSeries).map((s,i)=>({...s,origIndex:i}));
+  $('legend').innerHTML=legendSource.map((s,i)=>`<span data-series="${esc(s.label)}" class="${hiddenSeries.has(s.label)?'off':''}"><span class="sw" style="background:${colors[(s.origIndex??i)%colors.length]};opacity:${hiddenSeries.has(s.label)?.25:.9}"></span>${esc(s.label)}</span>`).join('')+(autoStack?'<span class="small">※100%構成に自動補正中</span>':'');
   $('legend').querySelectorAll('[data-series]').forEach(el=>el.addEventListener('click',()=>{const k=el.getAttribute('data-series'); hiddenSeries.has(k)?hiddenSeries.delete(k):hiddenSeries.add(k); render();}));
 }
 
@@ -294,15 +304,17 @@ if(mode==='stack'||mode==='donut'){
   baseVisibleSeries=visibleSeries;
   baseDisplayRows=displayRows;
 } const warn=$('stackWarn'); warn.innerHTML=''; let autoStack=false, excluded=[]; if(mode==='stack'||mode==='donut'){const sums=baseDisplayRows.map(r=>r.values.reduce((a,v)=>a+(typeof v.value==='number'?v.value:0),0)); if(sums.some(v=>v>101)){const subset=findHundredPercentSubset(baseDisplayRows,baseVisibleSeries); if(subset){const keep=new Set(subset.idx); excluded=baseVisibleSeries.filter((_,i)=>!keep.has(i)).map(s=>s.label); visibleSeries=baseVisibleSeries.filter((_,i)=>keep.has(i)); displayRows=baseDisplayRows.map(r=>({...r,values:r.values.filter((_,i)=>keep.has(i))})); autoStack=true; warn.innerHTML=`<details class="warnIcon"><summary title="積み上げ表示の自動補正">⚠️</summary><div><b>積み上げ表示の自動補正：</b>選択項目の合計が100%を超えたため、重複集計項目を除外し、100%構成になる回答項目のみで表示しています。<div style="font-weight:800;margin-top:6px">除外項目</div><ul>${excluded.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></details>`;}else{warn.innerHTML='<details class="warnIcon"><summary title="積み上げ表示の注意">⚠️</summary><div><b>積み上げ表示の注意：</b>選択された回答項目に重複集計項目が含まれている可能性があります。100%構成になる組み合わせを自動判定できませんでした。</div></details>';}}}
-if(mode==='donut'){drawDonutChart(displayRows,visibleSeries,colors,mode,autoStack);return;}
+if(mode==='donut'){drawDonutChart(displayRows,visibleSeries,colors,mode,autoStack,series);return;}
 const wrap=$('chartWrap');
 const longestLabel=Math.max(4,...displayRows.map(r=>String(r.label||'').length));
-const ml=Math.min(230,Math.max(112,longestLabel*8+24));
-const w=Math.max(640,Math.floor(wrap.clientWidth||1000)), h=560, mr=34, mt=28, mb=92; chart.setAttribute('viewBox',`0 0 ${w} ${h}`); const nums=[]; displayRows.forEach(r=>r.values.forEach(v=>{if(typeof v.value==='number')nums.push(v.value)})); const max=mode==='stack'?100:Math.max(100,...nums,1); const plotW=w-ml-mr, plotH=h-mt-mb, n=displayRows.length, gap=8; const slotH=Math.max(26,Math.min(54,(plotH-(n-1)*gap)/Math.max(n,1))); const groupGap=2; const barH=mode==='stack'?Math.max(8,slotH*.72):Math.max(4,Math.min(14,(slotH-groupGap*Math.max(0,visibleSeries.length-1))/Math.max(1,visibleSeries.length))); const scale=v=>ml+(Math.min(v,max)/max)*plotW; function line(x1,y1,x2,y2,stroke='#d0d5dd'){const e=document.createElementNS('http://www.w3.org/2000/svg','line'); e.setAttribute('x1',x1);e.setAttribute('y1',y1);e.setAttribute('x2',x2);e.setAttribute('y2',y2);e.setAttribute('stroke',stroke);chart.appendChild(e);}
+const ml=Math.min(320,Math.max(150,longestLabel*9+36));
+const w=Math.max(760,Math.floor(wrap.clientWidth||1000)), h=560, mr=42, mt=28, mb=98; chart.setAttribute('viewBox',`0 0 ${w} ${h}`); const nums=[]; displayRows.forEach(r=>r.values.forEach(v=>{if(typeof v.value==='number')nums.push(v.value)})); const max=mode==='stack'?100:Math.max(100,...nums,1); const plotW=w-ml-mr, plotH=h-mt-mb, n=displayRows.length, gap=8; const slotH=Math.max(26,Math.min(54,(plotH-(n-1)*gap)/Math.max(n,1))); const groupGap=2; const barH=mode==='stack'?Math.max(8,slotH*.72):Math.max(4,Math.min(14,(slotH-groupGap*Math.max(0,visibleSeries.length-1))/Math.max(1,visibleSeries.length))); const scale=v=>ml+(Math.min(v,max)/max)*plotW; function line(x1,y1,x2,y2,stroke='#d0d5dd'){const e=document.createElementNS('http://www.w3.org/2000/svg','line'); e.setAttribute('x1',x1);e.setAttribute('y1',y1);e.setAttribute('x2',x2);e.setAttribute('y2',y2);e.setAttribute('stroke',stroke);chart.appendChild(e);}
 for(let t=0;t<=max;t+=20){const x=scale(t); line(x,mt,x,mt+plotH,'#edf1f7'); const tx=document.createElementNS('http://www.w3.org/2000/svg','text'); tx.setAttribute('x',x);tx.setAttribute('y',mt+plotH+22);tx.setAttribute('text-anchor','middle');tx.setAttribute('font-size','11');tx.setAttribute('fill','#667085');tx.textContent=t+'%'; chart.appendChild(tx);} line(ml,mt+plotH,w-mr,mt+plotH,'#98a2b3');
-displayRows.forEach((r,i)=>{const y=mt+i*(slotH+gap); const lab=document.createElementNS('http://www.w3.org/2000/svg','text'); lab.setAttribute('x',ml-8);lab.setAttribute('y',y+slotH*.58);lab.setAttribute('text-anchor','end');lab.setAttribute('font-size',n>18?'10':'12');lab.setAttribute('fill','#344054');lab.textContent=(r.label.length>28?r.label.slice(0,27)+'…':r.label); chart.appendChild(lab); let acc=0; r.values.forEach((v,si)=>{if(typeof v.value!=='number')return; const ser=visibleSeries[si]; const rect=document.createElementNS('http://www.w3.org/2000/svg','rect'); let x=ml,width=Math.max(2,scale(v.value)-ml),yPos=y+(slotH-barH)/2,opacity=1; if(mode==='stack'){x=scale(acc); width=Math.max(2,scale(acc+v.value)-scale(acc)); acc+=v.value; opacity=.9;}else{const totalH=visibleSeries.length*barH+(visibleSeries.length-1)*groupGap; yPos=y+Math.max(0,(slotH-totalH)/2)+si*(barH+groupGap); opacity=Math.max(.38,1-si*.08);} rect.setAttribute('class','bar'); rect.setAttribute('x',x);rect.setAttribute('y',yPos);rect.setAttribute('width',width);rect.setAttribute('height',barH);rect.setAttribute('rx',mode==='stack'?2:3);rect.setAttribute('fill',colors[(ser?.origIndex??si)%colors.length]);rect.setAttribute('fill-opacity',String(opacity));rect.setAttribute('stroke','#fff');rect.setAttribute('stroke-opacity','.75'); rect.addEventListener('mousemove',ev=>{const total=r.values.reduce((a,z)=>a+(typeof z.value==='number'?z.value:0),0); tooltip.innerHTML=`<b>${esc(r.label)}</b><br>${esc(v.year)}年度<br>${esc(v.sheet)} / ${esc(v.answer)}：${fmt(v.value)}%<br>N：${esc(v.n)}${mode==='stack'?'<br>表示項目合計：'+fmt(total)+'%':''}`; const box=wrap.getBoundingClientRect(); tooltip.style.left=(ev.clientX-box.left+12)+'px'; tooltip.style.top=(ev.clientY-box.top+12)+'px'; tooltip.style.display='block';}); rect.addEventListener('mouseleave',()=>tooltip.style.display='none'); rect.addEventListener('click',ev=>{ev.stopPropagation(); if(ser){hiddenSeries.add(ser.label); render();}}); chart.appendChild(rect);});});
+displayRows.forEach((r,i)=>{const y=mt+i*(slotH+gap); const lab=document.createElementNS('http://www.w3.org/2000/svg','text'); lab.setAttribute('x',ml-8);lab.setAttribute('y',y+slotH*.58);lab.setAttribute('text-anchor','end');lab.setAttribute('font-size',n>18?'10':'12');lab.setAttribute('fill','#344054');lab.textContent=(r.label.length>34?r.label.slice(0,33)+'…':r.label); chart.appendChild(lab); let acc=0; r.values.forEach((v,si)=>{if(typeof v.value!=='number')return; const ser=visibleSeries[si]; const rect=document.createElementNS('http://www.w3.org/2000/svg','rect'); let x=ml,width=Math.max(2,scale(v.value)-ml),yPos=y+(slotH-barH)/2,opacity=1; if(mode==='stack'){x=scale(acc); width=Math.max(2,scale(acc+v.value)-scale(acc)); acc+=v.value; opacity=.9;}else{const totalH=visibleSeries.length*barH+(visibleSeries.length-1)*groupGap; yPos=y+Math.max(0,(slotH-totalH)/2)+si*(barH+groupGap); opacity=Math.max(.38,1-si*.08);} rect.setAttribute('class','bar'); rect.setAttribute('x',x);rect.setAttribute('y',yPos);rect.setAttribute('width',width);rect.setAttribute('height',barH);rect.setAttribute('rx',mode==='stack'?2:3);rect.setAttribute('fill',colors[(ser?.origIndex??si)%colors.length]);rect.setAttribute('fill-opacity',String(opacity));rect.setAttribute('stroke','#fff');rect.setAttribute('stroke-opacity','.75'); rect.addEventListener('mousemove',ev=>{const total=r.values.reduce((a,z)=>a+(typeof z.value==='number'?z.value:0),0); tooltip.innerHTML=`<b>${esc(r.label)}</b><br>${esc(v.year)}年度<br>${esc(v.sheet)} / ${esc(v.answer)}：${fmt(v.value)}%<br>N：${esc(v.n)}${mode==='stack'?'<br>表示項目合計：'+fmt(total)+'%':''}`; const box=wrap.getBoundingClientRect(); tooltip.style.left=(ev.clientX-box.left+12)+'px'; tooltip.style.top=(ev.clientY-box.top+12)+'px'; tooltip.style.display='block';}); rect.addEventListener('mouseleave',()=>tooltip.style.display='none'); rect.addEventListener('click',ev=>{ev.stopPropagation(); if(ser){hiddenSeries.add(ser.label); render();}}); chart.appendChild(rect);});});
 if(!displayRows.length||!visibleSeries.length){const tx=document.createElementNS('http://www.w3.org/2000/svg','text'); tx.setAttribute('x',w/2);tx.setAttribute('y',h/2);tx.setAttribute('text-anchor','middle');tx.setAttribute('fill','#667085');tx.textContent='年度・集計対象・回答項目・属性を選択してください';chart.appendChild(tx);}
-$('legend').innerHTML=visibleSeries.map((s,i)=>`<span data-series="${esc(s.label)}" class="${hiddenSeries.has(s.label)?'off':''}"><span class="sw" style="background:${colors[(s.origIndex??i)%colors.length]};opacity:${hiddenSeries.has(s.label)?.25:(mode==='stack'?.9:Math.max(.38,1-i*.08))}"></span>${esc(s.label)}</span>`).join('')+(autoStack?'<span class="small">※100%構成に自動補正中</span>':''); $('legend').querySelectorAll('[data-series]').forEach(el=>el.addEventListener('click',()=>{const k=el.getAttribute('data-series'); hiddenSeries.has(k)?hiddenSeries.delete(k):hiddenSeries.add(k); render();}));}
+const legendSource=series.map((s,i)=>({...s,origIndex:i}));
+  $('legend').innerHTML=legendSource.map((s,i)=>`<span data-series="${esc(s.label)}" class="${hiddenSeries.has(s.label)?'off':''}"><span class="sw" style="background:${colors[(s.origIndex??i)%colors.length]};opacity:${hiddenSeries.has(s.label)?.25:(mode==='stack'?.9:Math.max(.38,1-i*.08))}"></span>${esc(s.label)}</span>`).join('')+(autoStack?'<span class="small">※100%構成に自動補正中</span>':'');
+  $('legend').querySelectorAll('[data-series]').forEach(el=>el.addEventListener('click',()=>{const k=el.getAttribute('data-series'); hiddenSeries.has(k)?hiddenSeries.delete(k):hiddenSeries.add(k); render();}));}
 function drawTable(rows,series){
   const shouldTranspose = series.length > Math.max(4, rows.length * 1.5);
   if(shouldTranspose){
