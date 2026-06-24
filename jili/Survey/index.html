@@ -1,561 +1,745 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>ヘルプ・サポートデスク一覧</title><style>
-:root{--bg:#f6f8fb;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e5e7eb;--accent:#0f766e;--accent2:#134e4a;}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP",sans-serif;line-height:1.55} 
-header{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:18px 16px 14px;box-shadow:0 4px 16px rgba(0,0,0,.12)}
-h1{font-size:21px;margin:0 0 6px;font-weight:800}.sub{font-size:12px;opacity:.9}.wrap{max-width:980px;margin:0 auto;padding:14px 12px 42px}.tools{display:grid;gap:10px;margin:12px 0 14px}.search{width:100%;border:1px solid var(--line);border-radius:12px;padding:13px 14px;font-size:16px;background:#fff}.tabs{display:flex;gap:8px}.tab{flex:1;border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 8px;font-weight:700;color:var(--accent);font-size:15px}.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}.section{display:none}.section.active{display:block}.company{background:var(--card);border:1px solid var(--line);border-radius:16px;margin:12px 0;overflow:hidden;box-shadow:0 2px 10px rgba(15,23,42,.04)}.company summary{cursor:pointer;list-style:none;padding:15px 14px;font-weight:800;font-size:17px;display:flex;justify-content:space-between;align-items:center}.company summary::-webkit-details-marker{display:none}.count{font-size:12px;color:var(--muted);font-weight:700}.entry{border-top:1px solid var(--line);padding:13px 14px}.item{font-weight:800;margin-bottom:8px}.contact,.note{white-space:pre-line;font-size:14px;color:#374151;margin:4px 0}.note{color:var(--muted)}.phones{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}.phone{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:#ecfdf5;border:1px solid #99f6e4;color:#065f46;border-radius:999px;padding:9px 12px;font-weight:800;font-size:15px}.phone:before{content:"☎"}.phone.mobile:before{content:"📱"}.empty{color:var(--muted);font-size:13px}.footer{font-size:12px;color:var(--muted);padding:16px 4px}.hidden{display:none!important}
-.auth-overlay{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:18px}.auth-card{width:min(480px,100%);background:#fff;border-radius:20px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.28)}.auth-card h2{margin:0 0 10px;font-size:20px}.auth-card p{margin:0 0 14px;color:#374151}.auth-card input{width:100%;font-size:18px;border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin:8px 0 10px}.auth-card button,.admin-btn{border:0;background:var(--accent);color:#fff;border-radius:12px;padding:12px 14px;font-weight:800;font-size:15px}.auth-error{color:#b91c1c;font-size:13px;min-height:20px}.locked header,.locked main{filter:blur(3px);pointer-events:none;user-select:none}.admin-panel{position:fixed;right:10px;bottom:10px;z-index:20}.admin-box{display:none;position:fixed;inset:auto 10px 64px 10px;max-height:70vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 60px rgba(0,0,0,.2);padding:14px}.admin-box.active{display:block}.admin-box h2{margin:0 0 8px;font-size:18px}.admin-box table{width:100%;border-collapse:collapse;font-size:12px}.admin-box th,.admin-box td{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}.admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.mini-note{font-size:12px;color:var(--muted);margin-top:8px}.setup-warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:13px}.admin-link{display:inline-block;margin-top:8px;color:var(--accent);font-weight:800;text-decoration:none}
-@media (min-width:720px){.tools{grid-template-columns:1fr 300px;align-items:center}h1{font-size:24px}.wrap{padding-top:18px}.entry{display:grid;grid-template-columns:1fr 1.2fr;gap:10px}.phones{grid-column:1/-1}}
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>生活保障に関する調査 年度比較ビューア</title>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#d9e1ee;--accent:#1f6feb;--warn:#fff7e6;--warnline:#ffb020}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
+header{padding:18px 24px;background:linear-gradient(135deg,#12385f,#1f6feb);color:#fff}h1{font-size:20px;margin:0 0 6px}.sub{font-size:12px;opacity:.92;line-height:1.5}.source a{color:#fff;text-decoration:underline}
+main{max-width:1540px;margin:auto;padding:14px}.grid{display:grid;grid-template-columns:360px 1fr;gap:14px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 8px 18px rgba(16,24,40,.05)}
+body.sidebar-collapsed aside{display:none}body.sidebar-collapsed .grid{grid-template-columns:1fr}.topbar{margin:0 0 10px}.sideToggle{width:38px;height:34px;font-size:20px;font-weight:800;background:#fff;border:1px solid var(--line);border-radius:9px}
+label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}select,input[type=text]{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:10px;background:#fff}button{padding:7px 10px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer}button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:800}
+.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.toolrow{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.small{font-size:12px;color:var(--muted)}.pill{display:inline-block;background:#eef4ff;color:#1849a9;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:800}
+.checks{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:8px;background:#fbfdff}.check{display:flex;gap:6px;align-items:flex-start;font-weight:650;font-size:13px;margin:6px 0}.check input{margin-top:2px}.section{font-weight:800;color:#344054;border-top:1px solid #e5e7eb;margin-top:10px;padding-top:8px}.section:first-child{border-top:0;margin-top:0;padding-top:0}
+.warn{font-size:12px;color:#7a4b00;background:var(--warn);border:1px solid var(--warnline);border-radius:10px;padding:8px;line-height:1.55;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.warnIcon summary{list-style:none;cursor:pointer;width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--warnline);background:var(--warn);font-size:18px}.warnIcon summary::-webkit-details-marker{display:none}.warnIcon[open]{display:block;width:100%;background:var(--warn);border:1px solid var(--warnline);border-radius:10px;padding:8px}.warnIcon[open] summary{margin-bottom:6px}.warnIcon ul{margin:5px 0 0 1.2em;padding:0}
+.modebox{display:flex;gap:12px;border:1px solid var(--line);border-radius:12px;padding:8px;background:#fbfdff}.modebox label{display:flex;gap:5px;align-items:center;margin:0}
+#chartWrap{position:relative;overflow:auto;margin-top:12px;border-top:1px solid var(--line);padding:8px 0 0 28px;width:100%;max-width:100%}svg:not(#chart){width:100%;height:560px;display:block}.bar{cursor:pointer;transition:opacity .15s}.tooltip{position:absolute;display:none;pointer-events:none;background:rgba(17,24,39,.94);color:#fff;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.55;max-width:360px;z-index:5}
+.legend{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap;margin:10px auto 8px;font-size:12px;color:#475467;text-align:center}.legend [data-series]{cursor:pointer;user-select:none}.legend [data-series].off{opacity:.32;text-decoration:line-through}.legend span{display:inline-flex;align-items:flex-start;white-space:normal}.sw{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:5px}
+.tablewrap{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:12px;margin-top:10px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border-bottom:1px solid #e5e7eb;padding:7px;text-align:right;white-space:nowrap}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}th{position:sticky;top:0;background:#f8fafc;z-index:1}.empty{padding:10px;color:var(--muted);font-size:13px}
+.consentLayer{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.35);padding:18px}.consentBox{max-width:640px;background:#fff;border-radius:16px;padding:22px;border:1px solid var(--line);box-shadow:0 20px 60px rgba(15,23,42,.25)}.consentBox h2{margin:0 0 12px;font-size:18px}.consentBox p{line-height:1.8;margin:0 0 14px}.consentBox button{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:800;padding:10px 18px}body.consent-pending header,body.consent-pending main{filter:blur(5px);pointer-events:none;user-select:none}body:not(.consent-pending) .consentLayer{display:none}
+.fileFallback{display:none;margin-top:8px}.loadError .fileFallback{display:block}
+@media(max-width:900px){main{padding:10px}.grid{grid-template-columns:1fr}.checks{max-height:190px}header{padding:16px 12px}h1{font-size:18px}.card{padding:10px}svg:not(#chart){height:520px}.tablewrap{max-height:300px}}@media(max-width:520px){.topbar{position:sticky;top:0;z-index:10;background:var(--bg);padding:6px 0}.sideToggle{width:100%}.checks{max-height:165px}svg:not(#chart){height:500px}th,td{padding:6px}.sub{font-size:12px}}
 
-.qr-block{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
+.chartModeIcons{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
   gap:8px;
 }
-.qr-block img{
-  display:block;
+.chartModeIcons label{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  min-height:58px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+  cursor:pointer;
+  user-select:none;
+  font-size:12px;
+  transition:.15s;
 }
-
-
-.company-link,.item-link{
-  color:var(--accent);
-  text-decoration:underline;
+.chartModeIcons input{position:absolute;opacity:0;pointer-events:none}
+.chartModeIcons .modeIcon{font-size:24px;line-height:1;color:#475467}
+.chartModeIcons label:has(input:checked){
+  border-color:var(--accent);
+  background:#eef4ff;
+  color:#1849a9;
   font-weight:800;
 }
-.company-link{
+.chartModeIcons label:has(input:checked) .modeIcon{color:#1f6feb}
+.donutCenterText{font-size:11px;fill:#667085;text-anchor:middle}
+
+
+#legend{
+  padding:8px 4px 2px;
+  overflow-x:auto;
+  justify-content:center;
+}
+@media(max-width:900px){
+  #legend{justify-content:flex-start}
+}
+
+
+.tablewrap table td,.tablewrap table th{
+  white-space:normal;
+}
+.tablewrap table td:first-child,.tablewrap table th:first-child{
+  min-width:180px;
+}
+.tablewrap table td:not(:first-child),.tablewrap table th:not(:first-child){
+  min-width:110px;
+}
+
+
+#legend [data-series].off{
+  opacity:.35!important;
+  text-decoration:line-through;
+}
+#legend [data-series]{
+  cursor:pointer;
+}
+
+
+#chart{
+display:block!important;
+margin:0 auto!important;
+flex:0 0 auto!important;
+max-width:none!important;
+width:auto!important;
+height:auto!important;
+overflow:visible!important;
+}
+@media(max-width:900px){
+  #chartWrap{padding-left:20px}
+}
+
+
+.chartGroupTitle{
+  margin:12px 0 2px;
+  text-align:center;
+  font-size:15px;
+  font-weight:800;
+  color:#344054;
+}
+.chartBottomControls{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin:8px 0 4px;
+  flex-wrap:wrap;
+}
+
+
+.attrSection{
+  cursor:pointer;
+  user-select:none;
+  border-radius:8px;
+  padding:6px 6px 6px 2px;
+}
+.attrSection:hover{
+  background:#eef4ff;
+  color:#1849a9;
+}
+.attrSection::after{
+  content:"  全選択";
+  font-size:11px;
+  font-weight:700;
+  color:#1f6feb;
+  opacity:0;
+}
+.attrSection:hover::after{
+  opacity:1;
+}
+
+
+#yearGroupToggle:hover{
+  color:#1f6feb;
+}
+
+
+
+
+
+.chartSizeBox{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  margin:8px 0 10px;
   font-size:13px;
-  display:inline-block;
-  margin-top:4px;
+  font-weight:700;
 }
-
-</style></head><body class="locked"><div id="authOverlay" class="auth-overlay"><div class="auth-card"><h2>利用確認</h2><p>本ページは特定の保険代理店の方専用のページです。<br>担当者コードを入力してください。</p><input id="staffCode" type="text" inputmode="text" autocomplete="off" placeholder=""><div id="authError" class="auth-error"></div><button id="authBtn" type="button">同意する</button></div></div><header><h1>ヘルプ・サポートデスク一覧</h1><div class="sub"></div></header><main class="wrap"><div class="tools"><input id="q" class="search" type="search" placeholder="会社名・項目・電話番号で検索"><div class="tabs"><button class="tab active" data-target="nonlife">損害保険</button><button class="tab" data-target="life">生命保険</button></div></div><section id="nonlife" class="section active"><details class="company" open data-company="東京海上日動"><summary><span>東京海上日動</span><span class="count">5件</span></summary>
-<div class="entry">
-<div><div class="item">Tnetﾍﾙﾌﾟﾃﾞｽｸ</div><div class="contact">0120-950-601</div></div><div><div class="note">03-6700-9000</div><div class="phones"><a class="phone" href="tel:0120950601">0120-950-601</a><a class="phone mobile" href="tel:0367009000">03-6700-9000</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">LCO（見積、申込）依頼</div><div class="contact">03-6705-0180</div></div><div><div class="phones"><a class="phone" href="tel:0367050180">03-6705-0180</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">SPﾍﾙﾌﾟﾃﾞｽｸ</div><div class="contact">0120-044-482</div></div><div><div class="note">050-3504-0553</div><div class="phones"><a class="phone" href="tel:0120044482">0120-044-482</a><a class="phone mobile" href="tel:05035040553">050-3504-0553</a></div></div>
-</div>
-<div class="entry">
-<div><div class="contact">03-3515-4440</div></div><div><div class="phones"><a class="phone" href="tel:0335154440">03-3515-4440</a></div></div>
-</div>
-<div class="entry">
-<div><div class="contact">050-3385-6735</div></div><div><div class="phones"><a class="phone" href="tel:05033856735">050-3385-6735</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="三井住友海上"><summary><span>三井住友海上</span><span class="count">3件</span></summary>
-<div class="entry">
-<div><div class="item"><div class="qr-block"><div>QRコード画像←</div><a href="https://forms.office.com/pages/responsepage.aspx?id=VEVZi81pYkWlwsPdLp3MRhq3y7gw6UlDiyQRbBKGSopUQ1hJVU5KN1lOOVQ5TzI5NlZYNkc4MDlaRS4u&route=shorturl" target="_blank" rel="noopener"><img src="data:image/png;base64,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" style="max-width:180px;border:1px solid #ddd;border-radius:8px">
-
-</a><div>東京東支店・全国型乗合ﾌﾟﾛﾁｬﾈﾙ室</div></div></div><div class="contact">formsや各ヘルプデスクに課支社へかけてと言われた場合の番号もこちら↓
-0570-01-6161</div></div><div><div class="note">①MS1ｼｽﾃﾑ,ﾛｸﾞｲﾝ,ｴﾗｰ
-②GK車,GKすまい事務,商品案内
-③引受,個別相談等営業へ</div><div class="phones"><a class="phone" href="tel:0570016161">0570-01-6161</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">ｼｽﾃﾑﾍﾙﾌﾟﾃﾞｽｸ(MS1操作）</div><div class="contact">0570-01-0525</div></div><div><div class="note">0476-31-3800</div><div class="phones"><a class="phone" href="tel:0570010525">0570-01-0525</a><a class="phone mobile" href="tel:0476313800">0476-31-3800</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">損保販売ｻﾎﾟｰﾄﾃﾞｽｸ</div><div class="contact">0120-220-115</div></div><div><div class="phones"><a class="phone" href="tel:0120220115">0120-220-115</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="あいおいニッセイ同和"><summary><span>あいおいニッセイ同和</span><span class="count">3件</span></summary>
-<div class="entry">
-<div><div class="item"><div class="qr-block"><div>QRコード画像←</div><a href="https://ad-communication.aioinissaydowa.co.jp/fa/msad2025-2/web/login.html" target="_blank" rel="noopener"><img src="data:image/png;base64,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" style="max-width:180px;border:1px solid #ddd;border-radius:8px">
-
-</a><div>ｼｽﾃﾑﾍﾙﾌﾟﾃﾞｽｸ</div></div></div><div class="contact">formsや各ヘルプデスクに課支社へかけてと言われた場合の番号もこちら↓
-050-3460-9106
-0570-06-0700</div></div><div><div class="note">①車②火③傷新④AD1導入
-⑤e-jibai⑥その他</div><div class="phones"><a class="phone" href="tel:05034609106">050-3460-9106</a><a class="phone" href="tel:0570060700">0570-06-0700</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">代理店ﾍﾙﾌﾟﾃﾞｽｸ携帯用</div><div class="contact">0476-31-9391</div></div><div><div class="phones"><a class="phone" href="tel:0476319391">0476-31-9391</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">ﾍﾟｯﾄ保険ｼｽﾃﾑ対応ﾃﾞｽｸ</div><div class="contact">0570-00-6617</div></div><div><div class="note">0476-31-9393</div><div class="phones"><a class="phone" href="tel:0570006617">0570-00-6617</a><a class="phone mobile" href="tel:0476319393">0476-31-9393</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="損保ジャパン"><summary><span>損保ジャパン</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">課支社（広域プロ開発支社）</div><div class="contact">050-3808-5039</div></div><div><div class="phones"><a class="phone" href="tel:05038085039">050-3808-5039</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">代理店ﾍﾙﾌﾟﾃﾞｽｸ</div><div class="contact">0120-115-565</div></div><div><div class="note">087-883-8351</div><div class="phones"><a class="phone" href="tel:0120115565">0120-115-565</a><a class="phone mobile" href="tel:0878838351">087-883-8351</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="楽天損保"><summary><span>楽天損保</span><span class="count">4件</span></summary>
-<div class="entry">
-<div><div class="item">代理店ｻﾎﾟｰﾄｾﾝﾀｰ</div><div class="contact">050-5434-8585</div></div><div><div class="note">平日9～17土日祝10～17</div><div class="phones"><a class="phone" href="tel:05054348585">050-5434-8585</a></div></div>
-</div>
-<div class="entry">
-<div><div class="contact">050-5817-7646</div></div><div><div class="phones"><a class="phone" href="tel:05058177646">050-5817-7646</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">東京支店</div><div class="contact">03-6748-6935</div></div><div><div class="phones"><a class="phone" href="tel:0367486935">03-6748-6935</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">総合窓口あんしんﾀﾞｲﾔﾙ</div><div class="contact">0120-120-555</div></div><div><div class="phones"><a class="phone" href="tel:0120120555">0120-120-555</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="AIG損保"><summary><span>AIG損保</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">ﾗｲﾌﾌﾟﾛ専用ｻﾎﾟｰﾄｾﾝﾀｰ</div><div class="contact">0120-228-504</div></div><div><div class="note">AIGｺﾈｸﾄ操作・事務処理</div><div class="phones"><a class="phone" href="tel:0120228504">0120-228-504</a></div></div>
-</div>
-<div class="entry">
-<div><div class="contact">03-5401-8007</div></div><div><div class="phones"><a class="phone" href="tel:0354018007">03-5401-8007</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="日新火災"><summary><span>日新火災</span><span class="count">4件</span></summary>
-<div class="entry">
-<div><div class="contact">03-5282-5533</div></div><div><div class="note">事務は左記東京テレオフィスへ</div><div class="phones"><a class="phone" href="tel:0352825533">03-5282-5533</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">代理店ｼｽﾃﾑｻﾎﾟｰﾄﾃﾞｽｸ</div><div class="contact">0120-567-325</div></div><div><div class="note">申込書作成、計上、見積支援など 平日9-18 土9-17</div><div class="phones"><a class="phone" href="tel:0120567325">0120-567-325</a></div></div>
-</div>
-<div class="entry">
-<div><div class="contact">0120-464-106</div></div><div><div class="note">日新ネット操作・WEBオンライン・ログイン等システム関連</div><div class="phones"><a class="phone" href="tel:0120464106">0120-464-106</a></div></div>
-</div>
-<div class="entry">
-<div><div class="contact">03-5282-5533</div></div><div><div class="phones"><a class="phone" href="tel:0352825533">03-5282-5533</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="セコム損保"><summary><span>セコム損保</span><span class="count">5件</span></summary>
-<div class="entry">
-<div><div class="item">書式請求</div></div><div><div class="note">FAX：03-5216-6405</div><div class="phones"><a class="phone" href="tel:0352166405">03-5216-6405</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">代理店ｻﾎﾟｰﾄｾﾝﾀｰ</div><div class="contact">0570-070-756</div></div><div><div class="note">各種ｼｽﾃﾑ操作について</div><div class="phones"><a class="phone" href="tel:0570070756">0570-070-756</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">ｸﾚｼﾞｯﾄｶｰﾄﾞｵｰｿﾘ</div><div class="contact">0120-141-756</div></div><div><div class="phones"><a class="phone" href="tel:0120141756">0120-141-756</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">代理店専用ﾀﾞｲﾔﾙ</div><div class="contact">03-5216-6108</div></div><div><div class="phones"><a class="phone" href="tel:0352166108">03-5216-6108</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">ﾒﾃﾞｨｺﾑ専用</div><div class="contact">0120-756-286</div></div><div><div class="note">受付書類の手配等</div><div class="phones"><a class="phone" href="tel:0120756286">0120-756-286</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="アイペット保険"><summary><span>アイペット保険</span><span class="count">1件</span></summary>
-<div class="entry">
-<div><div class="contact">03-4566-3160</div></div><div><div class="phones"><a class="phone" href="tel:0345663160">03-4566-3160</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="スター保険"><summary><span>スター保険</span><span class="count">4件</span></summary>
-<div class="entry">
-<div><div class="item">全般</div><div class="contact">03-6478-6380・6381</div></div><div><div class="phones"><a class="phone" href="tel:0364786380">03-6478-6380</a><a class="phone" href="tel:0364786381">03-6478-6381</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">賠責に関する照会全般</div></div><div><div class="empty">電話番号なし</div></div>
-</div>
-<div class="entry">
-<div><div class="item">OneStarrサポートデスク</div><div class="contact">0120-647-370</div></div><div><div class="phones"><a class="phone" href="tel:0120647370">0120-647-370</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">事故報告・保険金請求</div><div class="contact">0120-661-797</div></div><div><div class="phones"><a class="phone" href="tel:0120661797">0120-661-797</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="ソニー損保"><summary><span>ソニー損保</span><span class="count">3件</span></summary>
-<div class="entry">
-<div><div class="contact">03-5744-0400</div></div><div><div class="phones"><a class="phone" href="tel:0357440400">03-5744-0400</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">代理店支援ﾃﾞｽｸ（自動車）</div><div class="contact">0120-609-032</div></div><div><div class="note">見積：ガイダンス１平日9-20時土日祝9-18時</div><div class="phones"><a class="phone" href="tel:0120609032">0120-609-032</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">代理店支援ﾃﾞｽｸ（火災）</div><div class="contact">0120-957-693</div></div><div><div class="note">※火災保険は電話での見積をしない。</div><div class="phones"><a class="phone" href="tel:0120957693">0120-957-693</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="キャピタル損保"><summary><span>キャピタル損保</span><span class="count">1件</span></summary>
-<div class="entry">
-<div><div class="contact">03-5276-5602</div></div><div><div class="phones"><a class="phone" href="tel:0352765602">03-5276-5602</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="Chubb損保"><summary><span>Chubb損保</span><span class="count">3件</span></summary>
-<div class="entry">
-<div><div class="item">代理店ｺﾝﾀｸﾄｾﾝﾀｰ</div><div class="contact">0120-785-791</div></div><div><div class="note">見積作成・引き受け承認・割引適用他</div><div class="phones"><a class="phone" href="tel:0120785791">0120-785-791</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">損害ｻｰﾋﾞｽｾﾝﾀｰ</div><div class="contact">0120-044-709</div></div><div><div class="phones"><a class="phone" href="tel:0120044709">0120-044-709</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">ｼｽﾃﾑ操作</div><div class="contact">0120-984-000</div></div><div><div class="phones"><a class="phone" href="tel:0120984000">0120-984-000</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="大同火災"><summary><span>大同火災</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="contact">098-860-3858</div></div><div><div class="phones"><a class="phone" href="tel:0988603858">098-860-3858</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">ﾍﾙﾌﾟﾃﾞｽｸ</div><div class="contact">0120-925-265</div></div><div><div class="phones"><a class="phone" href="tel:0120925265">0120-925-265</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="あんしん少額短期"><summary><span>あんしん少額短期</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">営業部</div><div class="contact">048-658-2716</div></div><div><div class="phones"><a class="phone" href="tel:0486582716">048-658-2716</a></div></div>
-</div>
-<div class="entry">
-<div><div class="contact">03-5840-9554</div></div><div><div class="note">平日9～18土10～18</div><div class="phones"><a class="phone" href="tel:0358409554">03-5840-9554</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="共栄火災海上保険"><summary><span>共栄火災海上保険</span><span class="count">3件</span></summary>
-<div class="entry">
-<div><div class="contact">03-3504-2956</div></div><div><div class="phones"><a class="phone" href="tel:0335042956">03-3504-2956</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">ｼｽﾃﾑ操作案内</div><div class="contact">0120-332-927</div></div><div><div class="phones"><a class="phone" href="tel:0120332927">0120-332-927</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">ﾍﾙﾌﾟﾃﾞｽｸ※携帯から</div><div class="contact">03-5372-7273</div></div><div><div class="phones"><a class="phone" href="tel:0353727273">03-5372-7273</a></div></div>
-</div>
-</details></section><section id="life" class="section"><details class="company" open data-company="オリックス生命"><summary><span>オリックス生命</span><span class="count">5件</span></summary>
-<div class="entry">
-<div><div class="contact">03-5778-9285</div></div><div><div class="phones"><a class="phone" href="tel:0357789285">03-5778-9285</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">代理店ｻﾎﾟｰﾄﾃﾞｽｸ</div><div class="contact">0120-993-456</div></div><div><div class="note">平日9-19土日10-18</div><div class="phones"><a class="phone" href="tel:0120993456">0120-993-456</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">引受目安・商品内容等</div><div class="contact">ー1⃣ 新契約</div></div><div><div class="empty">電話番号なし</div></div>
-</div>
-<div class="entry">
-<div><div class="item">引受目安</div><div class="contact">ー2⃣ 保全</div></div><div><div class="empty">電話番号なし</div></div>
-</div>
-<div class="entry">
-<div><div class="item">システム関連</div><div class="contact">ー3⃣ 保険金・給付金</div></div><div><div class="empty">電話番号なし</div></div>
-</div>
-</details>
-<details class="company" open data-company="チューリッヒ生命"><summary><span>チューリッヒ生命</span><span class="count">1件</span></summary>
-<div class="entry">
-<div><div class="item">全般</div><div class="contact">0120-135-195</div></div><div><div class="note">平日土日祝 9：30 - 18：00</div><div class="phones"><a class="phone" href="tel:0120135195">0120-135-195</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="あんしん生命"><summary><span>あんしん生命</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">代理店総合フリーダイヤル</div><div class="contact">0120-202-181</div></div><div><div class="note">平日9-17</div><div class="phones"><a class="phone" href="tel:0120202181">0120-202-181</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">休日ヘルプデスク</div><div class="contact">0570-006-603</div></div><div><div class="note">土日祝10-18</div><div class="phones"><a class="phone" href="tel:0570006603">0570-006-603</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="メットライフ生命"><summary><span>メットライフ生命</span><span class="count">3件</span></summary>
-<div class="entry">
-<div><div class="item"><a class="item-link" href="https://www.wize.uno/met_call_links_footer_all_links_corrected.html" target="_blank" rel="noopener">全般</a></div><div class="contact">0120-945-779</div></div><div><div class="note">平日9-20土日9-18</div><div class="phones"><a class="phone" href="tel:0120945779">0120-945-779</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">不備対応</div><div class="contact">0120-957-177</div></div><div><div class="note">平日9-18</div><div class="phones"><a class="phone" href="tel:0120957177">0120-957-177</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">e-Mirai</div><div class="contact">0120-919-705</div></div><div><div class="note">平日9-18</div><div class="phones"><a class="phone" href="tel:0120919705">0120-919-705</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="第一生命"><summary><span>第一生命</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">代理店ﾍﾙﾌﾟﾃﾞｽｸ</div><div class="contact">0120-765-235</div></div><div><div class="note">平日9-17</div><div class="phones"><a class="phone" href="tel:0120765235">0120-765-235</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">設計書作成他サポート</div><div class="contact">0120-221-301</div></div><div><div class="phones"><a class="phone" href="tel:0120221301">0120-221-301</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="第一ネオ生命"><summary><span>第一ネオ生命</span><span class="count">1件</span></summary>
-<div class="entry">
-<div><div class="item">代理店ｻﾎﾟｰﾄﾃﾞｽｸ</div><div class="contact">0800-3330-201</div></div><div><div class="note">平日8-17</div><div class="phones"><a class="phone" href="tel:08003330201">0800-3330-201</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="第一フロンティア生命"><summary><span>第一フロンティア生命</span><span class="count">1件</span></summary>
-<div class="entry">
-<div><div class="item">代理店ｻﾎﾟｰﾄﾃﾞｽｸ</div><div class="contact">0120-771-200</div></div><div><div class="note">平日9-17</div><div class="phones"><a class="phone" href="tel:0120771200">0120-771-200</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="メディケア生命"><summary><span>メディケア生命</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">新契約</div><div class="contact">0120-860-492</div></div><div><div class="note">平日9-19土日祝10-18</div><div class="phones"><a class="phone" href="tel:0120860492">0120-860-492</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">保全</div><div class="contact">0120-860-391</div></div><div><div class="note">平日9-19土日祝10-18</div><div class="phones"><a class="phone" href="tel:0120860391">0120-860-391</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="ジブラルタ生命"><summary><span>ジブラルタ生命</span><span class="count">1件</span></summary>
-<div class="entry">
-<div><div class="item">全般</div><div class="contact">0120-22-3746</div></div><div><div class="note">平日9-20</div><div class="phones"><a class="phone" href="tel:0120223746">0120-22-3746</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="PGF生命"><summary><span>PGF生命</span><span class="count">1件</span></summary>
-<div class="entry">
-<div><div class="item">全般</div><div class="contact">0120-33-2269</div></div><div><div class="note">平日9-17:00</div><div class="phones"><a class="phone" href="tel:0120332269">0120-33-2269</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="マニュライフ生命"><summary><span>マニュライフ生命</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">代理店ｻｰﾋﾞｽﾃﾞｽｸ</div><div class="contact">0120-95-3939</div></div><div><div class="note">平日9-18土日10-18</div><div class="phones"><a class="phone" href="tel:0120953939">0120-95-3939</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">ﾘﾃｰﾙｻﾎﾟｰﾄﾃﾞｽｸ（不備）</div><div class="contact">0120-992-810</div></div><div><div class="note">平日9-18</div><div class="phones"><a class="phone" href="tel:0120992810">0120-992-810</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="朝日生命"><summary><span>朝日生命</span><span class="count">1件</span></summary>
-<div class="entry">
-<div><div class="item">全般</div><div class="contact">0120-000-758</div></div><div><div class="note">平日9-19土日祝10-18</div><div class="phones"><a class="phone" href="tel:0120000758">0120-000-758</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="ひまわり生命"><summary><span>ひまわり生命<br><a class="company-link" href="https://vivr.himawari-life.co.jp/7/hilfreichewebsite_esc_index.html" target="_blank" rel="noopener">代理店お役立ちサイト</a></span><span class="count">3件</span></summary>
-<div class="entry">
-<div><div class="item">営業ｻﾎﾟｰﾄｾﾝﾀｰ（新契約）</div><div class="contact">0120-050-611/0120-021-925（不備）</div></div><div><div class="note">平日9-18土日祝10-18</div><div class="phones"><a class="phone" href="tel:0120050611">0120-050-611</a><a class="phone" href="tel:0120021925">0120-021-925</a><a class="phone" href="tel:01200500120">0120-050-0120</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">営業ｻﾎﾟｰﾄｾﾝﾀｰ（既契約）</div><div class="contact">0120-310-614/0120-307-122（不備）</div></div><div><div class="note">平日9-18土10-18</div><div class="phones"><a class="phone" href="tel:0120310614">0120-310-614</a><a class="phone" href="tel:0120307122">0120-307-122</a><a class="phone" href="tel:01203100120">0120-310-0120</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">SJNKﾕｰｻﾞｰﾃﾞｽｸ(ｼｽﾃﾑ関連）</div><div class="contact">0120-115-565/087-883-8351（携帯から）</div></div><div><div class="note">平日9-19土9-17</div><div class="phones"><a class="phone" href="tel:0120115565">0120-115-565</a><a class="phone mobile" href="tel:0878838351">087-883-8351</a><a class="phone" href="tel:0120115087">0120-115-087</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="ソニー生命"><summary><span>ソニー生命</span><span class="count">4件</span></summary>
-<div class="entry">
-<div><div class="item">全般</div><div class="contact">03-6830-5942</div></div><div><div class="note">平日9-17：30</div><div class="phones"><a class="phone" href="tel:0368305942">03-6830-5942</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">保険事務ｻｰﾋﾞｽﾃﾞｽｸ</div><div class="contact">03-6831-2500</div></div><div><div class="note">平日9-20土日祝9-18</div><div class="phones"><a class="phone" href="tel:0368312500">03-6831-2500</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">ＰＣヘルプデスク</div><div class="contact">03-5216-3980</div></div><div><div class="note">平日8：30-20土日祝8：30-19</div><div class="phones"><a class="phone" href="tel:0352163980">03-5216-3980</a></div></div>
-</div>
-<div class="entry">
-<div><div class="contact">050-3205-1452</div></div><div><div class="phones"><a class="phone" href="tel:05032051452">050-3205-1452</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="NN生命"><summary><span>NN生命</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">全般</div><div class="contact">0120-339-115</div></div><div><div class="note">平日9-17</div><div class="phones"><a class="phone" href="tel:0120339115">0120-339-115</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">東京西営業部</div><div class="contact">03-6892-0832</div></div><div><div class="phones"><a class="phone" href="tel:0368920832">03-6892-0832</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="明治安田生命"><summary><span>明治安田生命</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">全般</div><div class="contact">033548-8031</div></div><div><div class="phones"><a class="phone" href="tel:0335488031">033548-8031</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">営業ｻﾎﾟｰﾄｵﾌｨｽ</div><div class="contact">0120-801-840</div></div><div><div class="note">平日9-17</div><div class="phones"><a class="phone" href="tel:0120801840">0120-801-840</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="FWD生命"><summary><span>FWD生命</span><span class="count">3件</span></summary>
-<div class="entry">
-<div><div class="item">代理店サービスセンター</div><div class="contact">0120-220-943</div></div><div><div class="note">平日9-18土日10-18</div><div class="phones"><a class="phone" href="tel:0120220943">0120-220-943</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">お客様専用ﾀﾞｲﾔﾙ</div><div class="contact">0120-211-901</div></div><div><div class="phones"><a class="phone" href="tel:0120211901">0120-211-901</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">自動応答保全書類受付</div><div class="contact">0120-288-088</div></div><div><div class="note">24時間365日</div><div class="phones"><a class="phone" href="tel:0120288088">0120-288-088</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="アクサ生命保険"><summary><span>アクサ生命保険</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">全般</div><div class="contact">0120-995-004</div></div><div><div class="note">平日9-19土日9-17</div><div class="phones"><a class="phone" href="tel:0120995004">0120-995-004</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">会社</div><div class="contact">050-4561-7788</div></div><div><div class="phones"><a class="phone" href="tel:05045617788">050-4561-7788</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="日本生命"><summary><span>日本生命</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">代理店サポートセンター</div><div class="contact">0120-951-283</div></div><div><div class="note">平日9-19土日祝10-17</div><div class="phones"><a class="phone" href="tel:0120951283">0120-951-283</a></div></div>
-</div>
-<div class="entry">
-<div><div class="contact">03-3580-2069</div></div><div><div class="phones"><a class="phone" href="tel:0335802069">03-3580-2069</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="はなさく生命"><summary><span>はなさく生命</span><span class="count">1件</span></summary>
-<div class="entry">
-<div><div class="item">全般</div><div class="contact">0120-8739-82</div></div><div><div class="phones"><a class="phone" href="tel:01208739">0120-8739</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="あいおい生命"><summary><span>あいおい生命</span><span class="count">1件</span></summary>
-<div class="entry">
-<div><div class="item">営業アシストセンター</div><div class="contact">0120-321-470</div></div><div><div class="note">平日9-18土日祝9-17</div><div class="phones"><a class="phone" href="tel:0120321470">0120-321-470</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="ﾆｯｾｲ･ｳｪﾙｽ生命"><summary><span>ﾆｯｾｲ･ｳｪﾙｽ生命</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">全般 ※新規取り扱いなし</div><div class="contact">0120-803-907</div></div><div><div class="note">平日9-17</div><div class="phones"><a class="phone" href="tel:0120803907">0120-803-907</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">保全ｻﾎﾟｰﾄﾃﾞｽｸ</div><div class="contact">03-3514-0728</div></div><div><div class="note">平日10-16</div><div class="phones"><a class="phone" href="tel:0335140728">03-3514-0728</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="SBI生命"><summary><span>SBI生命</span><span class="count">1件</span></summary>
-<div class="entry">
-<div><div class="item">代理店ﾍﾙﾌﾟﾃﾞｽｸ</div><div class="contact">0120-520-722</div></div><div><div class="note">平日9-17</div><div class="phones"><a class="phone" href="tel:0120520722">0120-520-722</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="なないろ生命"><summary><span>なないろ生命</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="contact">03-6229-0911</div></div><div><div class="phones"><a class="phone" href="tel:0362290911">03-6229-0911</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">代理店ｻﾎﾟｰﾄﾃﾞｽｸ</div><div class="contact">0120-000-758</div></div><div><div class="note">平日9-21 土日祝10-18</div><div class="phones"><a class="phone" href="tel:0120000758">0120-000-758</a></div></div>
-</div>
-</details>
-<details class="company" open data-company="プライマリー生命"><summary><span>プライマリー生命</span><span class="count">2件</span></summary>
-<div class="entry">
-<div><div class="item">WEBシステムに関する事項
-新契約保険料の着金確認</div><div class="contact">0120-321-035</div></div><div><div class="note">平 日9：00-18：00
-土日祝9：00-17：00</div><div class="phones"><a class="phone" href="tel:0120321035">0120-321-035</a></div></div>
-</div>
-<div class="entry">
-<div><div class="item">その他新契約関連の照会はソリシタ迄</div></div><div><div class="empty">電話番号なし</div></div>
-</div>
-</details></section><div class="footer">※090/080/070で始まる携帯電話番号は担当者情報として除外。0800で始まる番号はフリーダイヤルとして掲載。</div><div id="adminSummary"></div><div class="mini-note">※利用履歴は発信タップごとに「会社名・項目・電話番号」を記録します。Apps Script設定後は複数端末の履歴を集約できます。</div></div></main><script>
-const LOG_KEY='helpdesk_phonebook_logs_v3';
-const APPS_SCRIPT_WEB_APP_URL='https://script.google.com/macros/s/AKfycbxkcp4LpbJhd_ec_PoYMwPqilggK8WTVRXaGQs0Jvnoy8hh71c6dKK96zAjLk6uYZSn/exec';
-let currentCode='';
-
-function isRemoteEnabled(){
-  return APPS_SCRIPT_WEB_APP_URL && !APPS_SCRIPT_WEB_APP_URL.includes('PASTE_APPS_SCRIPT');
+#chartScale{width:260px}
+#chartWrap{
+  text-align:center!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:flex-start!important;
+  overflow:auto!important;
 }
-
-function getLogs(){
-  try{return JSON.parse(localStorage.getItem(LOG_KEY)||'[]')}catch(e){return []}
-}
-
-function saveLogs(logs){
-  localStorage.setItem(LOG_KEY,JSON.stringify(logs))
-}
-
-function localLog(entry){
-  const logs=getLogs();
-  logs.push(entry);
-  saveLogs(logs.slice(-1000));
-}
-
-function sendRemoteLog(entry){
-  if(!isRemoteEnabled()) return;
-  try{
-    const payload = new URLSearchParams();
-    Object.entries(entry).forEach(([k,v])=>payload.append(k, String(v ?? '')));
-    fetch(APPS_SCRIPT_WEB_APP_URL, {
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
-      body:payload
-    });
-  }catch(e){}
-}
-
-function addLog(type,target,extra={}){
-  const entry={
-    time:new Date().toISOString(),
-    code:currentCode||'',
-    type,
-    target,
-    company:extra.company||'',
-    label:extra.label||'',
-    phone:extra.phone||'',
-    sheet:document.querySelector('.section.active')?.id==='life'?'生命保険':'損害保険',
-    userAgent:navigator.userAgent,
-    page:location.pathname.split('/').pop()||'helpdesk_phonebook.html'
-  };
-  localLog(entry);
-  sendRemoteLog(entry);
+#chart{
+  display:block!important;
+  margin:0 auto!important;
+  flex:0 0 auto!important;
+  max-width:none!important;
 }
 
 
-async function authByAppsScript(code){
-  if(!isRemoteEnabled()) {
-    throw new Error('Apps Script URLが未設定です。');
+#legend{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  justify-content:center!important;
+  align-items:flex-start!important;
+  gap:8px 14px!important;
+  overflow-x:visible!important;
+  white-space:normal!important;
+  max-width:100%!important;
+  line-height:1.6!important;
+}
+#legend span{
+  white-space:normal!important;
+  max-width:260px;
+}
+#legend [data-series]{
+  display:inline-flex!important;
+  align-items:center!important;
+}
+
+
+#chartWrap{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:center!important;
+  overflow:auto!important;
+  text-align:center!important;
+}
+#chart{
+  display:block!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  flex:0 0 auto!important;
+  max-width:none!important;
+  width:auto!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+
+
+/* Legend wrap hard override */
+#legend.legend,
+#legend{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  flex-direction:row!important;
+  justify-content:center!important;
+  align-items:flex-start!important;
+  align-content:flex-start!important;
+  gap:8px 14px!important;
+  overflow-x:visible!important;
+  overflow-y:visible!important;
+  white-space:normal!important;
+  max-width:100%!important;
+  width:100%!important;
+  line-height:1.45!important;
+}
+#legend [data-series],
+#legend.legend [data-series]{
+  display:inline-flex!important;
+  align-items:flex-start!important;
+  flex:0 1 260px!important;
+  max-width:260px!important;
+  min-width:0!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  line-height:1.45!important;
+}
+#legend [data-series] .sw{
+  flex:0 0 10px!important;
+  margin-top:4px!important;
+}
+#legend span{
+  white-space:normal!important;
+}
+@media(max-width:900px){
+  #legend,#legend.legend{
+    justify-content:flex-start!important;
   }
+  #legend [data-series],
+  #legend.legend [data-series]{
+    flex-basis:220px!important;
+    max-width:220px!important;
+  }
+}
 
-  const url = APPS_SCRIPT_WEB_APP_URL
-    + '?action=auth'
-    + '&code=' + encodeURIComponent(code)
-    + '&t=' + Date.now();
 
-  const res = await fetch(url, {
-    method: 'GET',
-    mode: 'cors',
-    credentials: 'omit',
-    cache: 'no-store',
-    redirect: 'follow'
+/* Data table scroll area */
+.tablewrap{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  max-height:420px!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  border:1px solid var(--line)!important;
+  border-radius:12px!important;
+  margin-top:10px!important;
+}
+.tablewrap table{
+  width:max-content!important;
+  min-width:100%!important;
+  border-collapse:collapse!important;
+}
+.tablewrap th,
+.tablewrap td{
+  white-space:nowrap!important;
+}
+.tablewrap thead th{
+  position:sticky!important;
+  top:0!important;
+  z-index:3!important;
+  background:#f8fafc!important;
+}
+.tablewrap th:first-child,
+.tablewrap td:first-child{
+  position:sticky!important;
+  left:0!important;
+  z-index:2!important;
+  background:#fff!important;
+}
+.tablewrap thead th:first-child{
+  z-index:4!important;
+  background:#f8fafc!important;
+}
+.tablewrap th:nth-child(2),
+.tablewrap td:nth-child(2){
+  position:sticky!important;
+  left:90px!important;
+  z-index:2!important;
+  background:#fff!important;
+}
+.tablewrap thead th:nth-child(2){
+  z-index:4!important;
+  background:#f8fafc!important;
+}
+@media(max-width:900px){
+  .tablewrap{max-height:340px!important;}
+  .tablewrap th:nth-child(2),
+  .tablewrap td:nth-child(2){
+    position:static!important;
+  }
+}
+
+
+/* Prevent page-wide horizontal expansion; scroll only inside chart/table areas */
+html,body{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+}
+main,.grid,.card,section.card{
+  min-width:0!important;
+  max-width:100%!important;
+}
+#chartWrap{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  box-sizing:border-box!important;
+}
+
+/* Table must scroll inside its own box, not expand the page */
+.tablewrap{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:auto!important;
+  overflow-y:auto!important;
+  max-height:420px!important;
+  box-sizing:border-box!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.tablewrap table{
+  display:table!important;
+  width:max-content!important;
+  min-width:100%!important;
+  max-width:none!important;
+  table-layout:auto!important;
+}
+.tablewrap th,
+.tablewrap td{
+  white-space:nowrap!important;
+  min-width:90px;
+}
+.tablewrap th:first-child,
+.tablewrap td:first-child{
+  min-width:90px!important;
+}
+.tablewrap th:nth-child(2),
+.tablewrap td:nth-child(2){
+  min-width:110px!important;
+}
+.tablewrap thead th{
+  position:sticky!important;
+  top:0!important;
+  z-index:3!important;
+  background:#f8fafc!important;
+}
+.tablewrap th:first-child,
+.tablewrap td:first-child,
+.tablewrap th:nth-child(2),
+.tablewrap td:nth-child(2){
+  position:static!important;
+  left:auto!important;
+}
+
+</style>
+</head>
+<body class="consent-pending">
+<div class="consentLayer"><div class="consentBox"><h2>利用上の注意</h2><p>本データは一般社団法人生命保険文化センターが公表している「生活保障に関する調査」データをChatGPT5.5によってビジュアル化したものです。</p><p>データの正確性、また意図しない不具合が発生する場合があります。</p><button id="agreeBtn">同意して表示</button></div></div>
+<header><h1>生命保険文化センター「生活保障に関する調査」年度比較ビューア</h1><div class="sub">JSONファイルを読み込み、年度・集計対象・回答項目・属性区分を選んで比較できます。</div><div class="sub source">参照元：<a href="https://www.jili.or.jp/research/chousa/10349.html" target="_blank" rel="noopener noreferrer">https://www.jili.or.jp/research/chousa/10349.html</a></div></header>
+<main>
+<div class="topbar"><button id="sideToggle" class="sideToggle">−</button></div>
+<div id="loadMsg" class="warn" style="display:none"></div>
+<div class="fileFallback card">
+  <b>ローカル表示でJSONが自動読込できない場合</b>
+  <div class="small">GitHub PagesなどHTTP(S)環境では自動読込されます。file://で開く場合は下のJSONファイルを選択してください。</div>
+  <input id="jsonFiles" type="file" accept=".json" multiple>
+</div>
+<div class="grid">
+<aside class="card" id="sidebar">
+<label>基準年度</label><select id="baseYear"></select>
+<label id="yearGroupToggle" style="cursor:pointer" title="クリックで全選択 / 全解除">比較年度（複数選択）</label><div id="yearChecks" class="checks"></div>
+<label>大分類（章）</label><select id="chapterSelect"></select>
+<label>設問</label><select id="questionSelect"></select>
+<label>集計対象（複数選択）</label><div class="toolrow"><button id="sheetAll">全選択</button><button id="sheetClear">全解除</button></div><div class="small" style="margin:4px 0 8px;line-height:1.5">集計対象は母集団です。各項目にマウスを重ねると説明を表示します。</div><div id="sheetChecks" class="checks"></div>
+<label>回答項目（複数選択）</label><div class="toolrow"><button id="answerAll">全選択</button><button id="answerClear">全解除</button></div><div id="answerChecks" class="checks"></div>
+<label>回答項目の表示方法</label>
+<div class="modebox chartModeIcons" role="radiogroup" aria-label="回答項目の表示方法">
+  <label title="重ねグラフ"><input type="radio" name="chartMode" value="overlay" checked><span class="modeIcon">▦</span><span>重ね</span></label>
+  <label title="積み上げグラフ"><input type="radio" name="chartMode" value="stack"><span class="modeIcon">▰</span><span>積み上げ</span></label>
+  <label title="ドーナツグラフ"><input type="radio" name="chartMode" value="donut"><span class="modeIcon">◉</span><span>ドーナツ</span></label>
+</div>
+<label>属性検索</label><input type="text" id="filterText" placeholder="例：30歳代、年収、持家、会社員">
+<div class="toolrow"><button id="selectShown">表示中を全選択</button><button id="clearAll">全解除</button></div>
+<label>属性区分（複数選択）</label><div id="checks" class="checks"></div>
+<div class="warn" style="margin-top:10px">凡例クリックで系列を非表示／再表示できます。積み上げ・ドーナツ表示で合計が100%を超える場合は、重複集計項目を自動除外します。</div>
+</aside>
+<section class="card">
+<div class="row" style="justify-content:space-between">
+  <div><span id="qBadge" class="pill"></span><h2 id="chartTitle" style="font-size:18px;margin:8px 0 0"></h2><div id="chartSub" class="small"></div><div id="stackWarn" style="margin-top:8px"></div></div>
+  
+</div>
+<div id="chartGroupTitle" class="chartGroupTitle"></div><div class="chartSizeBox">グラフサイズ <input id="chartScale" type="range" min="60" max="220" value="100"><span id="chartScaleVal">100%</span></div>
+<div id="chartWrap"><svg id="chart"></svg><div id="tooltip" class="tooltip"></div></div>
+<div class="chartBottomControls"><button class="primary" id="sortBtn">値順に並替</button><button id="resetSort">元の順序</button></div>
+<div id="legend" class="legend"></div>
+<div id="tableScrollHint" class="small" style="margin:8px 0 4px;text-align:right">表はこの枠内で横スクロールできます。</div><div class="tablewrap"><table id="dataTable"></table></div>
+</section>
+</div>
+</main>
+<script>
+(()=>{'use strict';
+const FILES={"2025":"data/jili2025.json","2022":"data/jili2022.json","2019":"data/jili2019.json","2016":"data/jili2016.json","2013":"data/jili2013.json"};
+const YEAR_ORDER=["2025","2022","2019","2016","2013"];
+let DATASETS={}, DATA=null, sortMode=false, hiddenSeries=new Set(), sheetOrder=[], answerOrder=[];
+const CHAPTERS={"1":"第Ⅰ章　生活設計と生活保障意識","2":"第Ⅱ章　医療保障","3":"第Ⅲ章　老後保障","4":"第Ⅳ章　死亡保障","5":"第Ⅴ章　介護保障","6":"第Ⅵ章　生命保険の加入状況","7":"第Ⅶ章　直近加入契約の状況と今後の加入意向","8":"補章","9":"属性"};
+const $=id=>document.getElementById(id);
+const baseYear=$('baseYear'), yearChecks=$('yearChecks'), chapterSel=$('chapterSelect'), qSel=$('questionSelect'), sheetChecks=$('sheetChecks'), answerChecks=$('answerChecks'), checks=$('checks'), filterText=$('filterText'), chart=$('chart'), tooltip=$('tooltip'), table=$('dataTable');
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function fmt(v){return Number.isFinite(v)?(Math.round(v*10)/10).toFixed(1):'-';}
+function norm(s){return String(s||'').replace(/\s+/g,'').replace(/[〜～]/g,'～').trim();}
+function sheetDisplayName(name){const s=String(name||'').trim(); if(s.includes('18～69')||s.includes('18〜69'))return '全体（18～69歳）'; return s;}
+function sheetHelpText(name){const s=String(name||'').trim(); if(s==='全体')return '調査回答者全員'; if(s==='男性')return '男性回答者のみ'; if(s==='女性')return '女性回答者のみ'; if(s.includes('18～69')||s.includes('18〜69'))return '70歳以上を除外した18～69歳の集計'; return s;}
+function chapterOf(q){const m=String(q.id||q.file||'').match(/^(\d+)/); return m?m[1]:'';}
+
+function chartScaleValue(){
+  const el=document.getElementById('chartScale');
+  const v=el?Number(el.value):100;
+  return Number.isFinite(v) ? Math.max(60,Math.min(220,v))/100 : 1;
+}
+function applyChartSvgSize(w,h){
+  const scale=chartScaleValue();
+  const sw=Math.round(w*scale);
+  const sh=Math.round(h*scale);
+  chart.setAttribute('width', sw);
+  chart.setAttribute('height', sh);
+  chart.style.setProperty('width', sw+'px', 'important');
+  chart.style.setProperty('height', sh+'px', 'important');
+  chart.style.setProperty('max-width', 'none', 'important');
+  chart.style.setProperty('margin-left', 'auto', 'important');
+  chart.style.setProperty('margin-right', 'auto', 'important');
+  chart.style.setProperty('display', 'block', 'important');
+}
+
+function currentQ(){const idx=+qSel.value; return DATA?.questions?.[idx] || filteredQuestions()[0]?.q || DATA?.questions?.[0];}
+function selectedYears(){return [...yearChecks.querySelectorAll('input:checked')].map(i=>i.value).filter(y=>DATASETS[y]?.questions?.length);}
+function questionInYear(year,id){const ds=DATASETS[year]; if(!ds)return null; return (ds.questions||[]).find(q=>q.id===id) || null;}
+function sheetByDisplay(q, display){return (q?.sheets||[]).find(s=>norm(sheetDisplayName(s.sheet))===norm(display));}
+function allAnswersForSheets(sheets){const set=new Set(); sheets.forEach(s=>s.rows.forEach(r=>Object.keys(r.values||{}).forEach(k=>set.add(k)))); return [...set];}
+function selectedSheetIndexes(){return [...sheetChecks.querySelectorAll('input:checked')].map(i=>+i.value);}
+function selectedSheets(){const q=currentQ(); return selectedSheetIndexes().map(i=>q.sheets[i]).filter(Boolean);}
+function selectedAnswers(){return [...answerChecks.querySelectorAll('input:checked')].map(i=>i.value);}
+function updateOrder(container, order, isNumber=false){const checked=[...container.querySelectorAll('input:checked')].map(i=>isNumber?+i.value:i.value); for(const v of checked){if(!order.includes(v))order.push(v);} return order.filter(v=>checked.includes(v));}
+function filteredQuestions(){const ch=chapterSel.value; return (DATA?.questions||[]).map((q,i)=>({q,i})).filter(x=>!ch||chapterOf(x.q)===ch);}
+function populateYears(){baseYear.innerHTML=YEAR_ORDER.filter(y=>DATASETS[y]?.questions?.length).map(y=>`<option value="${y}">${y}年度</option>`).join(''); baseYear.value=DATASETS["2025"]?.questions?.length?"2025":baseYear.options[0]?.value; yearChecks.innerHTML=YEAR_ORDER.map(y=>{const ok=DATASETS[y]?.questions?.length; const note=ok?`${DATASETS[y].questions.length}設問`:(DATASETS[y]?.unsupported?.length?'旧xls未変換':'未読込'); return `<label class="check" title="${ok?'比較対象に含めます':'この年度はJSON化済み設問がありません'}"><input type="checkbox" value="${y}" ${y===baseYear.value?'checked':''} ${ok?'':'disabled'}> <span>${y}年度 <span class="small">${note}</span></span></label>`;}).join('');}
+function setBaseYear(y){DATA=DATASETS[y]; hiddenSeries.clear(); sortMode=false; populateChapters(); populateQuestions();}
+function populateChapters(){const present=[...new Set((DATA?.questions||[]).map(chapterOf))].filter(Boolean).sort((a,b)=>+a-+b); chapterSel.innerHTML='<option value="">すべて</option>'+present.map(k=>`<option value="${esc(k)}">${esc(k)}-${esc(CHAPTERS[k]||('第'+k+'章'))}</option>`).join('');}
+function populateQuestions(){const items=filteredQuestions(); qSel.innerHTML=items.map(({q,i})=>`<option value="${i}">${esc(q.id)}：${esc(q.title)}</option>`).join('') || '<option value="0">該当する設問がありません</option>'; hiddenSeries.clear(); sortMode=false; populateSheets();}
+function populateSheets(){const q=currentQ(); sheetOrder=q?.sheets?.map((_,i)=>i)||[]; sheetChecks.innerHTML=(q?.sheets||[]).map((s,i)=>`<label class="check" title="${esc(sheetHelpText(s.sheet))}"><input type="checkbox" value="${i}" ${i===0?'checked':''}> <span>${esc(sheetDisplayName(s.sheet))} <span class="small">${s.rows.length}属性</span></span></label>`).join('') || '<div class="empty">集計対象がありません。</div>'; sheetOrder=[0]; populateAnswers();}
+function populateAnswers(){const sheets=selectedSheets(); const ans=allAnswersForSheets(sheets.length?sheets:[currentQ()?.sheets?.[0]].filter(Boolean)); const prev=new Set(answerOrder.length?answerOrder:ans.slice(0,1)); answerChecks.innerHTML=ans.map((a,i)=>`<label class="check"><input type="checkbox" value="${esc(a)}" ${prev.has(a)||(!answerOrder.length&&i===0)?'checked':''}> <span>${esc(a)}</span></label>`).join('') || '<div class="empty">選択可能な回答項目がありません。</div>'; answerOrder=[...answerChecks.querySelectorAll('input:checked')].map(i=>i.value); populateChecks(true);}
+function visibleRows(){const kw=filterText.value.trim().toLowerCase(); const q=currentQ(); const rows=[]; const seen=new Set(); selectedSheetIndexes().forEach(si=>{const sheet=q?.sheets?.[si]; if(!sheet)return; sheet.rows.forEach(r=>{const key=si+'||'+r.category+'||'+r.label; const search=(sheet.sheet+' '+r.category+' '+r.label).toLowerCase(); if(kw&&!search.includes(kw))return; if(seen.has(key))return; seen.add(key); rows.push({sheetIndex:si,sheet:sheet.sheet,category:r.category,label:r.label,n:r.n,key});});}); return rows;}
+function populateChecks(initial){const rows=visibleRows(); const prev=new Set([...checks.querySelectorAll('input:checked')].map(i=>i.value)); let out='', last=''; rows.forEach((r,idx)=>{const section=(selectedSheetIndexes().length>1?sheetDisplayName(r.sheet)+' / ':'')+r.category; if(section!==last){out+=`<div class="section attrSection" data-section="${esc(section)}" title="クリックで全選択 / 全解除">${esc(section)}</div>`; last=section;} const checked=initial?idx===0:prev.has(r.key); out+=`<label class="check"><input type="checkbox" value="${esc(r.key)}" ${checked?'checked':''}> <span>${esc(r.label)} <span class="small">N=${esc(r.n)}</span></span></label>`;}); checks.innerHTML=out||'<div class="empty">該当する属性がありません。</div>'; enableAttributeSectionSelect(); render();}
+function selectedAttrKeys(){return [...checks.querySelectorAll('input:checked')].map(i=>i.value);}
+function makeSeries(){const q=currentQ(); const id=q?.id; const answers=answerOrder.filter(a=>selectedAnswers().includes(a)); const years=selectedYears(); const list=[]; years.forEach(y=>{const qy=questionInYear(y,id); if(!qy)return; answers.forEach(ans=>{const exists=selectedSheetIndexes().some(si=>{const baseSheet=q.sheets[si]; const sy=sheetByDisplay(qy,sheetDisplayName(baseSheet.sheet)); return sy&&sy.rows.some(r=>typeof r.values?.[ans]==='number');}); if(exists){const label=(years.length>1?y+' / ':'')+ans; list.push({year:y,answer:ans,label});}});}); return list;}
+function collectRows(){const q=currentQ(); const keys=selectedAttrKeys(); const series=makeSeries(); let rows=keys.map(key=>{const parts=key.split('||'); const baseSi=+parts[0]; const category=parts[1]||''; const rawLabel=parts.slice(2).join('||')||''; const baseSheet=q.sheets[baseSi]; const displayLabel=(selectedSheetIndexes().length>1?sheetDisplayName(baseSheet.sheet)+' / ':'')+rawLabel; const vals=series.map((ser,idx)=>{const qy=questionInYear(ser.year,q.id); const sy=sheetByDisplay(qy,sheetDisplayName(baseSheet.sheet)); const row=sy?.rows?.find(r=>r.category===category&&r.label===rawLabel); return {seriesIndex:idx,value:row&&typeof row.values?.[ser.answer]==='number'?row.values[ser.answer]:null,n:row?row.n:null,category,label:displayLabel,sheet:sy?sheetDisplayName(sy.sheet):sheetDisplayName(baseSheet.sheet),answer:ser.answer,year:ser.year};}); return {key,category,label:displayLabel,values:vals};}); if(sortMode&&series[0])rows=rows.slice().sort((a,b)=>(b.values[0].value??-Infinity)-(a.values[0].value??-Infinity)); return {rows,series};}
+function findHundredPercentSubset(rows, visibleSeries){const n=visibleSeries.length;if(n<=1||n>14)return null; const totals=rows.map(r=>r.values.reduce((a,v)=>a+(typeof v.value==='number'?v.value:0),0)).filter(Number.isFinite); if(!totals.some(v=>v>101))return null; let best=null; for(let mask=1;mask<(1<<n);mask++){const idx=[]; for(let i=0;i<n;i++)if(mask&(1<<i))idx.push(i); if(idx.length<2||idx.length===n)continue; let tested=0,close=0,abs=0,over=0; rows.forEach(r=>{let sum=0,any=false; idx.forEach(i=>{const val=r.values[i]?.value; if(typeof val==='number'){sum+=val; any=true;}}); if(any){tested++; const d=Math.abs(sum-100); abs+=d; if(d<=1.2)close++; if(sum>101.2)over++;}}); if(!tested)continue; const rate=close/tested; if(rate<.70||over>Math.max(1,tested*.15))continue; const score=rate*100-abs/tested-idx.length*.03; if(!best||score>best.score)best={idx,score};} return best;}
+function colorList(){return ['#2f80ed','#0a7f5a','#e18a17','#8b4de8','#e23b3b','#299bad','#7a5af8','#db2777','#65a30d','#f97316','#2563eb','#9333ea'];}
+
+function polarToCartesian(cx,cy,r,angle){
+  const rad=(angle-90)*Math.PI/180;
+  return {x:cx+r*Math.cos(rad), y:cy+r*Math.sin(rad)};
+}
+function donutArcPath(cx,cy,rOuter,rInner,startAngle,endAngle){
+  const largeArc=(endAngle-startAngle)>180?1:0;
+  const p1=polarToCartesian(cx,cy,rOuter,endAngle);
+  const p2=polarToCartesian(cx,cy,rOuter,startAngle);
+  const p3=polarToCartesian(cx,cy,rInner,startAngle);
+  const p4=polarToCartesian(cx,cy,rInner,endAngle);
+  return `M ${p1.x} ${p1.y} A ${rOuter} ${rOuter} 0 ${largeArc} 0 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rInner} ${rInner} 0 ${largeArc} 1 ${p4.x} ${p4.y} Z`;
+}
+
+function splitRowsByYearForComposition(rows, series){
+  const years=[...new Set(series.map(s=>s.year))];
+  const answers=[...new Set(series.map(s=>s.answer))].filter(a=>!hiddenSeries.has(a));
+  const newSeries=answers.map((ans,i)=>({year:'',answer:ans,label:ans,origIndex:i}));
+  const newRows=[];
+  rows.forEach(r=>{
+    years.forEach(y=>{
+      const vals=answers.map((ans,idx)=>{
+        const found=r.values.find(v=>v.year===y && v.answer===ans);
+        if(!found) return {seriesIndex:idx,value:null,n:null,category:r.category,label:(years.length>1?y+' / ':'')+r.label,sheet:'',answer:ans,year:y};
+        return {...found,seriesIndex:idx,label:(years.length>1?y+' / ':'')+r.label,answer:ans,year:y};
+      });
+      if(vals.some(v=>typeof v.value==='number')){
+        newRows.push({...r,key:y+'||'+r.key,label:(years.length>1?y+' / ':'')+r.label,values:vals});
+      }
+    });
+  });
+  return {rows:newRows,series:newSeries};
+}
+
+
+function drawDonutChart(displayRows, visibleSeries, colors, mode, autoStack, allSeries){
+  chart.innerHTML='';
+  tooltip.style.display='none';
+  const wrap=$('chartWrap');
+  const w=Math.max(520,Math.floor(wrap.clientWidth||1000));
+  const rowCount=Math.max(1,displayRows.length);
+  const cols=w>1120?3:(w>760?2:1);
+  const cellW=w/cols;
+  const cellH=250;
+  const h=Math.max(380,Math.ceil(rowCount/cols)*cellH+42);
+  chart.setAttribute('viewBox',`-36 0 ${w+36} ${h}`);
+  applyChartSvgSize(w+36,h);
+
+  displayRows.forEach((r,idx)=>{
+    const col=idx%cols, gridRow=Math.floor(idx/cols);
+    const x0=col*cellW, y0=gridRow*cellH;
+    const cx=x0+cellW/2;
+    const cy=y0+125;
+    const outer=Math.min(74,cellW*.24);
+    const inner=outer*.58;
+    const vals=r.values.map((v,si)=>({v,si,ser:visibleSeries[si]})).filter(x=>typeof x.v.value==='number' && x.v.value>0);
+    const total=vals.reduce((a,x)=>a+x.v.value,0);
+    let angle=-90;
+
+    const title=document.createElementNS('http://www.w3.org/2000/svg','text');
+    title.setAttribute('x',cx);
+    title.setAttribute('y',y0+26);
+    title.setAttribute('text-anchor','middle');
+    title.setAttribute('font-size','12');
+    title.setAttribute('font-weight','700');
+    title.setAttribute('fill','#344054');
+    title.textContent=(r.label.length>40?r.label.slice(0,39)+'…':r.label);
+    chart.appendChild(title);
+
+    if(!total){
+      const empty=document.createElementNS('http://www.w3.org/2000/svg','text');
+      empty.setAttribute('x',cx); empty.setAttribute('y',cy);
+      empty.setAttribute('text-anchor','middle'); empty.setAttribute('fill','#667085');
+      empty.setAttribute('font-size','12'); empty.textContent='データなし';
+      chart.appendChild(empty);
+      return;
+    }
+
+    let maxItem=null;
+    vals.forEach(x=>{if(!maxItem || x.v.value>maxItem.v.value) maxItem=x;});
+
+    vals.forEach(({v,si,ser})=>{
+      const delta=(v.value/total)*360;
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',donutArcPath(cx,cy,outer,inner,angle,angle+delta));
+      path.setAttribute('fill',colors[(ser?.origIndex??si)%colors.length]);
+      path.setAttribute('stroke','#fff');
+      path.setAttribute('stroke-width','2');
+      path.setAttribute('class','bar');
+      path.addEventListener('mousemove',ev=>{
+        tooltip.innerHTML=`<b>${esc(r.label)}</b><br>${esc(v.year)}年度<br>${esc(v.sheet)} / ${esc(v.answer)}：${fmt(v.value)}%<br>構成比：${fmt(v.value/total*100)}%<br>N：${esc(v.n)}`;
+        const box=wrap.getBoundingClientRect();
+        tooltip.style.left=(ev.clientX-box.left+12)+'px';
+        tooltip.style.top=(ev.clientY-box.top+12)+'px';
+        tooltip.style.display='block';
+      });
+      path.addEventListener('mouseleave',()=>tooltip.style.display='none');
+      path.addEventListener('click',ev=>{ev.stopPropagation(); if(ser){hiddenSeries.add(ser.label); render();}});
+      chart.appendChild(path);
+      angle+=delta;
+    });
+
+    const main=maxItem?.v?.answer||'';
+    const mainShort=main.length>8?main.slice(0,7)+'…':main;
+    const largest=vals.slice().sort((a,b)=>b.v.value-a.v.value)[0];
+    const mainLabel=largest?.v?.answer||'';
+    const mainValue=largest?.v?.value;
+
+    const c1=document.createElementNS('http://www.w3.org/2000/svg','text');
+    c1.setAttribute('x',cx); c1.setAttribute('y',cy-4); c1.setAttribute('class','donutCenterText');
+    c1.setAttribute('font-weight','700');
+    c1.textContent=mainShort;
+    chart.appendChild(c1);
+    const c2=document.createElementNS('http://www.w3.org/2000/svg','text');
+    c2.setAttribute('x',cx); c2.setAttribute('y',cy+14); c2.setAttribute('class','donutCenterText');
+    c2.setAttribute('font-weight','800');
+    c2.textContent=fmt(maxItem?.v?.value||0)+'%';
+    chart.appendChild(c2);
   });
 
-  if(!res.ok){
-    throw new Error('認証サーバーに接続できません。');
+  if(!displayRows.length || !visibleSeries.length){
+    const tx=document.createElementNS('http://www.w3.org/2000/svg','text');
+    tx.setAttribute('x',w/2);tx.setAttribute('y',h/2);tx.setAttribute('text-anchor','middle');tx.setAttribute('fill','#667085');
+    tx.textContent='年度・集計対象・回答項目・属性を選択してください';
+    chart.appendChild(tx);
   }
 
-  const text = await res.text();
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch(e) {
-    throw new Error('認証サーバーの応答を読み取れません。');
-  }
-
-  return !!data.ok;
+  const legendSource=(allSeries||visibleSeries).map((s,i)=>({...s,origIndex:i}));
+  $('legend').innerHTML=legendSource.map((s,i)=>`<span data-series="${esc(s.label)}" title="${esc(s.label)}" class="${hiddenSeries.has(s.label)?'off':''}"><span class="sw" style="background:${colors[(s.origIndex??i)%colors.length]};opacity:${hiddenSeries.has(s.label)?.25:.9}"></span>${esc(s.label)}</span>`).join('')+(autoStack?'<span class="small">※100%構成に自動補正中</span>':'');
+  $('legend').querySelectorAll('[data-series]').forEach(el=>el.addEventListener('click',()=>{const k=el.getAttribute('data-series'); hiddenSeries.has(k)?hiddenSeries.delete(k):hiddenSeries.add(k); render();}));
 }
 
-async function authenticate(){
-  const input=document.getElementById('staffCode');
-  const btn=document.getElementById('authBtn');
-  const err=document.getElementById('authError');
-  const code=(input.value||'').trim();
 
-  if(!/^.+\d{6}$/.test(code)){
-    err.textContent='担当者コードの形式が正しくありません。';
+
+function enableAttributeSectionSelect(){
+  checks.querySelectorAll('.attrSection').forEach(sec=>{
+    sec.addEventListener('click',()=>{
+      let el=sec.nextElementSibling;
+      const boxes=[];
+      while(el && !el.classList.contains('section')){
+        const cb=el.querySelector ? el.querySelector('input[type="checkbox"]') : null;
+        if(cb) boxes.push(cb);
+        el=el.nextElementSibling;
+      }
+      const allChecked = boxes.length>0 && boxes.every(cb=>cb.checked);
+      boxes.forEach(cb=>cb.checked=!allChecked);
+      render();
+    });
+  });
+}
+
+function selectedCategoryTitle(rows){
+  const cats=[...new Set((rows||[]).map(r=>r.category).filter(Boolean))];
+  if(cats.length===1) return cats[0];
+  if(cats.length>1) return cats.join('・');
+  const checked=[...checks.querySelectorAll('input:checked')];
+  const sections=[];
+  checked.forEach(cb=>{
+    let el=cb.closest('label');
+    let prev=el?el.previousElementSibling:null;
+    while(prev && !prev.classList?.contains('section')) prev=prev.previousElementSibling;
+    if(prev && !sections.includes(prev.textContent.trim())) sections.push(prev.textContent.trim());
+  });
+  return sections.join('・');
+}
+
+function drawChart(rows,series){chart.innerHTML=''; tooltip.style.display='none'; const mode=(document.querySelector('input[name="chartMode"]:checked')||{}).value||'overlay'; const colors=colorList(); let baseVisibleSeries=series.map((s,i)=>({...s,origIndex:i})).filter(s=>!hiddenSeries.has(s.label) && !hiddenSeries.has(s.answer));
+let baseDisplayRows=rows.map(r=>({...r,values:r.values.filter((v,i)=>!hiddenSeries.has(series[i]?.label) && !hiddenSeries.has(series[i]?.answer))}));
+let visibleSeries=baseVisibleSeries, displayRows=baseDisplayRows;
+if(mode==='stack'||mode==='donut'){
+  const split=splitRowsByYearForComposition(rows, series);
+  visibleSeries=split.series.filter(s=>!hiddenSeries.has(s.label));
+  displayRows=split.rows.map(r=>({...r,values:r.values.filter((v,i)=>!hiddenSeries.has(split.series[i]?.label))}));
+  baseVisibleSeries=visibleSeries;
+  baseDisplayRows=displayRows;
+} const warn=$('stackWarn'); warn.innerHTML=''; let autoStack=false, excluded=[]; if(mode==='stack'||mode==='donut'){const sums=baseDisplayRows.map(r=>r.values.reduce((a,v)=>a+(typeof v.value==='number'?v.value:0),0)); if(sums.some(v=>v>101)){const subset=findHundredPercentSubset(baseDisplayRows,baseVisibleSeries); if(subset){const keep=new Set(subset.idx); excluded=baseVisibleSeries.filter((_,i)=>!keep.has(i)).map(s=>s.label); visibleSeries=baseVisibleSeries.filter((_,i)=>keep.has(i)); displayRows=baseDisplayRows.map(r=>({...r,values:r.values.filter((_,i)=>keep.has(i))})); autoStack=true; warn.innerHTML=`<details class="warnIcon"><summary title="積み上げ表示の自動補正">⚠️</summary><div><b>積み上げ表示の自動補正：</b>選択項目の合計が100%を超えたため、重複集計項目を除外し、100%構成になる回答項目のみで表示しています。<div style="font-weight:800;margin-top:6px">除外項目</div><ul>${excluded.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></details>`;}else{warn.innerHTML='<details class="warnIcon"><summary title="積み上げ表示の注意">⚠️</summary><div><b>積み上げ表示の注意：</b>選択された回答項目に重複集計項目が含まれている可能性があります。100%構成になる組み合わせを自動判定できませんでした。</div></details>';}}}
+if(mode==='donut'){drawDonutChart(displayRows,visibleSeries,colors,mode,autoStack,series);return;}
+const wrap=$('chartWrap');
+const longestLabel=Math.max(4,...displayRows.map(r=>String(r.label||'').length));
+const ml=Math.min(380,Math.max(190,longestLabel*10+56));
+const w=Math.max(760,Math.floor(wrap.clientWidth||1000)), h=560, mr=42, mt=28, mb=98; chart.setAttribute('viewBox',`-36 0 ${w+36} ${h}`); applyChartSvgSize(w+36,h); const nums=[]; displayRows.forEach(r=>r.values.forEach(v=>{if(typeof v.value==='number')nums.push(v.value)})); const max=mode==='stack'?100:Math.max(100,...nums,1); const plotW=w-ml-mr, plotH=h-mt-mb, n=displayRows.length, gap=8; const slotH=Math.max(26,Math.min(54,(plotH-(n-1)*gap)/Math.max(n,1))); const groupGap=2; const barH=mode==='stack'?Math.max(8,slotH*.72):Math.max(4,Math.min(14,(slotH-groupGap*Math.max(0,visibleSeries.length-1))/Math.max(1,visibleSeries.length))); const scale=v=>ml+(Math.min(v,max)/max)*plotW; function line(x1,y1,x2,y2,stroke='#d0d5dd'){const e=document.createElementNS('http://www.w3.org/2000/svg','line'); e.setAttribute('x1',x1);e.setAttribute('y1',y1);e.setAttribute('x2',x2);e.setAttribute('y2',y2);e.setAttribute('stroke',stroke);chart.appendChild(e);}
+for(let t=0;t<=max;t+=20){const x=scale(t); line(x,mt,x,mt+plotH,'#edf1f7'); const tx=document.createElementNS('http://www.w3.org/2000/svg','text'); tx.setAttribute('x',x);tx.setAttribute('y',mt+plotH+22);tx.setAttribute('text-anchor','middle');tx.setAttribute('font-size','11');tx.setAttribute('fill','#667085');tx.textContent=t+'%'; chart.appendChild(tx);} line(ml,mt+plotH,w-mr,mt+plotH,'#98a2b3');
+displayRows.forEach((r,i)=>{const y=mt+i*(slotH+gap); const lab=document.createElementNS('http://www.w3.org/2000/svg','text'); lab.setAttribute('x',ml-14);lab.setAttribute('y',y+slotH*.58);lab.setAttribute('text-anchor','end');lab.setAttribute('font-size',n>18?'10':'12');lab.setAttribute('fill','#344054');lab.textContent=(r.label.length>34?r.label.slice(0,33)+'…':r.label); chart.appendChild(lab); let acc=0; r.values.forEach((v,si)=>{if(typeof v.value!=='number')return; const ser=visibleSeries[si]; const rect=document.createElementNS('http://www.w3.org/2000/svg','rect'); let x=ml,width=Math.max(2,scale(v.value)-ml),yPos=y+(slotH-barH)/2,opacity=1; if(mode==='stack'){x=scale(acc); width=Math.max(2,scale(acc+v.value)-scale(acc)); acc+=v.value; opacity=.9;}else{const totalH=visibleSeries.length*barH+(visibleSeries.length-1)*groupGap; yPos=y+Math.max(0,(slotH-totalH)/2)+si*(barH+groupGap); opacity=Math.max(.38,1-si*.08);} rect.setAttribute('class','bar'); rect.setAttribute('x',x);rect.setAttribute('y',yPos);rect.setAttribute('width',width);rect.setAttribute('height',barH);rect.setAttribute('rx',mode==='stack'?2:3);rect.setAttribute('fill',colors[(ser?.origIndex??si)%colors.length]);rect.setAttribute('fill-opacity',String(opacity));rect.setAttribute('stroke','#fff');rect.setAttribute('stroke-opacity','.75'); rect.addEventListener('mousemove',ev=>{const total=r.values.reduce((a,z)=>a+(typeof z.value==='number'?z.value:0),0); tooltip.innerHTML=`<b>${esc(r.label)}</b><br>${esc(v.year)}年度<br>${esc(v.sheet)} / ${esc(v.answer)}：${fmt(v.value)}%<br>N：${esc(v.n)}${mode==='stack'?'<br>表示項目合計：'+fmt(total)+'%':''}`; const box=wrap.getBoundingClientRect(); tooltip.style.left=(ev.clientX-box.left+12)+'px'; tooltip.style.top=(ev.clientY-box.top+12)+'px'; tooltip.style.display='block';}); rect.addEventListener('mouseleave',()=>tooltip.style.display='none'); rect.addEventListener('click',ev=>{ev.stopPropagation(); if(ser){hiddenSeries.add(ser.label); render();}}); chart.appendChild(rect);});});
+if(!displayRows.length||!visibleSeries.length){const tx=document.createElementNS('http://www.w3.org/2000/svg','text'); tx.setAttribute('x',w/2);tx.setAttribute('y',h/2);tx.setAttribute('text-anchor','middle');tx.setAttribute('fill','#667085');tx.textContent='年度・集計対象・回答項目・属性を選択してください';chart.appendChild(tx);}
+const legendSource=series.map((s,i)=>({...s,origIndex:i}));
+  $('legend').innerHTML=legendSource.map((s,i)=>`<span data-series="${esc(s.label)}" title="${esc(s.label)}" class="${hiddenSeries.has(s.label)?'off':''}"><span class="sw" style="background:${colors[(s.origIndex??i)%colors.length]};opacity:${hiddenSeries.has(s.label)?.25:(mode==='stack'?.9:Math.max(.38,1-i*.08))}"></span>${esc(s.label)}</span>`).join('')+(autoStack?'<span class="small">※100%構成に自動補正中</span>':'');
+  $('legend').querySelectorAll('[data-series]').forEach(el=>el.addEventListener('click',()=>{const k=el.getAttribute('data-series'); hiddenSeries.has(k)?hiddenSeries.delete(k):hiddenSeries.add(k); render();}));}
+function drawTable(rows,series){
+  const shouldTranspose = series.length > Math.max(4, rows.length * 1.5);
+  if(shouldTranspose){
+    const headers=['項目'].concat(rows.map(r=>r.label));
+    table.innerHTML='<thead><tr>'+headers.map(h=>`<th>${esc(h)}</th>`).join('')+'</tr></thead><tbody>'+
+      series.map((s,si)=>{
+        return '<tr><td>'+esc(s.label)+'</td>'+
+          rows.map(r=>{
+            const v=r.values[si];
+            const val=typeof v?.value==='number'?fmt(v.value)+'%':'-';
+            const n=v?.n??'-';
+            return `<td>${val}<span class="small"> / N=${n}</span></td>`;
+          }).join('')+'</tr>';
+      }).join('')+'</tbody>';
     return;
   }
 
-  btn.disabled=true;
-  btn.textContent='確認中...';
-  err.textContent='';
+  let headers=['属性分類','属性'];
+  series.forEach((s,i)=>headers.push(`${s.label}`,`N${i+1}`));
+  table.innerHTML='<thead><tr>'+headers.map(h=>`<th>${esc(h)}</th>`).join('')+'</tr></thead><tbody>'+
+    rows.map(r=>'<tr><td>'+esc(r.category)+'</td><td>'+esc(r.label)+'</td>'+
+      r.values.map(v=>`<td>${typeof v.value==='number'?fmt(v.value)+'%':'-'}</td><td>${v.n??'-'}</td>`).join('')+
+    '</tr>').join('')+'</tbody>';
+}
+function render(){if(!DATA)return; sheetOrder=updateOrder(sheetChecks,sheetOrder,true); answerOrder=updateOrder(answerChecks,answerOrder,false); const q=currentQ(); const {rows,series}=collectRows(); const groupTitle=selectedCategoryTitle(rows); $('chartGroupTitle').textContent=groupTitle||''; $('qBadge').textContent=`${q?.id||''} / ${selectedYears().join('・')}年度`; $('chartTitle').textContent=q?.title||''; $('chartSub').textContent=`選択属性 ${rows.length}件 / 集計対象 ${selectedSheetIndexes().length}件 / 回答項目 ${selectedAnswers().length}件 / 系列 ${series.length}件`; drawChart(rows,series); drawTable(rows,series);}
+async function loadAll(){const msg=$('loadMsg'); const promises=YEAR_ORDER.map(async y=>{try{const r=await fetch(FILES[y],{cache:'no-store'}); if(!r.ok)throw new Error(r.status); DATASETS[y]=await r.json(); DATASETS[y].year=y;}catch(e){DATASETS[y]={year:y,questions:[],unsupported:[],loadError:String(e)}}}); await Promise.all(promises); if(!DATASETS["2025"]?.questions?.length){document.body.classList.add('loadError'); msg.style.display='block'; msg.textContent='JSONを自動読込できませんでした。GitHub Pages等で公開するか、ローカル表示ではJSONファイルを手動選択してください。';} initUI();}
+function initUI(){populateYears(); const y=baseYear.value||YEAR_ORDER.find(y=>DATASETS[y]?.questions?.length); if(y)setBaseYear(y);}
+baseYear.addEventListener('change',()=>{yearChecks.querySelectorAll('input').forEach(i=>{if(i.value===baseYear.value)i.checked=true}); setBaseYear(baseYear.value);});
+yearChecks.addEventListener('change',()=>{hiddenSeries.clear(); render();});
+chapterSel.addEventListener('change',populateQuestions); qSel.addEventListener('change',()=>{hiddenSeries.clear(); sortMode=false; populateSheets();});
+sheetChecks.addEventListener('change',()=>{hiddenSeries.clear(); populateAnswers();}); answerChecks.addEventListener('change',()=>{hiddenSeries.clear(); render();});
+checks.addEventListener('change',render); filterText.addEventListener('input',()=>populateChecks(false));
+document.querySelectorAll('input[name="chartMode"]').forEach(r=>r.addEventListener('change',()=>{hiddenSeries.clear(); render();}));
+$('sheetAll').onclick=()=>{sheetChecks.querySelectorAll('input').forEach(i=>i.checked=true); populateAnswers();}; $('sheetClear').onclick=()=>{sheetChecks.querySelectorAll('input').forEach(i=>i.checked=false); populateAnswers();};
+$('answerAll').onclick=()=>{answerChecks.querySelectorAll('input').forEach(i=>i.checked=true); hiddenSeries.clear(); render();}; $('answerClear').onclick=()=>{answerChecks.querySelectorAll('input').forEach(i=>i.checked=false); hiddenSeries.clear(); render();};
+$('selectShown').onclick=()=>{checks.querySelectorAll('input').forEach(i=>i.checked=true); render();}; $('clearAll').onclick=()=>{checks.querySelectorAll('input').forEach(i=>i.checked=false); render();};
+$('sortBtn').onclick=()=>{sortMode=true; render();}; $('resetSort').onclick=()=>{sortMode=false; render();};
+$('sideToggle').onclick=()=>{document.body.classList.toggle('sidebar-collapsed'); $('sideToggle').textContent=document.body.classList.contains('sidebar-collapsed')?'+':'−'; setTimeout(render,50);};
+$('agreeBtn').onclick=()=>document.body.classList.remove('consent-pending');
+$('jsonFiles').addEventListener('change',async ev=>{for(const f of ev.target.files){const txt=await f.text(); const d=JSON.parse(txt); const y=String(d.year||f.name.match(/(20\d{2})/)?.[1]||''); if(y)DATASETS[y]=d;} document.body.classList.remove('loadError'); $('loadMsg').style.display='none'; initUI();});
 
-  try{
-    const ok=await authByAppsScript(code);
-    if(!ok){
-      err.textContent='担当者コードが正しくありません。';
-      return;
-    }
-    currentCode=code;
-    document.body.classList.remove('locked');
-    document.getElementById('authOverlay').style.display='none';
-    addLog('login','page_open');
-  }catch(e){
-    err.textContent=e.message || '認証に失敗しました。';
-  }finally{
-    btn.disabled=false;
-    btn.textContent='同意する';
+const chartScaleEl=document.getElementById('chartScale');
+const chartScaleVal=document.getElementById('chartScaleVal');
+if(chartScaleEl){
+  chartScaleEl.addEventListener('input',()=>{
+    if(chartScaleVal) chartScaleVal.textContent=chartScaleEl.value+'%';
+    render();
+  });
+  if(chartScaleVal) chartScaleVal.textContent=chartScaleEl.value+'%';
+}
+
+window.addEventListener('resize',()=>{try{render()}catch(e){}});
+loadAll();
+})();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const yearToggle=document.getElementById('yearGroupToggle');
+  if(yearToggle){
+    yearToggle.addEventListener('click',()=>{
+      const boxes=[...document.querySelectorAll('#years input[type="checkbox"]')];
+      const allChecked=boxes.length>0 && boxes.every(cb=>cb.checked);
+      boxes.forEach(cb=>cb.checked=!allChecked);
+      if(typeof render==='function') render();
+    });
   }
-}
-
-document.getElementById('authBtn').addEventListener('click',authenticate);
-document.getElementById('staffCode').addEventListener('keydown',e=>{if(e.key==='Enter')authenticate();});
-
-document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.getElementById(btn.dataset.target).classList.add('active');
-  applySearch();
-}));
-
-function applySearch(){
-  const q=(document.getElementById('q').value||'').toLowerCase().trim();
-  document.querySelectorAll('.company').forEach(c=>{
-    const hit=!q||c.textContent.toLowerCase().includes(q);
-    c.style.display=hit?'':'none';
-  });
-}
-document.getElementById('q').addEventListener('input',applySearch);
-
-document.querySelectorAll('a[href^="tel:"]').forEach(a=>{
-  a.addEventListener('click',()=>{
-    const entry=a.closest('.entry');
-    const company=a.closest('.company')?.dataset.company||a.closest('.company')?.querySelector('summary span')?.textContent?.trim()||'';
-    const label=entry?.querySelector('.item')?.textContent?.trim()||'';
-    const phone=a.textContent.trim();
-    addLog('tel','call_tap',{company,label,phone});
-  });
 });
-</script></body></html>
+</script>
+
+
+</body>
+</html>
