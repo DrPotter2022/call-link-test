@@ -439,43 +439,38 @@ function addLog(type,target,extra={}){
   sendRemoteLog(entry);
 }
 
-function authByAppsScript(code){
-  return new Promise((resolve,reject)=>{
-    if(!isRemoteEnabled()) {
-      reject(new Error('Apps Script URLが未設定です。'));
-      return;
-    }
-    const cb='authCallback_'+Date.now()+'_'+Math.random().toString(36).slice(2);
-    const script=document.createElement('script');
-    const timer=setTimeout(()=>{
-      cleanup();
-      reject(new Error('認証サーバーから応答がありません。'));
-    },10000);
 
-    function cleanup(){
-      clearTimeout(timer);
-      try{delete window[cb]}catch(e){window[cb]=undefined}
-      script.remove();
-    }
+async function authByAppsScript(code){
+  if(!isRemoteEnabled()) {
+    throw new Error('Apps Script URLが未設定です。');
+  }
 
-    window[cb]=function(res){
-      cleanup();
-      resolve(!!(res && res.ok));
-    };
+  const url = APPS_SCRIPT_WEB_APP_URL
+    + '?action=auth'
+    + '&code=' + encodeURIComponent(code)
+    + '&t=' + Date.now();
 
-    script.onerror=function(){
-      cleanup();
-      reject(new Error('認証サーバーに接続できません。'));
-    };
-
-    const url=APPS_SCRIPT_WEB_APP_URL
-      +'?action=auth'
-      +'&code='+encodeURIComponent(code)
-      +'&callback='+encodeURIComponent(cb)
-      +'&t='+Date.now();
-    script.src=url;
-    document.body.appendChild(script);
+  const res = await fetch(url, {
+    method: 'GET',
+    mode: 'cors',
+    credentials: 'omit',
+    cache: 'no-store',
+    redirect: 'follow'
   });
+
+  if(!res.ok){
+    throw new Error('認証サーバーに接続できません。');
+  }
+
+  const text = await res.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch(e) {
+    throw new Error('認証サーバーの応答を読み取れません。');
+  }
+
+  return !!data.ok;
 }
 
 async function authenticate(){
