@@ -8,8 +8,8 @@
 :root{--bg:#f6f8fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#d9e1ee;--accent:#1f6feb;--warn:#fff7e6;--warnline:#ffb020}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
 header{padding:18px 24px;background:linear-gradient(135deg,#12385f,#1f6feb);color:#fff}h1{font-size:20px;margin:0 0 6px}.sub{font-size:12px;opacity:.92;line-height:1.5}.source a{color:#fff;text-decoration:underline}
-main{max-width:1540px;margin:auto;padding:14px}.grid{display:grid;grid-template-columns:360px 1fr;gap:14px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 8px 18px rgba(16,24,40,.05)}
-body.sidebar-collapsed aside{display:none}body.sidebar-collapsed .grid{grid-template-columns:1fr}.topbar{margin:0 0 10px}.sideToggle{width:38px;height:34px;font-size:20px;font-weight:800;background:#fff;border:1px solid var(--line);border-radius:9px}
+main{max-width:1540px;margin:auto;padding:14px}.grid{display:grid;grid-template-columns:360px minmax(0,1fr);gap:14px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 8px 18px rgba(16,24,40,.05)}
+body.sidebar-collapsed aside{display:none}body.sidebar-collapsed .grid{grid-template-columns:minmax(0,1fr)}.topbar{margin:0 0 10px}.sideToggle{width:38px;height:34px;font-size:20px;font-weight:800;background:#fff;border:1px solid var(--line);border-radius:9px}
 label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}select,input[type=text]{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:10px;background:#fff}button{padding:7px 10px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer}button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:800}
 .row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.toolrow{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.small{font-size:12px;color:var(--muted)}.pill{display:inline-block;background:#eef4ff;color:#1849a9;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:800}
 .checks{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:8px;background:#fbfdff}.check{display:flex;gap:6px;align-items:flex-start;font-weight:650;font-size:13px;margin:6px 0}.check input{margin-top:2px}.section{font-weight:800;color:#344054;border-top:1px solid #e5e7eb;margin-top:10px;padding-top:8px}.section:first-child{border-top:0;margin-top:0;padding-top:0}
@@ -382,6 +382,62 @@ main,.grid,.card,section.card{
   left:auto!important;
 }
 
+
+/* Final fix: keep wide data table inside its own horizontal scroll box */
+html,body{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+}
+main,.grid,.card,section.card{
+  min-width:0!important;
+  max-width:100%!important;
+}
+section.card{
+  overflow:hidden!important;
+}
+.tablewrap{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:scroll!important;
+  overflow-y:auto!important;
+  max-height:420px!important;
+  box-sizing:border-box!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.tablewrap table{
+  display:table!important;
+  width:max-content!important;
+  min-width:max-content!important;
+  max-width:none!important;
+  table-layout:auto!important;
+}
+.tablewrap th,
+.tablewrap td{
+  white-space:nowrap!important;
+}
+.tablewrap thead th{
+  position:sticky!important;
+  top:0!important;
+  z-index:3!important;
+  background:#f8fafc!important;
+}
+
+
+.autoStackToggle{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  margin:10px 0 4px!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  cursor:pointer!important;
+}
+.autoStackToggle input{width:auto!important}
+
 </style>
 </head>
 <body class="consent-pending">
@@ -409,6 +465,15 @@ main,.grid,.card,section.card{
   <label title="積み上げグラフ"><input type="radio" name="chartMode" value="stack"><span class="modeIcon">▰</span><span>積み上げ</span></label>
   <label title="ドーナツグラフ"><input type="radio" name="chartMode" value="donut"><span class="modeIcon">◉</span><span>ドーナツ</span></label>
 </div>
+
+<label class="autoStackToggle">
+  <input id="autoStackFix" type="checkbox" checked>
+  <span>積み上げ・ドーナツの自動補正を有効にする</span>
+</label>
+<div class="small" style="margin:4px 0 8px;line-height:1.5">
+  オフにすると、重複集計項目が含まれて100%を超える場合でも選択項目をそのまま表示します。
+</div>
+
 <label>属性検索</label><input type="text" id="filterText" placeholder="例：30歳代、年収、持家、会社員">
 <div class="toolrow"><button id="selectShown">表示中を全選択</button><button id="clearAll">全解除</button></div>
 <label>属性区分（複数選択）</label><div id="checks" class="checks"></div>
@@ -419,7 +484,7 @@ main,.grid,.card,section.card{
   <div><span id="qBadge" class="pill"></span><h2 id="chartTitle" style="font-size:18px;margin:8px 0 0"></h2><div id="chartSub" class="small"></div><div id="stackWarn" style="margin-top:8px"></div></div>
   
 </div>
-<div id="chartGroupTitle" class="chartGroupTitle"></div><div class="chartSizeBox">グラフサイズ <input id="chartScale" type="range" min="60" max="220" value="100"><span id="chartScaleVal">100%</span></div>
+<div id="chartGroupTitle" class="chartGroupTitle"></div><div class="chartSizeBox">グラフサイズ <input id="chartScale" type="range" min="10" max="220" value="100"><span id="chartScaleVal">100%</span></div>
 <div id="chartWrap"><svg id="chart"></svg><div id="tooltip" class="tooltip"></div></div>
 <div class="chartBottomControls"><button class="primary" id="sortBtn">値順に並替</button><button id="resetSort">元の順序</button></div>
 <div id="legend" class="legend"></div>
@@ -445,7 +510,7 @@ function chapterOf(q){const m=String(q.id||q.file||'').match(/^(\d+)/); return m
 function chartScaleValue(){
   const el=document.getElementById('chartScale');
   const v=el?Number(el.value):100;
-  return Number.isFinite(v) ? Math.max(60,Math.min(220,v))/100 : 1;
+  return Number.isFinite(v) ? Math.max(10,Math.min(220,v))/100 : 1;
 }
 function applyChartSvgSize(w,h){
   const scale=chartScaleValue();
@@ -650,6 +715,12 @@ function selectedCategoryTitle(rows){
   return sections.join('・');
 }
 
+
+function isAutoStackFixEnabled(){
+  const el=document.getElementById('autoStackFix');
+  return !el || el.checked;
+}
+
 function drawChart(rows,series){chart.innerHTML=''; tooltip.style.display='none'; const mode=(document.querySelector('input[name="chartMode"]:checked')||{}).value||'overlay'; const colors=colorList(); let baseVisibleSeries=series.map((s,i)=>({...s,origIndex:i})).filter(s=>!hiddenSeries.has(s.label) && !hiddenSeries.has(s.answer));
 let baseDisplayRows=rows.map(r=>({...r,values:r.values.filter((v,i)=>!hiddenSeries.has(series[i]?.label) && !hiddenSeries.has(series[i]?.answer))}));
 let visibleSeries=baseVisibleSeries, displayRows=baseDisplayRows;
@@ -659,7 +730,15 @@ if(mode==='stack'||mode==='donut'){
   displayRows=split.rows.map(r=>({...r,values:r.values.filter((v,i)=>!hiddenSeries.has(split.series[i]?.label))}));
   baseVisibleSeries=visibleSeries;
   baseDisplayRows=displayRows;
-} const warn=$('stackWarn'); warn.innerHTML=''; let autoStack=false, excluded=[]; if(mode==='stack'||mode==='donut'){const sums=baseDisplayRows.map(r=>r.values.reduce((a,v)=>a+(typeof v.value==='number'?v.value:0),0)); if(sums.some(v=>v>101)){const subset=findHundredPercentSubset(baseDisplayRows,baseVisibleSeries); if(subset){const keep=new Set(subset.idx); excluded=baseVisibleSeries.filter((_,i)=>!keep.has(i)).map(s=>s.label); visibleSeries=baseVisibleSeries.filter((_,i)=>keep.has(i)); displayRows=baseDisplayRows.map(r=>({...r,values:r.values.filter((_,i)=>keep.has(i))})); autoStack=true; warn.innerHTML=`<details class="warnIcon"><summary title="積み上げ表示の自動補正">⚠️</summary><div><b>積み上げ表示の自動補正：</b>選択項目の合計が100%を超えたため、重複集計項目を除外し、100%構成になる回答項目のみで表示しています。<div style="font-weight:800;margin-top:6px">除外項目</div><ul>${excluded.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></details>`;}else{warn.innerHTML='<details class="warnIcon"><summary title="積み上げ表示の注意">⚠️</summary><div><b>積み上げ表示の注意：</b>選択された回答項目に重複集計項目が含まれている可能性があります。100%構成になる組み合わせを自動判定できませんでした。</div></details>';}}}
+} const warn=$('stackWarn'); warn.innerHTML=''; let autoStack=false, excluded=[]; if((mode==='stack'||mode==='donut') && isAutoStackFixEnabled()){const sums=baseDisplayRows.map(r=>r.values.reduce((a,v)=>a+(typeof v.value==='number'?v.value:0),0)); if(sums.some(v=>v>101)){const subset=findHundredPercentSubset(baseDisplayRows,baseVisibleSeries); if(subset){const keep=new Set(subset.idx); excluded=baseVisibleSeries.filter((_,i)=>!keep.has(i)).map(s=>s.label); visibleSeries=baseVisibleSeries.filter((_,i)=>keep.has(i)); displayRows=baseDisplayRows.map(r=>({...r,values:r.values.filter((_,i)=>keep.has(i))})); autoStack=true; warn.innerHTML=`<details class="warnIcon"><summary title="積み上げ表示の自動補正">⚠️</summary><div><b>積み上げ表示の自動補正：</b>選択項目の合計が100%を超えたため、重複集計項目を除外し、100%構成になる回答項目のみで表示しています。<div style="font-weight:800;margin-top:6px">除外項目</div><ul>${excluded.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></details>`;}else{warn.innerHTML='<details class="warnIcon"><summary title="積み上げ表示の注意">⚠️</summary><div><b>積み上げ表示の注意：</b>選択された回答項目に重複集計項目が含まれている可能性があります。100%構成になる組み合わせを自動判定できませんでした。</div></details>';}}}
+
+if((mode==='stack'||mode==='donut') && !isAutoStackFixEnabled()){
+  const rawSums=baseDisplayRows.map(r=>r.values.reduce((a,v)=>a+(typeof v.value==='number'?v.value:0),0));
+  if(rawSums.some(v=>v>101)){
+    warn.innerHTML='<details class="warnIcon" open><summary title="自動補正オフ">⚠️</summary><div><b>自動補正オフ：</b>選択項目に重複集計項目が含まれている可能性があります。100%を超える場合でも、選択項目をそのまま表示しています。</div></details>';
+  }
+}
+
 if(mode==='donut'){drawDonutChart(displayRows,visibleSeries,colors,mode,autoStack,series);return;}
 const wrap=$('chartWrap');
 const longestLabel=Math.max(4,...displayRows.map(r=>String(r.label||'').length));
@@ -720,6 +799,12 @@ if(chartScaleEl){
     render();
   });
   if(chartScaleVal) chartScaleVal.textContent=chartScaleEl.value+'%';
+}
+
+
+const autoStackFixEl=document.getElementById('autoStackFix');
+if(autoStackFixEl){
+  autoStackFixEl.addEventListener('change',()=>{hiddenSeries.clear(); render();});
 }
 
 window.addEventListener('resize',()=>{try{render()}catch(e){}});
