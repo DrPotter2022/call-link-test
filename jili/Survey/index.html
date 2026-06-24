@@ -20,7 +20,7 @@ label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}select,inpu
 .tablewrap{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:12px;margin-top:10px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border-bottom:1px solid #e5e7eb;padding:7px;text-align:right;white-space:nowrap}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}th{position:sticky;top:0;background:#f8fafc;z-index:1}.empty{padding:10px;color:var(--muted);font-size:13px}
 .consentLayer{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.35);padding:18px}.consentBox{max-width:640px;background:#fff;border-radius:16px;padding:22px;border:1px solid var(--line);box-shadow:0 20px 60px rgba(15,23,42,.25)}.consentBox h2{margin:0 0 12px;font-size:18px}.consentBox p{line-height:1.8;margin:0 0 14px}.consentBox button{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:800;padding:10px 18px}body.consent-pending header,body.consent-pending main{filter:blur(5px);pointer-events:none;user-select:none}body:not(.consent-pending) .consentLayer{display:none}
 .fileFallback{display:none;margin-top:8px}.loadError .fileFallback{display:block}
-@media(max-width:900px){main{padding:10px}.grid{grid-template-columns:1fr}.checks{max-height:190px}header{padding:16px 12px}h1{font-size:18px}.card{padding:10px}svg{height:520px}.tablewrap{max-height:300px}}@media(max-width:520px){.topbar{position:sticky;top:0;z-index:10;background:var(--bg);padding:6px 0}.sideToggle{width:100%}.checks{max-height:165px}svg{height:500px}th,td{padding:6px}.sub{font-size:12px}}
+@media(max-width:900px){main{padding:10px}.grid{grid-template-columns:1fr}.checks{max-height:190px}header{padding:16px 12px}h1{font-size:18px}.card{padding:10px}svg:not(#chart){height:520px}.tablewrap{max-height:300px}}@media(max-width:520px){.topbar{position:sticky;top:0;z-index:10;background:var(--bg);padding:6px 0}.sideToggle{width:100%}.checks{max-height:165px}svg:not(#chart){height:500px}th,td{padding:6px}.sub{font-size:12px}}
 
 .chartModeIcons{
   display:grid;
@@ -168,6 +168,47 @@ overflow:visible!important;
   max-width:none!important;
 }
 
+
+#legend{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  justify-content:center!important;
+  align-items:flex-start!important;
+  gap:8px 14px!important;
+  overflow-x:visible!important;
+  white-space:normal!important;
+  max-width:100%!important;
+  line-height:1.6!important;
+}
+#legend span{
+  white-space:normal!important;
+  max-width:260px;
+}
+#legend [data-series]{
+  display:inline-flex!important;
+  align-items:center!important;
+}
+
+
+#chartWrap{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:center!important;
+  overflow:auto!important;
+  text-align:center!important;
+}
+#chart{
+  display:block!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  flex:0 0 auto!important;
+  max-width:none!important;
+  width:auto!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+
 </style>
 </head>
 <body class="consent-pending">
@@ -205,7 +246,7 @@ overflow:visible!important;
   <div><span id="qBadge" class="pill"></span><h2 id="chartTitle" style="font-size:18px;margin:8px 0 0"></h2><div id="chartSub" class="small"></div><div id="stackWarn" style="margin-top:8px"></div></div>
   
 </div>
-<div id="chartGroupTitle" class="chartGroupTitle"></div><div class="chartSizeBox">グラフサイズ <input id="chartScale" type="range" min="60" max="200" value="100"><span id="chartScaleVal">100%</span></div>
+<div id="chartGroupTitle" class="chartGroupTitle"></div><div class="chartSizeBox">グラフサイズ <input id="chartScale" type="range" min="60" max="220" value="100"><span id="chartScaleVal">100%</span></div>
 <div id="chartWrap"><svg id="chart"></svg><div id="tooltip" class="tooltip"></div></div>
 <div class="chartBottomControls"><button class="primary" id="sortBtn">値順に並替</button><button id="resetSort">元の順序</button></div>
 <div id="legend" class="legend"></div>
@@ -235,12 +276,16 @@ function chartScaleValue(){
 }
 function applyChartSvgSize(w,h){
   const scale=chartScaleValue();
-  chart.setAttribute('width', Math.round(w*scale));
-  chart.setAttribute('height', Math.round(h*scale));
-  chart.style.width=Math.round(w*scale)+'px';
-  chart.style.height=Math.round(h*scale)+'px';
-  chart.style.margin='0 auto';
-  chart.style.display='block';
+  const sw=Math.round(w*scale);
+  const sh=Math.round(h*scale);
+  chart.setAttribute('width', sw);
+  chart.setAttribute('height', sh);
+  chart.style.setProperty('width', sw+'px', 'important');
+  chart.style.setProperty('height', sh+'px', 'important');
+  chart.style.setProperty('max-width', 'none', 'important');
+  chart.style.setProperty('margin-left', 'auto', 'important');
+  chart.style.setProperty('margin-right', 'auto', 'important');
+  chart.style.setProperty('display', 'block', 'important');
 }
 
 function currentQ(){const idx=+qSel.value; return DATA?.questions?.[idx] || filteredQuestions()[0]?.q || DATA?.questions?.[0];}
@@ -493,6 +538,17 @@ $('sortBtn').onclick=()=>{sortMode=true; render();}; $('resetSort').onclick=()=>
 $('sideToggle').onclick=()=>{document.body.classList.toggle('sidebar-collapsed'); $('sideToggle').textContent=document.body.classList.contains('sidebar-collapsed')?'+':'−'; setTimeout(render,50);};
 $('agreeBtn').onclick=()=>document.body.classList.remove('consent-pending');
 $('jsonFiles').addEventListener('change',async ev=>{for(const f of ev.target.files){const txt=await f.text(); const d=JSON.parse(txt); const y=String(d.year||f.name.match(/(20\d{2})/)?.[1]||''); if(y)DATASETS[y]=d;} document.body.classList.remove('loadError'); $('loadMsg').style.display='none'; initUI();});
+
+const chartScaleEl=document.getElementById('chartScale');
+const chartScaleVal=document.getElementById('chartScaleVal');
+if(chartScaleEl){
+  chartScaleEl.addEventListener('input',()=>{
+    if(chartScaleVal) chartScaleVal.textContent=chartScaleEl.value+'%';
+    render();
+  });
+  if(chartScaleVal) chartScaleVal.textContent=chartScaleEl.value+'%';
+}
+
 window.addEventListener('resize',()=>{try{render()}catch(e){}});
 loadAll();
 })();
@@ -510,24 +566,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 });
 </script>
-<script>
-document.addEventListener('DOMContentLoaded',()=>{
- const s=document.getElementById('chartScale');
- const v=document.getElementById('chartScaleVal');
- if(!s) return;
- function apply(){
-   if(v) v.textContent=s.value+'%';
-   if(typeof render==='function'){
-     try{render();}catch(e){}
-   }else{
-     const c=document.getElementById('chart');
-     if(c){c.style.margin='0 auto';c.style.display='block';}
-   }
- }
- s.addEventListener('input',apply);
- setTimeout(apply,50);
-});
-</script>
+
 
 </body>
 </html>
