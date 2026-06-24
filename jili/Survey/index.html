@@ -257,6 +257,65 @@ overflow:visible!important;
   }
 }
 
+
+/* Data table scroll area */
+.tablewrap{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  max-height:420px!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  border:1px solid var(--line)!important;
+  border-radius:12px!important;
+  margin-top:10px!important;
+}
+.tablewrap table{
+  width:max-content!important;
+  min-width:100%!important;
+  border-collapse:collapse!important;
+}
+.tablewrap th,
+.tablewrap td{
+  white-space:nowrap!important;
+}
+.tablewrap thead th{
+  position:sticky!important;
+  top:0!important;
+  z-index:3!important;
+  background:#f8fafc!important;
+}
+.tablewrap th:first-child,
+.tablewrap td:first-child{
+  position:sticky!important;
+  left:0!important;
+  z-index:2!important;
+  background:#fff!important;
+}
+.tablewrap thead th:first-child{
+  z-index:4!important;
+  background:#f8fafc!important;
+}
+.tablewrap th:nth-child(2),
+.tablewrap td:nth-child(2){
+  position:sticky!important;
+  left:90px!important;
+  z-index:2!important;
+  background:#fff!important;
+}
+.tablewrap thead th:nth-child(2){
+  z-index:4!important;
+  background:#f8fafc!important;
+}
+@media(max-width:900px){
+  .tablewrap{max-height:340px!important;}
+  .tablewrap th:nth-child(2),
+  .tablewrap td:nth-child(2){
+    position:static!important;
+  }
+}
+
 </style>
 </head>
 <body class="consent-pending">
@@ -298,7 +357,7 @@ overflow:visible!important;
 <div id="chartWrap"><svg id="chart"></svg><div id="tooltip" class="tooltip"></div></div>
 <div class="chartBottomControls"><button class="primary" id="sortBtn">値順に並替</button><button id="resetSort">元の順序</button></div>
 <div id="legend" class="legend"></div>
-<div class="tablewrap"><table id="dataTable"></table></div>
+<div id="tableScrollHint" class="small" style="margin:8px 0 4px;text-align:right">表は縦横にスクロールできます。</div><div class="tablewrap"><table id="dataTable"></table></div>
 </section>
 </div>
 </main>
