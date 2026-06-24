@@ -316,6 +316,72 @@ overflow:visible!important;
   }
 }
 
+
+/* Prevent page-wide horizontal expansion; scroll only inside chart/table areas */
+html,body{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+}
+main,.grid,.card,section.card{
+  min-width:0!important;
+  max-width:100%!important;
+}
+#chartWrap{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  box-sizing:border-box!important;
+}
+
+/* Table must scroll inside its own box, not expand the page */
+.tablewrap{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:auto!important;
+  overflow-y:auto!important;
+  max-height:420px!important;
+  box-sizing:border-box!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.tablewrap table{
+  display:table!important;
+  width:max-content!important;
+  min-width:100%!important;
+  max-width:none!important;
+  table-layout:auto!important;
+}
+.tablewrap th,
+.tablewrap td{
+  white-space:nowrap!important;
+  min-width:90px;
+}
+.tablewrap th:first-child,
+.tablewrap td:first-child{
+  min-width:90px!important;
+}
+.tablewrap th:nth-child(2),
+.tablewrap td:nth-child(2){
+  min-width:110px!important;
+}
+.tablewrap thead th{
+  position:sticky!important;
+  top:0!important;
+  z-index:3!important;
+  background:#f8fafc!important;
+}
+.tablewrap th:first-child,
+.tablewrap td:first-child,
+.tablewrap th:nth-child(2),
+.tablewrap td:nth-child(2){
+  position:static!important;
+  left:auto!important;
+}
+
 </style>
 </head>
 <body class="consent-pending">
@@ -357,7 +423,7 @@ overflow:visible!important;
 <div id="chartWrap"><svg id="chart"></svg><div id="tooltip" class="tooltip"></div></div>
 <div class="chartBottomControls"><button class="primary" id="sortBtn">値順に並替</button><button id="resetSort">元の順序</button></div>
 <div id="legend" class="legend"></div>
-<div id="tableScrollHint" class="small" style="margin:8px 0 4px;text-align:right">表は縦横にスクロールできます。</div><div class="tablewrap"><table id="dataTable"></table></div>
+<div id="tableScrollHint" class="small" style="margin:8px 0 4px;text-align:right">表はこの枠内で横スクロールできます。</div><div class="tablewrap"><table id="dataTable"></table></div>
 </section>
 </div>
 </main>
