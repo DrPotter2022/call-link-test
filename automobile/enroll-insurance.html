@@ -2,19 +2,32 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>自動車保険の普及率</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    :root {
+      --border: #d9dee7;
+      --bg: #f7f9fc;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+    }
+
     * { box-sizing: border-box; }
 
     body {
-      font-family: sans-serif;
-      margin: 40px;
-      color: #222;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 28px;
+      color: var(--text);
       background: #fff;
     }
 
-    h2 { margin: 0 0 20px; }
+    h2 {
+      margin: 0 0 20px;
+      font-size: 24px;
+    }
 
     .top-controls {
       display: flex;
@@ -22,123 +35,139 @@
       gap: 16px 24px;
       align-items: center;
       margin-bottom: 18px;
-    }
-
-    .json-loader {
-      display: block;
-      margin: 0 0 18px;
       padding: 14px 16px;
-      border: 1px solid #b8d6ff;
-      border-radius: 10px;
-      background: #f4f9ff;
-      line-height: 1.6;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg);
     }
 
-    .json-loader strong { display: block; margin-bottom: 6px; }
-    .json-loader input { margin-top: 8px; }
-
-    select,
-    input[type="number"] {
-      padding: 6px 8px;
-      border: 1px solid #bbb;
-      border-radius: 6px;
+    select {
+      min-width: 180px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
       font-size: 14px;
     }
 
     #checkboxes {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px 14px;
-      margin-bottom: 18px;
+      gap: 10px 16px;
+      align-items: center;
     }
 
     #checkboxes label,
-    .axis-control label {
+    .axis-panel label {
       cursor: pointer;
       user-select: none;
     }
 
-    .dashboard-layout {
+    .main-layout {
       display: grid;
-      grid-template-columns: 240px minmax(0, 1fr);
-      gap: 22px;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 18px;
       align-items: stretch;
-      width: 100%;
     }
 
-    .axis-slicer {
-      border: 1px solid #ddd;
-      border-radius: 12px;
+    .axis-panel {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg);
       padding: 16px;
-      background: #fafafa;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      min-height: 520px;
     }
 
-    .axis-slicer h3 {
-      margin: 0 0 14px;
+    .axis-panel h3 {
+      margin: 0 0 10px;
       font-size: 16px;
     }
 
-    .axis-control {
-      margin-bottom: 16px;
+    .axis-panel .note {
+      margin: 0 0 16px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
     }
 
-    .axis-control-title {
-      display: block;
-      font-weight: 700;
-      margin-bottom: 8px;
+    .control-block {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
     }
 
-    .axis-row {
-      display: grid;
-      grid-template-columns: 1fr 72px;
-      gap: 8px;
+    .control-row {
+      display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .control-row input[type="number"] {
+      width: 88px;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      text-align: right;
     }
 
     input[type="range"] {
       width: 100%;
-    }
-
-    .axis-note {
-      font-size: 12px;
-      color: #666;
-      line-height: 1.55;
-      margin-top: 10px;
+      accent-color: var(--accent);
     }
 
     .button-row {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
-      margin-top: 14px;
+      margin-top: 18px;
     }
 
     button {
-      padding: 7px 10px;
-      border: 1px solid #bbb;
-      border-radius: 7px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
       background: #fff;
       cursor: pointer;
       font-size: 13px;
     }
 
-    button:hover { background: #f2f2f2; }
+    button.primary {
+      border-color: var(--accent);
+      color: #fff;
+      background: var(--accent);
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
 
     .chart-container {
       width: 100%;
       height: 560px;
       min-height: 420px;
-      position: relative;
-      border: 1px solid #eee;
-      border-radius: 12px;
-      padding: 12px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
       background: #fff;
+      position: relative;
     }
 
-    @media (max-width: 860px) {
-      body { margin: 20px; }
-      .dashboard-layout { grid-template-columns: 1fr; }
-      .chart-container { height: 480px; }
+    @media (max-width: 850px) {
+      body { padding: 18px; }
+      .main-layout { grid-template-columns: 1fr; }
+      .axis-panel { min-height: auto; }
+      .chart-container { height: 460px; }
     }
   </style>
 </head>
@@ -146,63 +175,51 @@
   <h2>自動車保険の普及率</h2>
 
   <div class="top-controls">
-    <label for="pref-select">都道府県を選択：</label>
-    <select id="pref-select">
-      <option value="">───</option>
-    </select>
+    <div>
+      <label for="pref-select">都道府県を選択：</label>
+      <select id="pref-select">
+        <option value="">───</option>
+      </select>
+    </div>
+
+    <div id="checkboxes">
+      <label><input type="checkbox" value="対人賠償" checked> 対人賠償</label>
+      <label><input type="checkbox" value="対物賠償" checked> 対物賠償</label>
+      <label><input type="checkbox" value="人身傷害" checked> 人身傷害</label>
+      <label><input type="checkbox" value="搭乗者傷害" checked> 搭乗者傷害</label>
+      <label><input type="checkbox" value="車両保険" checked> 車両保険</label>
+    </div>
   </div>
 
-  <div id="json-loader" class="json-loader">
-    <strong>JSONファイルを選択してください</strong>
-    ChromeでHTMLを直接開く場合、<code>fetch()</code> によるローカルJSONの自動読み込みはCORS制限でブロックされます。<br>
-    この版では自動fetchを廃止し、下のボタンから <code>insurance_data.json</code> を直接選択して読み込みます。
-    <br>
-    <input type="file" id="json-file-input" accept=".json,application/json">
-  </div>
-
-  <div id="checkboxes">
-    <label><input type="checkbox" value="対人賠償" checked> 対人賠償</label>
-    <label><input type="checkbox" value="対物賠償" checked> 対物賠償</label>
-    <label><input type="checkbox" value="人身傷害" checked> 人身傷害</label>
-    <label><input type="checkbox" value="搭乗者傷害" checked> 搭乗者傷害</label>
-    <label><input type="checkbox" value="車両保険" checked> 車両保険</label>
-  </div>
-
-  <div class="dashboard-layout">
-    <aside class="axis-slicer" aria-label="縦軸調整スライサー">
+  <div class="main-layout">
+    <aside class="axis-panel" aria-label="縦軸調整スライサー">
       <h3>縦軸調整</h3>
+      <p class="note">GitHub Pagesでは、元ファイルと同じ場所にある <strong>data/insurance_data.json</strong> を自動で読み込みます。</p>
 
-      <div class="axis-control">
-        <label>
-          <input type="checkbox" id="auto-axis" checked>
-          自動調整
-        </label>
-        <div class="axis-note">チェックあり：選択中データに合わせて縦軸を自動調整します。</div>
+      <label><input type="checkbox" id="auto-axis" checked> 自動調整</label>
+
+      <div class="control-block">
+        <div class="control-row">
+          <label for="y-min-number">最小値</label>
+          <input type="number" id="y-min-number" min="0" max="100" step="0.1" value="0">
+        </div>
+        <input type="range" id="y-min-range" min="0" max="100" step="0.1" value="0" orient="vertical">
       </div>
 
-      <div class="axis-control">
-        <span class="axis-control-title">最小値（%）</span>
-        <div class="axis-row">
-          <input type="range" id="y-min-range" min="0" max="100" step="0.1" value="0" disabled>
-          <input type="number" id="y-min-input" min="0" max="100" step="0.1" value="0" disabled>
+      <div class="control-block">
+        <div class="control-row">
+          <label for="y-max-number">最大値</label>
+          <input type="number" id="y-max-number" min="0" max="100" step="0.1" value="100">
         </div>
-      </div>
-
-      <div class="axis-control">
-        <span class="axis-control-title">最大値（%）</span>
-        <div class="axis-row">
-          <input type="range" id="y-max-range" min="0" max="100" step="0.1" value="100" disabled>
-          <input type="number" id="y-max-input" min="0" max="100" step="0.1" value="100" disabled>
-        </div>
+        <input type="range" id="y-max-range" min="0" max="100" step="0.1" value="100" orient="vertical">
       </div>
 
       <div class="button-row">
-        <button type="button" id="reset-axis">0〜100に戻す</button>
+        <button type="button" id="narrow-axis">拡大</button>
+        <button type="button" id="reset-axis" class="primary">初期化</button>
       </div>
 
-      <div class="axis-note">
-        変化が小さい場合は、自動調整をオフにして例：90〜100%、70〜100%などにすると推移が見やすくなります。
-      </div>
+      <div id="status" class="status">JSON読み込み中...</div>
     </aside>
 
     <div class="chart-container">
@@ -211,169 +228,126 @@
   </div>
 
   <script>
+    const DATA_URL = 'data/insurance_data.json';
+
     const select = document.getElementById('pref-select');
     const checkboxContainer = document.getElementById('checkboxes');
     const ctx = document.getElementById('myChart').getContext('2d');
-
-    const jsonLoader = document.getElementById('json-loader');
-    const jsonFileInput = document.getElementById('json-file-input');
-
     const autoAxis = document.getElementById('auto-axis');
     const yMinRange = document.getElementById('y-min-range');
     const yMaxRange = document.getElementById('y-max-range');
-    const yMinInput = document.getElementById('y-min-input');
-    const yMaxInput = document.getElementById('y-max-input');
-    const resetAxis = document.getElementById('reset-axis');
+    const yMinNumber = document.getElementById('y-min-number');
+    const yMaxNumber = document.getElementById('y-max-number');
+    const statusBox = document.getElementById('status');
 
-    let allData, chartInstance;
+    let allData;
+    let chartInstance;
 
-    // --- JSON を読み込む ---
-    // ChromeでHTMLをローカル表示する場合、fetch()でfile://配下のJSONを読むとCORS制限で失敗します。
-    // そのため、この版ではfetchを使わず、FileReaderでユーザーが選択したJSONを読み込みます。
-
-    function initializeData(json) {
-      allData = json;
-      select.innerHTML = '<option value="">───</option>';
-
-      Object.keys(allData).forEach(pref => {
-        const opt = document.createElement('option');
-        opt.value = pref;
-        opt.textContent = pref;
-        select.appendChild(opt);
+    fetch(DATA_URL)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${DATA_URL}`);
+        return res.json();
+      })
+      .then(json => {
+        allData = json;
+        Object.keys(allData).forEach(pref => {
+          const opt = document.createElement('option');
+          opt.value = pref;
+          opt.textContent = pref;
+          select.appendChild(opt);
+        });
+        select.value = allData['全国平均'] ? '全国平均' : Object.keys(allData)[0];
+        statusBox.textContent = `JSON読込完了：${DATA_URL}`;
+        renderChart();
+      })
+      .catch(err => {
+        statusBox.textContent = `JSON読み込み失敗：${err.message}`;
+        alert('JSON読み込み失敗：' + err.message + '\n\nGitHub上で HTML と同じ階層に data/insurance_data.json があるか確認してください。');
       });
 
-      select.value = allData['全国平均'] ? '全国平均' : Object.keys(allData)[0];
-      jsonLoader.style.display = 'block';
-      renderChart();
-    }
+    function getChartSource() {
+      const raw = allData?.[select.value];
+      if (!raw) return null;
 
-    jsonFileInput.addEventListener('change', event => {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = e => {
-        try {
-          const json = JSON.parse(e.target.result);
-          initializeData(json);
-        } catch (err) {
-          alert('JSONファイルの形式を確認してください：' + err.message);
-        }
-      };
-      reader.onerror = () => alert('JSONファイルの読み込みに失敗しました。');
-      reader.readAsText(file, 'UTF-8');
-    });
-
-    function toNumber(value) {
-      const num = Number(value);
-      return Number.isFinite(num) ? num : null;
-    }
-
-    function setAxisControlDisabled(disabled) {
-      [yMinRange, yMaxRange, yMinInput, yMaxInput].forEach(el => {
-        el.disabled = disabled;
-      });
-    }
-
-    function syncAxisControls(source, value) {
-      const fixedValue = Math.max(0, Math.min(100, Number(value))).toFixed(1);
-      if (source === yMinRange || source === yMinInput) {
-        yMinRange.value = fixedValue;
-        yMinInput.value = fixedValue;
-      }
-      if (source === yMaxRange || source === yMaxInput) {
-        yMaxRange.value = fixedValue;
-        yMaxInput.value = fixedValue;
-      }
-    }
-
-    function getSelectedDatasets(getData) {
-      return Array.from(
-        checkboxContainer.querySelectorAll('input[type=checkbox]')
-      ).filter(cb => cb.checked).map(cb => ({
-        label: cb.value,
-        data: getData(cb.value),
-        borderWidth: 2,
-        fill: false,
-        tension: 0.2,
-        pointRadius: 3,
-        pointHoverRadius: 5
-      }));
-    }
-
-    function getAxisOptions(datasets) {
-      const values = datasets
-        .flatMap(d => d.data)
-        .map(toNumber)
-        .filter(v => v !== null);
-
-      if (values.length === 0) {
-        return { beginAtZero: true };
-      }
-
-      if (autoAxis.checked) {
-        const dataMin = Math.min(...values);
-        const dataMax = Math.max(...values);
-        const range = Math.max(dataMax - dataMin, 1);
-        const padding = Math.max(range * 0.15, 0.5);
+      if (Array.isArray(raw)) {
         return {
-          min: Math.max(0, Math.floor((dataMin - padding) * 10) / 10),
-          max: Math.min(100, Math.ceil((dataMax + padding) * 10) / 10),
-          ticks: {
-            callback: value => Number(value).toFixed(1) + '%'
-          }
+          labels: raw.map(r => r.年度),
+          getData: field => raw.map(r => Number(r[field])).filter(v => Number.isFinite(v))
         };
       }
 
-      let min = toNumber(yMinInput.value);
-      let max = toNumber(yMaxInput.value);
+      return {
+        labels: raw.年度,
+        getData: field => (raw[field] || []).map(v => Number(v)).filter(v => Number.isFinite(v))
+      };
+    }
 
-      if (min === null) min = 0;
-      if (max === null) max = 100;
+    function getDatasets(source) {
+      return Array.from(checkboxContainer.querySelectorAll('input[type=checkbox]'))
+        .filter(cb => cb.checked)
+        .map(cb => ({
+          label: cb.value,
+          data: source.getData(cb.value),
+          borderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          tension: 0.25,
+          fill: false
+        }));
+    }
+
+    function calcAutoAxis(datasets) {
+      const values = datasets.flatMap(d => d.data).filter(v => Number.isFinite(v));
+      if (!values.length) return { min: 0, max: 100 };
+
+      const dataMin = Math.min(...values);
+      const dataMax = Math.max(...values);
+      const padding = Math.max((dataMax - dataMin) * 0.15, 1);
+      const min = Math.max(0, Math.floor((dataMin - padding) * 10) / 10);
+      const max = Math.min(100, Math.ceil((dataMax + padding) * 10) / 10);
+
+      if (min >= max) return { min: Math.max(0, dataMin - 1), max: Math.min(100, dataMax + 1) };
+      return { min, max };
+    }
+
+    function syncAxisInputs(min, max) {
+      yMinRange.value = min;
+      yMaxRange.value = max;
+      yMinNumber.value = min;
+      yMaxNumber.value = max;
+    }
+
+    function getManualAxis() {
+      let min = Number(yMinNumber.value);
+      let max = Number(yMaxNumber.value);
+
+      if (!Number.isFinite(min)) min = 0;
+      if (!Number.isFinite(max)) max = 100;
       if (min >= max) {
         max = Math.min(100, min + 1);
-        if (max === min) min = Math.max(0, max - 1);
-        yMinInput.value = yMinRange.value = min.toFixed(1);
-        yMaxInput.value = yMaxRange.value = max.toFixed(1);
+        if (min >= max) min = Math.max(0, max - 1);
       }
-
-      return {
-        min,
-        max,
-        ticks: {
-          callback: value => Number(value).toFixed(1) + '%'
-        }
-      };
+      return { min, max };
     }
 
     function renderChart() {
       if (!allData) return;
 
-      const raw = allData[select.value];
-      if (!raw) {
-        // 選択なし or データなし
+      const source = getChartSource();
+      if (!source) {
         if (chartInstance) chartInstance.destroy();
         return;
       }
 
-      let labels, getData;
-      if (Array.isArray(raw)) {
-        // [{年度:..., 対人賠償:...},...] の形式
-        labels = raw.map(r => r.年度);
-        getData = field => raw.map(r => toNumber(r[field]));
-      } else {
-        // { 年度: [...], 対人賠償: [...], ... } の形式
-        labels = raw.年度;
-        getData = field => raw[field].map(toNumber);
-      }
-
-      const datasets = getSelectedDatasets(getData);
+      const datasets = getDatasets(source);
+      const axis = autoAxis.checked ? calcAutoAxis(datasets) : getManualAxis();
+      syncAxisInputs(axis.min, axis.max);
 
       if (chartInstance) chartInstance.destroy();
 
       chartInstance = new Chart(ctx, {
         type: 'line',
-        data: { labels, datasets },
+        data: { labels: source.labels, datasets },
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -382,6 +356,9 @@
             intersect: false
           },
           plugins: {
+            legend: {
+              position: 'top'
+            },
             tooltip: {
               callbacks: {
                 label: context => `${context.dataset.label}: ${Number(context.parsed.y).toFixed(1)}%`
@@ -389,34 +366,48 @@
             }
           },
           scales: {
-            y: getAxisOptions(datasets)
+            y: {
+              min: axis.min,
+              max: axis.max,
+              ticks: {
+                callback: value => `${Number(value).toFixed(1)}%`
+              }
+            }
           }
         }
       });
     }
 
-    select.addEventListener('change', renderChart);
-    checkboxContainer.querySelectorAll('input[type=checkbox]')
-      .forEach(cb => cb.addEventListener('change', renderChart));
-
-    autoAxis.addEventListener('change', () => {
-      setAxisControlDisabled(autoAxis.checked);
-      renderChart();
-    });
-
-    [yMinRange, yMinInput, yMaxRange, yMaxInput].forEach(el => {
-      el.addEventListener('input', event => {
-        syncAxisControls(event.target, event.target.value);
-        renderChart();
-      });
-    });
-
-    resetAxis.addEventListener('click', () => {
+    function setManualFromInputs(min, max) {
       autoAxis.checked = false;
-      setAxisControlDisabled(false);
-      yMinRange.value = yMinInput.value = '0.0';
-      yMaxRange.value = yMaxInput.value = '100.0';
+      syncAxisInputs(min, max);
       renderChart();
+    }
+
+    select.addEventListener('change', renderChart);
+    checkboxContainer.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', renderChart));
+
+    autoAxis.addEventListener('change', renderChart);
+
+    yMinRange.addEventListener('input', () => setManualFromInputs(Number(yMinRange.value), Number(yMaxNumber.value)));
+    yMaxRange.addEventListener('input', () => setManualFromInputs(Number(yMinNumber.value), Number(yMaxRange.value)));
+    yMinNumber.addEventListener('change', () => setManualFromInputs(Number(yMinNumber.value), Number(yMaxNumber.value)));
+    yMaxNumber.addEventListener('change', () => setManualFromInputs(Number(yMinNumber.value), Number(yMaxNumber.value)));
+
+    document.getElementById('reset-axis').addEventListener('click', () => {
+      autoAxis.checked = true;
+      renderChart();
+    });
+
+    document.getElementById('narrow-axis').addEventListener('click', () => {
+      const source = getChartSource();
+      if (!source) return;
+      const datasets = getDatasets(source);
+      const values = datasets.flatMap(d => d.data).filter(v => Number.isFinite(v));
+      if (!values.length) return;
+      const min = Math.max(0, Math.floor((Math.min(...values) - 0.5) * 10) / 10);
+      const max = Math.min(100, Math.ceil((Math.max(...values) + 0.5) * 10) / 10);
+      setManualFromInputs(min, max);
     });
   </script>
 </body>
