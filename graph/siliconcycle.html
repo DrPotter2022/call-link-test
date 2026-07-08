@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>シリコンサイクル分析ツール v1.0.1 色補正版 色補正版</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#667085;--line:#d7dde8;--nav:#103b5f;--accent:#1769aa;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic",sans-serif}
+header{padding:14px 20px;background:var(--nav);color:#fff}
+header h1{margin:0 0 4px;font-size:20px}
+header p{margin:0;color:#dbeaf6;font-size:13px}
+.layout{display:grid;grid-template-columns:320px 1fr;gap:12px;padding:12px;transition:grid-template-columns .2s ease}
+.layout.collapsed{grid-template-columns:48px 1fr}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 5px rgba(15,31,50,.06)}
+.sidebar{padding:12px;min-height:calc(100vh - 88px);position:sticky;top:10px;overflow:auto}
+.layout.collapsed .sidebar{padding:8px;overflow:hidden}
+.sidebar-content{display:block}
+.layout.collapsed .sidebar-content{display:none}
+.collapse-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:700}
+.sidebar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+h2{font-size:15px;margin:0 0 10px}
+h3{font-size:13px;margin:14px 0 7px;color:#103b5f}
+.series-item{border-bottom:1px solid #eef1f6;padding:7px 0}
+.series-item label{display:flex;gap:8px;align-items:center;font-size:13px;line-height:1.35}
+.series-item small{display:block;margin-left:25px;color:#8a94a6;font-size:11px}
+.controls{padding:12px;display:grid;gap:10px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+label{font-size:13px}
+select,input[type=number],input[type=file]{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;max-width:100%}
+input[type=range]{width:100%}
+.dual-slider-wrap{position:relative;height:44px;margin:4px 0 0}
+.dual-slider-track{position:absolute;left:0;right:0;top:19px;height:8px;border-radius:999px;background:#dfe6ef}
+.dual-slider-range{position:absolute;top:19px;height:8px;border-radius:999px;background:#1769aa}
+.dual-slider-wrap input[type=range]{position:absolute;left:0;right:0;top:10px;width:100%;pointer-events:none;appearance:none;-webkit-appearance:none;background:transparent;margin:0}
+.dual-slider-wrap input[type=range]::-webkit-slider-thumb{pointer-events:auto;appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#1769aa;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.25);cursor:pointer}
+.dual-slider-wrap input[type=range]::-moz-range-thumb{pointer-events:auto;width:18px;height:18px;border-radius:50%;background:#1769aa;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.25);cursor:pointer}
+.dual-slider-wrap input[type=range]::-webkit-slider-runnable-track{background:transparent;height:8px}
+.dual-slider-wrap input[type=range]::-moz-range-track{background:transparent;height:8px}
+.slider-scale{display:flex;justify-content:space-between;font-size:11px;color:#667085}
+#chart{width:100%;height:68vh;min-height:520px}
+.chart-card{padding:8px}
+.note{color:var(--muted);font-size:12px;line-height:1.65;margin:8px 0 0}
+.warn{background:#fff7e6;border:1px solid #ffe0a3;color:#6b4a00;padding:10px;border-radius:8px;font-size:12px;line-height:1.55;margin-top:10px}
+.stats{padding:12px;overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:12px;background:#fff}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{background:#eef5fb;color:#103b5f}
+button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 10px;cursor:pointer}
+button:hover{background:#f0f5fa}
+.toggle-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;border-bottom:1px solid #eef1f6;padding:6px 0;font-size:12px}
+.switch{position:relative;display:inline-block;width:38px;height:20px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#cbd5e1;transition:.2s;border-radius:999px}
+.slider:before{position:absolute;content:"";height:16px;width:16px;left:2px;bottom:2px;background:white;transition:.2s;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.switch input:checked + .slider{background:var(--switch-on,#1769aa)}
+.switch input:checked + .slider:before{transform:translateX(18px)}
+.palette-panel{display:none;border:1px solid #e3e8f0;border-radius:10px;padding:10px;margin-top:8px;background:#fbfdff}
+.palette-panel.open{display:block}
+.color-row{display:grid;grid-template-columns:1fr 44px;gap:8px;align-items:center;margin:6px 0;font-size:12px}
+.color-row input{width:42px;height:28px;border:0;background:none;padding:0}
+.file-box{border:1px dashed #cbd5e1;border-radius:10px;padding:10px;background:#fbfdff}
+@media(max-width:1000px){
+  .layout{grid-template-columns:1fr}
+  .layout.collapsed{grid-template-columns:1fr}
+  .sidebar{position:static;min-height:auto}
+  .layout.collapsed .sidebar-content{display:block}
+  #chart{height:58vh;min-height:420px}
+}
+@media(max-width:640px){
+  header h1{font-size:17px}
+  .row{align-items:stretch}
+  .row label{width:100%}
+  #chart{height:55vh;min-height:360px}
+  table{font-size:11px}
+  th,td{padding:5px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>シリコンサイクル分析ツール v1.0.1 色補正版 色補正版</h1>
+  <p>起点年＝100で指数化。表示期間・系列・網掛け条件を切り替えて、WSTSと株価指数の連動を確認します。</p>
+</header>
+
+<div class="layout" id="layout">
+  <aside class="card sidebar">
+    <div class="sidebar-head">
+      <button class="collapse-btn" id="collapseBtn" title="左メニューを収納/展開">−</button>
+      <div class="sidebar-content"><strong>設定</strong></div>
+    </div>
+    <div class="sidebar-content">
+      <h2>表示データ</h2>
+      <div id="seriesList"></div>
+      <div class="warn" id="missingNote"></div>
+
+      <h3>網掛け条件</h3>
+      <p class="note">ONにした項目の上昇・下落を年ごとに数え、該当数に応じて背景色を付けます。</p>
+      <div id="shadeToggles"></div>
+      <button id="paletteBtn" style="margin-top:8px">🎨 色設定</button>
+      <div class="palette-panel" id="palettePanel">
+        <div class="color-row"><span>上昇1つ</span><input type="color" id="colorUp1"></div>
+        <div class="color-row"><span>上昇2つ以上</span><input type="color" id="colorUp2"></div>
+        <div class="color-row"><span>下落1つ</span><input type="color" id="colorDown1"></div>
+        <div class="color-row"><span>下落2つ以上</span><input type="color" id="colorDown2"></div>
+      </div>
+
+      <h3>データ読込</h3>
+      <div class="file-box">
+        <input type="file" id="xlsxInput" accept=".xlsx,.xlsm,.xls">
+        <p class="note"><a href="https://docs.google.com/spreadsheets/d/1GY9DaCjQw3UGsHYItt7PWEQYP5iV15Ay9vMDAcF1J4s/edit?usp=sharing" target="_blank" rel="noopener noreferrer">silicon_cycle_data.xlsx</a>を読み込むと、HTML内の初期データは使わず、Excelのデータのみで再描画します。</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #e7ecf3;margin:14px 0">
+      <button id="resetBtn">表示をリセット</button>
+    </div>
+  </aside>
+
+  <main style="display:grid;gap:12px;">
+    <section class="card controls">
+      <div class="row">
+        <label>起点年：
+          <select id="baseYear"></select>
+        </label>
+        <label>開始年：
+          <input type="number" id="startYear">
+        </label>
+        <label>終了年：
+          <input type="number" id="endYear">
+        </label>
+      </div>
+      <div>
+        <label>表示期間スライサー（左右のつまみをドラッグ）</label>
+        <div class="dual-slider-wrap" id="yearSlider">
+          <div class="dual-slider-track"></div>
+          <div class="dual-slider-range" id="yearSliderRange"></div>
+          <input id="startRange" type="range" aria-label="開始年">
+          <input id="endRange" type="range" aria-label="終了年">
+        </div>
+        <div class="slider-scale">
+          <span id="sliderMinLabel"></span>
+          <span id="sliderMaxLabel"></span>
+        </div>
+      </div>
+      <p class="note">凡例クリックで線の表示/非表示を切替。グラフ下のレンジスライダーでも期間変更できます。</p>
+    </section>
+
+    <section class="card chart-card">
+      <div id="chart"></div>
+    </section>
+
+    <section class="card stats">
+      <h2>WSTSとの相関・方向一致</h2>
+      <div id="statsTable"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+let EMBEDDED = {"series": {"wsts": {"label": "WSTS世界半導体市場", "unit": "十億ドル", "default": true, "startYear": 1986}, "nasdaq": {"label": "NASDAQ Composite", "unit": "年末値", "default": true, "startYear": 1986}, "sox": {"label": "SOX / Philadelphia Semiconductor Index", "unit": "年末値", "default": true, "startYear": 2004}, "dow": {"label": "NYダウ（Dow Jones Industrial Average）", "unit": "年末値", "default": true, "startYear": 1986, "source": "Uploaded Macrotrends monthly closing price CSV; converted to each year's final available monthly closing value."}, "nikkei": {"label": "日経平均", "unit": "年末値", "default": false, "startYear": null, "status": "データ未収録"}, "topix": {"label": "TOPIX", "unit": "年末値", "default": false, "startYear": null, "status": "データ未収録"}, "ftse": {"label": "FTSE 100", "unit": "年末値", "default": false, "startYear": null, "status": "データ未収録"}, "dax": {"label": "DAX", "unit": "年末値", "default": false, "startYear": null, "status": "データ未収録"}, "cac": {"label": "CAC 40", "unit": "年末値", "default": false, "startYear": null, "status": "データ未収録"}, "msci_world": {"label": "MSCI World Index", "unit": "年末値", "default": false, "startYear": null, "status": "データ未収録"}, "acwi": {"label": "MSCI ACWI", "unit": "年末値", "default": false, "startYear": null, "status": "データ未収録"}}, "data": [{"year": 1986, "wsts": 26.355, "nasdaq": 348.83, "sox": null, "wsts_yoy": null, "wsts_dir": null, "nasdaq_yoy": null, "nasdaq_dir": null, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 1895.95, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1987, "wsts": 32.53, "nasdaq": 330.47, "sox": null, "wsts_yoy": 23.430089167140956, "wsts_dir": 1, "nasdaq_yoy": -5.263308775048003, "nasdaq_dir": -1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 1938.83, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1988, "wsts": 45.005, "nasdaq": 381.38, "sox": null, "wsts_yoy": 38.349216108207806, "wsts_dir": 1, "nasdaq_yoy": 15.405331800163392, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 2168.57, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1989, "wsts": 48.763, "nasdaq": 454.82, "sox": null, "wsts_yoy": 8.350183312965221, "wsts_dir": 1, "nasdaq_yoy": 19.256384708165086, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 2753.2, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1990, "wsts": 50.519, "nasdaq": 373.84, "sox": null, "wsts_yoy": 3.601090991120315, "wsts_dir": 1, "nasdaq_yoy": -17.804845873092656, "nasdaq_dir": -1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 2633.66, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1991, "wsts": 54.607, "nasdaq": 586.34, "sox": null, "wsts_yoy": 8.092004988222246, "wsts_dir": 1, "nasdaq_yoy": 56.842499465011784, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 3168.83, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1992, "wsts": 59.865, "nasdaq": 676.95, "sox": null, "wsts_yoy": 9.628802168220197, "wsts_dir": 1, "nasdaq_yoy": 15.453491148480403, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 3301.11, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1993, "wsts": 77.31, "nasdaq": 776.8, "sox": null, "wsts_yoy": 29.140566274116765, "wsts_dir": 1, "nasdaq_yoy": 14.749981534825295, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 3754.09, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1994, "wsts": 101.879, "nasdaq": 751.96, "sox": null, "wsts_yoy": 31.779847367740267, "wsts_dir": 1, "nasdaq_yoy": -3.1977342945416987, "nasdaq_dir": -1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 3834.44, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1995, "wsts": 144.404, "nasdaq": 1052.13, "sox": null, "wsts_yoy": 41.74069238999203, "wsts_dir": 1, "nasdaq_yoy": 39.91834672057024, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 5117.12, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1996, "wsts": 131.966, "nasdaq": 1291.03, "sox": null, "wsts_yoy": -8.61333481067006, "wsts_dir": -1, "nasdaq_yoy": 22.706319561270938, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 6448.27, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1997, "wsts": 137.203, "nasdaq": 1570.35, "sox": null, "wsts_yoy": 3.9684464180167467, "wsts_dir": 1, "nasdaq_yoy": 21.63543837091315, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 7908.3, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1998, "wsts": 125.612, "nasdaq": 2192.69, "sox": null, "wsts_yoy": -8.448066004387666, "wsts_dir": -1, "nasdaq_yoy": 39.63065558633427, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 9181.43, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 1999, "wsts": 149.379, "nasdaq": 4069.31, "sox": null, "wsts_yoy": 18.920962965321774, "wsts_dir": 1, "nasdaq_yoy": 85.58528565369477, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 11497.12, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2000, "wsts": 204.394, "nasdaq": 2470.52, "sox": null, "wsts_yoy": 36.829139303382675, "wsts_dir": 1, "nasdaq_yoy": -39.288970365983424, "nasdaq_dir": -1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 10787.99, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2001, "wsts": 138.963, "nasdaq": 1950.4, "sox": null, "wsts_yoy": -32.01219213871249, "wsts_dir": -1, "nasdaq_yoy": -21.053057655878117, "nasdaq_dir": -1, "sox_yoy": null, "sox_dir": null, "down_match_count": 2, "shade": "double", "dow": 10021.57, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2002, "wsts": 140.713, "nasdaq": 1335.51, "sox": null, "wsts_yoy": 1.2593280225671633, "wsts_dir": 1, "nasdaq_yoy": -31.526353568498777, "nasdaq_dir": -1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 8341.63, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2003, "wsts": 166.426, "nasdaq": 1996.62, "sox": null, "wsts_yoy": 18.273364934298897, "wsts_dir": 1, "nasdaq_yoy": 49.50243727115484, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 10453.92, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2004, "wsts": 213.027, "nasdaq": 2175.44, "sox": 433.33, "wsts_yoy": 28.001033492362982, "wsts_dir": 1, "nasdaq_yoy": 8.956135869619676, "nasdaq_dir": 1, "sox_yoy": null, "sox_dir": null, "down_match_count": 0, "shade": "none", "dow": 10783.01, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2005, "wsts": 227.484, "nasdaq": 2205.32, "sox": 462.7, "wsts_yoy": 6.786463687701572, "wsts_dir": 1, "nasdaq_yoy": 1.3735152428933972, "nasdaq_dir": 1, "sox_yoy": 6.777744444188039, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 10717.5, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2006, "wsts": 247.716, "nasdaq": 2415.29, "sox": 467.92, "wsts_yoy": 8.89381231207469, "wsts_dir": 1, "nasdaq_yoy": 9.52106723740771, "nasdaq_dir": 1, "sox_yoy": 1.1281607953317563, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 12463.15, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2007, "wsts": 255.645, "nasdaq": 2652.28, "sox": 408.04, "wsts_yoy": 3.200842900741163, "wsts_dir": 1, "nasdaq_yoy": 9.812072256333625, "nasdaq_dir": 1, "sox_yoy": -12.797059326380577, "sox_dir": -1, "down_match_count": 0, "shade": "none", "dow": 13264.82, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2008, "wsts": 248.603, "nasdaq": 1577.03, "sox": 212.17, "wsts_yoy": -2.754601107003851, "wsts_dir": -1, "nasdaq_yoy": -40.54059149109446, "nasdaq_dir": -1, "sox_yoy": -48.002646799333405, "sox_dir": -1, "down_match_count": 3, "shade": "triple", "dow": 8776.39, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2009, "wsts": 226.313, "nasdaq": 2269.15, "sox": 359.91, "wsts_yoy": -8.96610258122389, "wsts_dir": -1, "nasdaq_yoy": 43.88756079465832, "nasdaq_dir": 1, "sox_yoy": 69.63284158929164, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 10428.05, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2010, "wsts": 298.315, "nasdaq": 2652.87, "sox": 411.82, "wsts_yoy": 31.815229350501294, "wsts_dir": 1, "nasdaq_yoy": 16.910296807174486, "nasdaq_dir": 1, "sox_yoy": 14.42305020699619, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 11577.51, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2011, "wsts": 299.521, "nasdaq": 2605.15, "sox": 364.44, "wsts_yoy": 0.4042706535038576, "wsts_dir": 1, "nasdaq_yoy": -1.7988065755200844, "nasdaq_dir": -1, "sox_yoy": -11.505026467874313, "sox_dir": -1, "down_match_count": 0, "shade": "none", "dow": 12217.56, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2012, "wsts": 291.562, "nasdaq": 3019.51, "sox": 384.06, "wsts_yoy": -2.657242730893661, "wsts_dir": -1, "nasdaq_yoy": 15.905418114120117, "nasdaq_dir": 1, "sox_yoy": 5.383602239051699, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 13104.14, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2013, "wsts": 305.584, "nasdaq": 4176.59, "sox": 535.03, "wsts_yoy": 4.809268697566904, "wsts_dir": 1, "nasdaq_yoy": 38.320124788459054, "nasdaq_dir": 1, "sox_yoy": 39.30896214133208, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 16576.66, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2014, "wsts": 335.843, "nasdaq": 4736.05, "sox": 686.87, "wsts_yoy": 9.902023666160531, "wsts_dir": 1, "nasdaq_yoy": 13.395138139008145, "nasdaq_dir": 1, "sox_yoy": 28.37971702521356, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 17823.07, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2015, "wsts": 335.168, "nasdaq": 5007.41, "sox": 663.48, "wsts_yoy": -0.20098677060412795, "wsts_dir": -1, "nasdaq_yoy": 5.729669239133872, "nasdaq_dir": 1, "sox_yoy": -3.405302313392633, "sox_dir": -1, "down_match_count": 2, "shade": "double", "dow": 17425.03, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2016, "wsts": 338.931, "nasdaq": 5383.12, "sox": 906.47, "wsts_yoy": 1.1227205461141754, "wsts_dir": 1, "nasdaq_yoy": 7.503080434795639, "nasdaq_dir": 1, "sox_yoy": 36.623560619762465, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 19762.6, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2017, "wsts": 412.221, "nasdaq": 6903.39, "sox": 1253.05, "wsts_yoy": 21.623870345291518, "wsts_dir": 1, "nasdaq_yoy": 28.24142876250204, "nasdaq_dir": 1, "sox_yoy": 38.23402870475581, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 24719.22, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2018, "wsts": 468.778, "nasdaq": 6635.28, "sox": 1155.17, "wsts_yoy": 13.720067633623723, "wsts_dir": 1, "nasdaq_yoy": -3.883744073563866, "nasdaq_dir": -1, "sox_yoy": -7.811340329595772, "sox_dir": -1, "down_match_count": 0, "shade": "none", "dow": 23327.46, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2019, "wsts": 412.307, "nasdaq": 8972.6, "sox": 1849.62, "wsts_yoy": -12.046427093421618, "wsts_dir": -1, "nasdaq_yoy": 35.22564232406169, "nasdaq_dir": 1, "sox_yoy": 60.116692781149084, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 28538.44, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2020, "wsts": 440.389, "nasdaq": 12888.28, "sox": 2795.5, "wsts_yoy": 6.8109442721079105, "wsts_dir": 1, "nasdaq_yoy": 43.64041637875309, "nasdaq_dir": 1, "sox_yoy": 51.13915290708362, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 30606.48, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2021, "wsts": 555.893, "nasdaq": 15644.97, "sox": 3946.16, "wsts_yoy": 26.22772140085243, "wsts_dir": 1, "nasdaq_yoy": 21.389122520615622, "nasdaq_dir": 1, "sox_yoy": 41.1611518511894, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 36338.3, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2022, "wsts": 574.084, "nasdaq": 10466.48, "sox": 2532.11, "wsts_yoy": 3.2723923488872764, "wsts_dir": 1, "nasdaq_yoy": -33.10003151172549, "nasdaq_dir": -1, "sox_yoy": -35.833569850183466, "sox_dir": -1, "down_match_count": 0, "shade": "none", "dow": 33147.25, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2023, "wsts": 526.885, "nasdaq": 15011.35, "sox": 4175.47, "wsts_yoy": -8.22161913587558, "wsts_dir": -1, "nasdaq_yoy": 43.423099265464614, "nasdaq_dir": 1, "sox_yoy": 64.90081394568166, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 37689.54, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2024, "wsts": 630.549, "nasdaq": 19310.79, "sox": 4979.93, "wsts_yoy": 19.67488161553279, "wsts_dir": 1, "nasdaq_yoy": 28.641261445506228, "nasdaq_dir": 1, "sox_yoy": 19.266334089336045, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 42544.22, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}, {"year": 2025, "wsts": 795.64, "nasdaq": 23241.99, "sox": 7083.13, "wsts_yoy": 26.18210480073713, "wsts_dir": 1, "nasdaq_yoy": 20.357530686212222, "nasdaq_dir": 1, "sox_yoy": 42.233525370838535, "sox_dir": 1, "down_match_count": 0, "shade": "none", "dow": 48063.29, "nikkei": null, "topix": null, "ftse": null, "dax": null, "cac": null, "msci_world": null, "acwi": null}]};
+let DATA = EMBEDDED.data;
+let SERIES = EMBEDDED.series;
+
+const COLORS = {
+  wsts:"#1769aa", nasdaq:"#f28e2b", sox:"#2ca02c", dow:"#7f3c8d",
+  nikkei:"#d62728", topix:"#9467bd", ftse:"#7f7f7f", dax:"#bcbd22",
+  cac:"#17becf", msci_world:"#1f77b4", acwi:"#ff7f0e"
+};
+const COLUMN_ALIASES = {
+  year:["year","年度","年","date","日付"],
+  wsts:["wsts","半導体市場","world semiconductor","世界半導体市場"],
+  nasdaq:["nasdaq","nasdaq composite","^ixic"],
+  sox:["sox","philadelphia semiconductor","^sox"],
+  dow:["dow","dja","dji","nyダウ","ny dow","dow jones","^dji"],
+  nikkei:["nikkei","nikkei225","日経平均","日経225","^n225"],
+  topix:["topix","^topx"],
+  ftse:["ftse","ftse100","ftse 100","^ftse"],
+  dax:["dax","^gdaxi"],
+  cac:["cac","cac40","cac 40","^fchi"],
+  msci_world:["msci_world","msci world","msci world index"],
+  acwi:["acwi","msci acwi","msci acwi index"]
+};
+const DEFAULT_LABELS = {
+  wsts:"WSTS世界半導体市場", nasdaq:"NASDAQ Composite", sox:"SOX / Philadelphia Semiconductor Index",
+  dow:"NYダウ（Dow Jones Industrial Average）", nikkei:"日経平均", topix:"TOPIX",
+  ftse:"FTSE 100", dax:"DAX", cac:"CAC 40", msci_world:"MSCI World Index", acwi:"MSCI ACWI"
+};
+let MIN_YEAR, MAX_YEAR, currentVisible={};
+
+function loadColors() {
+  const defaults={colorUp1:"#ffb6d9",colorUp2:"#ff6666",colorDown1:"#b7e46b",colorDown2:"#32a852"};
+  for(const [k,v] of Object.entries(defaults)) {
+    const saved = localStorage.getItem(k) || v;
+    document.getElementById(k).value = saved;
+  }
+}
+function getColor(id, alpha) {
+  const hex = document.getElementById(id).value;
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function val(row,key) {
+  const v=row ? row[key] : null;
+  return (v===null||v===undefined||v===""||Number.isNaN(Number(v))) ? null : Number(v);
+}
+function direction(cur, prev) {
+  if(cur==null||prev==null) return null;
+  const d=cur-prev; return d>0?1:(d<0?-1:0);
+}
+function fmt(v,d=3) {
+  return (v==null||!Number.isFinite(v)) ? "-" : Number(v).toFixed(d);
+}
+function pearson(xs,ys) {
+  const p=[]; for(let i=0;i<xs.length;i++) if(Number.isFinite(xs[i])&&Number.isFinite(ys[i])) p.push([xs[i],ys[i]]);
+  if(p.length<2) return null;
+  const mx=p.reduce((s,a)=>s+a[0],0)/p.length, my=p.reduce((s,a)=>s+a[1],0)/p.length;
+  let num=0,dx=0,dy=0; for(const [x,y] of p){num+=(x-mx)*(y-my);dx+=(x-mx)**2;dy+=(y-my)**2}
+  return dx&&dy ? num/Math.sqrt(dx*dy) : null;
+}
+function hasData(key) { return DATA.some(d => val(d,key)!=null); }
+function availableKeys() { return Object.keys(SERIES).filter(k => hasData(k)); }
+function updateBounds() {
+  const years = DATA.map(d=>Number(d.year)).filter(Number.isFinite);
+  MIN_YEAR = Math.min(...years); MAX_YEAR = Math.max(...years);
+}
+function refreshSeriesMeta() {
+  for(const key of Object.keys(SERIES)) {
+    const ys = DATA.filter(d=>val(d,key)!=null).map(d=>Number(d.year));
+    SERIES[key].startYear = ys.length ? Math.min(...ys) : null;
+    SERIES[key].label = SERIES[key].label || DEFAULT_LABELS[key] || key;
+  }
+}
+function buildUI() {
+  updateBounds(); refreshSeriesMeta();
+  const seriesList=document.getElementById("seriesList");
+  seriesList.innerHTML="";
+  Object.entries(SERIES).forEach(([key,s]) => {
+    const div=document.createElement("div"); div.className="series-item";
+    const lab=document.createElement("label");
+    const cb=document.createElement("input"); cb.type="checkbox"; cb.value=key; cb.checked=!!s.default && hasData(key);
+    cb.disabled=!hasData(key); cb.addEventListener("change",update);
+    lab.appendChild(cb); lab.appendChild(document.createTextNode(s.label));
+    div.appendChild(lab);
+    const sm=document.createElement("small");
+    sm.textContent = hasData(key) ? `データ開始：${s.startYear}年` : "数値データ未収録";
+    div.appendChild(sm);
+    seriesList.appendChild(div);
+  });
+  buildShadeToggles();
+  buildYearControls();
+  const missing=Object.entries(SERIES).filter(([k,s])=>!hasData(k)).map(([k,s])=>s.label);
+  document.getElementById("missingNote").textContent = missing.length ? "未収録データ：" + missing.join("、") : "";
+}
+
+function applyToggleColors() {
+  const checked = Array.from(document.querySelectorAll(".shade-toggle:checked"));
+  const upCount = checked.filter(el => el.dataset.dir === "up").length;
+  const downCount = checked.filter(el => el.dataset.dir === "down").length;
+  const upColor = upCount >= 2 ? document.getElementById("colorUp2").value : document.getElementById("colorUp1").value;
+  const downColor = downCount >= 2 ? document.getElementById("colorDown2").value : document.getElementById("colorDown1").value;
+
+  document.querySelectorAll(".shade-toggle").forEach(el => {
+    const knob = el.nextElementSibling;
+    if(!knob) return;
+    if(el.checked) {
+      const c = el.dataset.dir === "up" ? upColor : downColor;
+      knob.style.setProperty("--switch-on", c);
+      knob.style.background = c;
+    } else {
+      knob.style.removeProperty("--switch-on");
+      knob.style.background = "#cbd5e1";
+    }
+  });
+}
+
+function buildShadeToggles() {
+  const box=document.getElementById("shadeToggles");
+  box.innerHTML="";
+  availableKeys().forEach(key => {
+    const s=SERIES[key];
+    const row=document.createElement("div"); row.className="toggle-row";
+    row.innerHTML = `<span>${s.label}</span>
+      <label class="switch" title="上昇"><input type="checkbox" class="shade-toggle" data-key="${key}" data-dir="up"><span class="slider"></span></label>
+      <label class="switch" title="下落"><input type="checkbox" class="shade-toggle" data-key="${key}" data-dir="down"><span class="slider"></span></label>`;
+    box.appendChild(row);
+  });
+  document.querySelectorAll(".shade-toggle").forEach(el=>el.addEventListener("change",()=>{applyToggleColors();update();}));
+  applyToggleColors();
+}
+function buildYearControls() {
+  const baseSel=document.getElementById("baseYear");
+  baseSel.innerHTML="";
+  DATA.map(d=>d.year).forEach(y=>{
+    const o=document.createElement("option"); o.value=y; o.textContent=y; baseSel.appendChild(o);
+  });
+  baseSel.value = DATA.some(d=>d.year===2004) ? 2004 : MIN_YEAR;
+  for(const id of ["startYear","endYear","startRange","endRange"]) {
+    const el=document.getElementById(id); el.min=MIN_YEAR; el.max=MAX_YEAR; el.step=1;
+  }
+  document.getElementById("startYear").value=MIN_YEAR;
+  document.getElementById("endYear").value=MAX_YEAR;
+  document.getElementById("startRange").value=MIN_YEAR;
+  document.getElementById("endRange").value=MAX_YEAR;
+  document.getElementById("sliderMinLabel").textContent=MIN_YEAR;
+  document.getElementById("sliderMaxLabel").textContent=MAX_YEAR;
+}
+function selectedKeys() {
+  return Array.from(document.querySelectorAll("#seriesList input:checked")).map(x=>x.value);
+}
+function syncAndUpdate(e) {
+  const id=e.target.id;
+  if(id==="startRange") document.getElementById("startYear").value=e.target.value;
+  if(id==="endRange") document.getElementById("endYear").value=e.target.value;
+  if(id==="startYear") document.getElementById("startRange").value=e.target.value;
+  if(id==="endYear") document.getElementById("endRange").value=e.target.value;
+  update();
+}
+function updateDualSliderFill() {
+  const start=document.getElementById("startRange"), end=document.getElementById("endRange"), fill=document.getElementById("yearSliderRange");
+  let s=Number(start.value), e=Number(end.value); if(s>e)[s,e]=[e,s];
+  const min=Number(start.min), max=Number(start.max);
+  fill.style.left = ((s-min)/(max-min))*100 + "%";
+  fill.style.width = ((e-s)/(max-min))*100 + "%";
+}
+function normalizedSeries(key,baseYear,sy,ey) {
+  const baseRow=DATA.find(d=>Number(d.year)===baseYear);
+  const base=val(baseRow,key);
+  return DATA.filter(d=>d.year>=sy&&d.year<=ey).map(d=> {
+    const v=val(d,key); return (v!=null&&base!=null&&base!==0) ? v/base*100 : null;
+  });
+}
+function shadeShapes(sy,ey) {
+  const toggles = Array.from(document.querySelectorAll(".shade-toggle:checked"))
+    .map(el => ({key: el.dataset.key, dir: el.dataset.dir}));
+  if(!toggles.length) return [];
+
+  const shapes = [];
+  for(let y = sy; y <= ey; y++) {
+    const cur = DATA.find(d => d.year === y);
+    const prev = DATA.find(d => d.year === y - 1);
+    if(!cur || !prev) continue;
+
+    let up = 0, down = 0;
+    for(const t of toggles) {
+      const dir = direction(val(cur, t.key), val(prev, t.key));
+      if(t.dir === "up" && dir === 1) up++;
+      if(t.dir === "down" && dir === -1) down++;
+    }
+
+    let fill = null;
+
+    // 透明度を上げ、指定色に近い見え方に修正。
+    // 1つ一致：やや薄く、2つ以上一致：より濃く表示。
+    if(up > 0 || down > 0) {
+      if(up > down) {
+        fill = up >= 2 ? getColor("colorUp2", 0.42) : getColor("colorUp1", 0.34);
+      } else if(down > up) {
+        fill = down >= 2 ? getColor("colorDown2", 0.42) : getColor("colorDown1", 0.34);
+      } else {
+        // 上昇・下落が同数の場合は下落色を優先。
+        fill = down >= 2 ? getColor("colorDown2", 0.38) : getColor("colorDown1", 0.30);
+      }
+    }
+
+    if(fill) {
+      shapes.push({
+        type: "rect",
+        xref: "x",
+        yref: "paper",
+        x0: y - 0.5,
+        x1: y + 0.5,
+        y0: 0,
+        y1: 1,
+        fillcolor: fill,
+        line: {width: 0},
+        layer: "below"
+      });
+    }
+  }
+  return shapes;
+}
+function update() {
+  let sy=Number(document.getElementById("startYear").value), ey=Number(document.getElementById("endYear").value);
+  if(sy>ey){[sy,ey]=[ey,sy];document.getElementById("startYear").value=sy;document.getElementById("endYear").value=ey;document.getElementById("startRange").value=sy;document.getElementById("endRange").value=ey}
+  updateDualSliderFill();
+  const baseYear=Number(document.getElementById("baseYear").value), keys=selectedKeys();
+  const x=DATA.filter(d=>d.year>=sy&&d.year<=ey).map(d=>d.year);
+  const traces=keys.map(k=>({
+    x, y: normalizedSeries(k,baseYear,sy,ey), name:SERIES[k].label, mode:"lines+markers",
+    line:{color:COLORS[k]||"#555",width:k==="wsts"?3:2}, marker:{size:5}, connectgaps:false
+  }));
+  const layout={
+    title:{text:`シリコンサイクル比較（${baseYear}年＝100）`,x:0.03},
+    paper_bgcolor:"#fff",plot_bgcolor:"#fff",margin:{l:58,r:24,t:55,b:62},hovermode:"x unified",
+    legend:{orientation:"h",x:0,y:-0.25},
+    xaxis:{title:"年",tickmode:"linear",dtick:Math.max(1,Math.ceil((ey-sy)/14)),rangeslider:{visible:true,thickness:0.08},range:[sy-0.5,ey+0.5]},
+    yaxis:{title:`指数（${baseYear}=100）`,zeroline:false},
+    shapes:shadeShapes(sy,ey)
+  };
+  Plotly.react("chart",traces,layout,{responsive:true,displaylogo:false,modeBarButtonsToRemove:["lasso2d","select2d"]}).then(gd=>{
+    gd.on("plotly_relayout",ev=>{
+      if(ev["xaxis.range[0]"]!==undefined&&ev["xaxis.range[1]"]!==undefined){
+        let ns=Math.max(MIN_YEAR,Math.round(Number(ev["xaxis.range[0]"])));
+        let ne=Math.min(MAX_YEAR,Math.round(Number(ev["xaxis.range[1]"])));
+        if(ns<=ne){document.getElementById("startYear").value=ns;document.getElementById("endYear").value=ne;document.getElementById("startRange").value=ns;document.getElementById("endRange").value=ne;updateDualSliderFill();renderStats(keys,ns,ne);}
+      }
+    });
+  });
+  renderStats(keys,sy,ey);
+}
+function renderStats(keys,sy,ey) {
+  const rows=DATA.filter(d=>d.year>=sy&&d.year<=ey);
+  let html=`<table><thead><tr><th>比較対象</th><th>実数値の相関</th><th>前年比％の相関</th><th>方向一致件数</th><th>比較件数</th><th>方向一致率</th><th>同時上昇</th><th>同時下落</th></tr></thead><tbody>`;
+  keys.forEach(k=>{
+    if(k==="wsts")return;
+    const xs=[],ys=[],gx=[],gy=[],dirs=[]; let upSame=0,downSame=0;
+    for(let i=1;i<rows.length;i++) {
+      const p=rows[i-1],c=rows[i],w=val(c,"wsts"),kv=val(c,k),wp=val(p,"wsts"),kp=val(p,k);
+      if(w!=null&&kv!=null){xs.push(w);ys.push(kv)}
+      if(w!=null&&wp!=null&&kv!=null&&kp!=null){
+        const wg=(w/wp-1)*100, kg=(kv/kp-1)*100, wd=Math.sign(wg), kd=Math.sign(kg);
+        gx.push(wg);gy.push(kg);dirs.push([wd,kd]); if(wd===1&&kd===1)upSame++; if(wd===-1&&kd===-1)downSame++;
+      }
+    }
+    const same=dirs.filter(d=>d[0]===d[1]).length,total=dirs.length;
+    html+=`<tr><td>${SERIES[k].label}</td><td>${fmt(pearson(xs,ys),3)}</td><td>${fmt(pearson(gx,gy),3)}</td><td>${same}</td><td>${total}</td><td>${total?fmt(same/total*100,1)+"%":"-"}</td><td>${upSame}</td><td>${downSame}</td></tr>`;
+  });
+  html+="</tbody></table>";
+  document.getElementById("statsTable").innerHTML=html;
+}
+function normalizeHeader(h) {
+  return String(h||"").toLowerCase().replace(/\s+/g,"").replace(/[\^_\-\/（）()]/g,"");
+}
+function mapHeader(header) {
+  const n=normalizeHeader(header);
+  for(const [key,aliases] of Object.entries(COLUMN_ALIASES)) {
+    if(aliases.some(a=>n.includes(normalizeHeader(a)))) return key;
+  }
+  return null;
+}
+function handleWorkbook(file) {
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+    if(rows.length<2){alert("データ行がありません");return;}
+    const headers=rows[0];
+    const mapped=headers.map(mapHeader);
+    const yearIdx=mapped.indexOf("year");
+    if(yearIdx<0){alert("Year列が見つかりません");return;}
+    const newRows=[];
+    for(let i=1;i<rows.length;i++) {
+      const r=rows[i]; const year=Number(r[yearIdx]);
+      if(!Number.isFinite(year)) continue;
+      const obj={year:year};
+      Object.keys(SERIES).forEach(k=>obj[k]=null);
+      mapped.forEach((key,idx)=>{
+        if(key && key!=="year") {
+          const v=Number(r[idx]);
+          obj[key]=Number.isFinite(v)?v:null;
+        }
+      });
+      newRows.push(obj);
+    }
+    if(!newRows.length){alert("読み込める年次データがありません");return;}
+    DATA=newRows.sort((a,b)=>a.year-b.year);
+    Object.keys(DEFAULT_LABELS).forEach(k=>{SERIES[k]=SERIES[k]||{label:DEFAULT_LABELS[k],unit:"年末値",default:false};});
+    buildUI(); update(); alert("Excelデータを読み込みました");
+  };
+  reader.readAsArrayBuffer(file);
+}
+function init() {
+  loadColors();
+  buildUI();
+  ["baseYear","startYear","endYear","startRange","endRange"].forEach(id=>document.getElementById(id).addEventListener("input",syncAndUpdate));
+  ["colorUp1","colorUp2","colorDown1","colorDown2"].forEach(id=>document.getElementById(id).addEventListener("input",e=>{localStorage.setItem(id,e.target.value);applyToggleColors();update();}));
+  document.getElementById("paletteBtn").addEventListener("click",()=>document.getElementById("palettePanel").classList.toggle("open"));
+  document.getElementById("collapseBtn").addEventListener("click",()=>{
+    const layout=document.getElementById("layout"); layout.classList.toggle("collapsed");
+    document.getElementById("collapseBtn").textContent=layout.classList.contains("collapsed")?"+":"−";
+    setTimeout(()=>Plotly.Plots.resize("chart"),250);
+  });
+  document.getElementById("resetBtn").addEventListener("click",()=>{buildUI();update();});
+  document.getElementById("xlsxInput").addEventListener("change",e=>{ if(e.target.files[0]) handleWorkbook(e.target.files[0]); });
+  update();
+}
+init();
+</script>
+</body>
+</html>
