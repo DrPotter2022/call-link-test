@@ -397,7 +397,7 @@ function calculate(){
  $("balanceBox").classList.toggle("covered",net>=0);$("coverageBar").style.width=(totalNeed?Math.min(100,totalBenefit/totalNeed*100):0)+"%";
  $("coverageText").textContent=`年間自己負担 ${yen(annualPay)} ＋ 減収額 ${yen(annualReduction)} ／ 保険等の給付 ${yen(totalBenefit)}`;
  $("coverageText").textContent=`年間自己負担 ${yen(annualPay)} ／ 減収額 ${yen(annualReduction)} ／ その他支出 ${yen(annualOther)} ／ 保険等の給付 ${yen(totalBenefit)}`;
- const actualPay=publicPays.map((pay,i)=>Math.max(0,pay+reductions[i]-sicknessByMonth[i]));
+ const actualPay=publicPays.slice();
  drawChart(costs,thirty,publicPays,actualPay,reductions,other,benefit,sicknessByMonth);
 }
 const chartVisibility={costs:true,thirty:true,publicPays:true,actualPay:true,reductions:true,benefits:true,sickness:true,other:true};
