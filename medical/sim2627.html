@@ -94,7 +94,8 @@ input:disabled,select:disabled{background:#e8edf2;color:#8995a4;cursor:not-allow
 .chart-title h3{margin:0;font-size:16px}.chart-title p{margin:2px 0 0;font-size:11px;color:var(--muted)}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#536579;margin-bottom:8px}
 .legend i{display:inline-block;width:18px;height:3px;border-radius:3px;margin-right:5px;vertical-align:middle}
-.legend .bar-key{height:9px;background:rgba(115,87,200,.55)}
+.legend span{cursor:pointer;user-select:none}.legend span.legend-off{opacity:.35;text-decoration:line-through}
+.legend .bar-key{height:9px;background:rgba(82,187,220,.72)}
 .canvas-scroll{overflow-x:auto;padding-bottom:4px}
 .canvas-wrap{position:relative;width:100%;height:360px;min-width:720px}
 canvas{width:100%;height:100%;display:block}
@@ -388,29 +389,35 @@ function calculate(){
  $("initialPay").textContent=yen(initial);$("multiPay").textContent=outCap?"対象外":yen(row.multi);
  $("annualCap").textContent=annualCap?yen(annualCap):"設定なし";$("annualAverage").textContent=annualCap?yen(annualCap/12):"―";
  $("formula").textContent=`所得区分目安：${row.label}。多数回該当は上限到達月を自動判定し、4回目以降に${yen(row.multi)}を適用しています。`;
- const benefit=benefits(),additionalCapsForBenefits=additionalBenefitCaps(); for(let i=0;i<benefit.length;i++)if(additionalCapsForBenefits[i]>0)benefit[i]-=additionalCapsForBenefits[i];
+ const benefit=benefits(),sicknessByMonth=benefit.sickness||Array(totalMonths).fill(0); for(let i=0;i<sicknessByMonth.length;i++){const allowed=Math.min(sicknessByMonth[i]||0,reductions[i]||0),delta=(sicknessByMonth[i]||0)-allowed;if(delta>0)benefit[i]-=delta;sicknessByMonth[i]=allowed;} $("sicknessBenefit").textContent=yen(sicknessByMonth.reduce((a,b)=>a+b,0));
+ const additionalCapsForBenefits=additionalBenefitCaps(); for(let i=0;i<benefit.length;i++)if(additionalCapsForBenefits[i]>0)benefit[i]-=additionalCapsForBenefits[i];
  const annualPay=publicPays.reduce((a,b)=>a+b,0),annualReduction=reductions.reduce((a,b)=>a+b,0),annualOther=other.reduce((a,b)=>a+b,0),totalNeed=annualPay+annualReduction+annualOther,totalBenefit=benefit.reduce((a,b)=>a+b,0),net=totalBenefit-totalNeed;
+ $("totalBenefit").textContent=yen(totalBenefit);
  $("remaining").textContent=signedYen(net);
  $("balanceBox").classList.toggle("covered",net>=0);$("coverageBar").style.width=(totalNeed?Math.min(100,totalBenefit/totalNeed*100):0)+"%";
  $("coverageText").textContent=`年間自己負担 ${yen(annualPay)} ＋ 減収額 ${yen(annualReduction)} ／ 保険等の給付 ${yen(totalBenefit)}`;
  $("coverageText").textContent=`年間自己負担 ${yen(annualPay)} ／ 減収額 ${yen(annualReduction)} ／ その他支出 ${yen(annualOther)} ／ 保険等の給付 ${yen(totalBenefit)}`;
- drawChart(costs,thirty,publicPays,reductions,other,benefit,benefit.sickness);
+ const actualPay=publicPays.map((pay,i)=>Math.max(0,pay+reductions[i]-sicknessByMonth[i]));
+ drawChart(costs,thirty,publicPays,actualPay,reductions,other,benefit,sicknessByMonth);
 }
-function drawChart(costs,thirty,publicPays,reductions,other,benefits,sickness){
+const chartVisibility={costs:true,thirty:true,publicPays:true,actualPay:true,reductions:true,benefits:true,sickness:true,other:true};
+function setupChartLegend(){document.querySelectorAll(".legend span").forEach((el,i)=>{const key=["costs","thirty","publicPays","reductions","benefits","actualPay","sickness","other"][i];if(key){el.dataset.chartKey=key;el.classList.toggle("legend-off",!chartVisibility[key]);el.title="クリックで表示／非表示"}})}
+function drawChart(costs,thirty,publicPays,actualPay,reductions,other,benefits,sickness){
  const c=$("chart"),box=c.parentElement,minWidth=Math.max(720,yearCount*720);box.style.width=minWidth+"px";const ratio=window.devicePixelRatio||1,w=box.clientWidth,h=box.clientHeight;c.width=w*ratio;c.height=h*ratio;
  const x=c.getContext("2d");x.setTransform(ratio,0,0,ratio,0,0);x.clearRect(0,0,w,h);
- const pad={l:62,r:18,t:18,b:38},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b,maxPos=Math.max(1,...costs,...thirty,...publicPays,...benefits)*1.1,minNeg=-Math.max(1,...reductions,...other)*1.1,range=maxPos-minNeg;
+ const pad={l:62,r:18,t:18,b:38},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b,maxPos=Math.max(1,...costs,...thirty,...publicPays,...actualPay,...benefits)*1.1,minNeg=-Math.max(1,...reductions,...other,...sickness)*1.1,range=maxPos-minNeg;
  const py=v=>pad.t+(maxPos-v)/range*ph,zeroY=py(0);
  x.font="11px system-ui";x.textAlign="right";x.textBaseline="middle";
  for(let i=0;i<=5;i++){const val=maxPos-range*i/5,y=py(val);x.strokeStyle=Math.abs(val)<range/10?"#9aa8b6":"#e4eaf0";x.lineWidth=Math.abs(val)<range/10?1.5:1;x.beginPath();x.moveTo(pad.l,y);x.lineTo(w-pad.r,y);x.stroke();x.fillStyle="#718096";const abs=Math.abs(val);x.fillText((val<0?"−":"")+(abs>=10000?Math.round(abs/10000)+"万":Math.round(abs)),pad.l-8,y)}
  x.strokeStyle="#8796a5";x.lineWidth=1.5;x.beginPath();x.moveTo(pad.l,zeroY);x.lineTo(w-pad.r,zeroY);x.stroke();
  const count=costs.length,step=pw/count,px=i=>pad.l+step*(i+.5);
- benefits.forEach((v,i)=>{const bw=Math.max(6,step*.42);x.fillStyle="rgba(115,87,200,.52)";x.fillRect(px(i)-bw/2,py(v),bw,zeroY-py(v))});
+ if(chartVisibility.benefits)benefits.forEach((v,i)=>{const bw=Math.max(6,step*.42);x.fillStyle="rgba(82,187,220,.72)";x.fillRect(px(i)-bw/2,py(v),bw,zeroY-py(v))});
+ if(chartVisibility.sickness)sickness.forEach((sv,i)=>{if(sv>0){const bw=Math.max(6,step*.42);x.fillStyle="rgba(22,163,124,.72)";x.fillRect(px(i)+bw*.15,zeroY,bw*.7,py(-sv)-zeroY)}});
  function line(data,color){x.strokeStyle=color;x.lineWidth=2.6;x.lineJoin="round";x.beginPath();data.forEach((v,i)=>i?x.lineTo(px(i),py(v)):x.moveTo(px(i),py(v)));x.stroke();data.forEach((v,i)=>{x.fillStyle="#fff";x.strokeStyle=color;x.lineWidth=2;x.beginPath();x.arc(px(i),py(v),3,0,Math.PI*2);x.fill();x.stroke()})}
- line(costs,"#d83b3b");line(thirty,"#ef7e9b");line(publicPays,"#12805c");line(reductions.map(v=>-v),"#d4912d");line(other.map(v=>-v),"#687789");if(sickness.some(v=>v>0))line(sickness,"#16a37c");
+ if(chartVisibility.costs)line(costs,"#d83b3b");if(chartVisibility.thirty)line(thirty,"#ef7e9b");if(chartVisibility.publicPays)line(publicPays,"#12805c");if(chartVisibility.actualPay)line(actualPay,"#8b5fbf");if(chartVisibility.reductions)line(reductions.map(v=>-v),"#d4912d");if(chartVisibility.other)line(other.map(v=>-v),"#687789");
  x.fillStyle="#536579";x.textAlign="center";x.textBaseline="top";for(let i=0;i<count;i++)x.fillText((i%12+1)+"月",px(i),pad.t+ph+10);
  for(let y=1;y<yearCount;y++){const xx=pad.l+step*y*12;x.strokeStyle="#aebbc8";x.setLineDash([4,4]);x.beginPath();x.moveTo(xx,pad.t);x.lineTo(xx,pad.t+ph);x.stroke();x.setLineDash([])}
- c._chartState={costs,thirty,publicPays,reductions,other,benefits,sickness,pad,step,px,w,h};
+ c._chartState={costs,thirty,publicPays,actualPay,reductions,other,benefits,sickness,pad,step,px,w,h};
 }
 function formatInput(el){const v=String(el.value).replace(/[^\d]/g,"");el.value=v?comma(Number(v)):""}
 function copyYear(prefix){
@@ -477,8 +484,9 @@ function removePlan(card){const cards=planCards(card.dataset.kind);if(cards.leng
 function showChartTooltip(e){
  const c=$("chart"),s=c._chartState;if(!s)return;
  const rect=c.getBoundingClientRect(),mx=e.clientX-rect.left,index=Math.max(0,Math.min(s.costs.length-1,Math.round((mx-s.pad.l)/s.step-.5))),tip=$("chartTooltip"),year=Math.floor(index/12)+1,month=index%12+1;
- const sickness=s.sickness?.[index]||0,diff=s.publicPays[index]-sickness;
+ const sickness=s.sickness?.[index]||0,diff=s.publicPays[index]-sickness,actual=s.actualPay?.[index]??Math.max(0,s.publicPays[index]+(s.reductions[index]||0)-sickness);
  tip.innerHTML=`<strong>${year}年目 ${month}月</strong><span style="color:#d83b3b">● 総医療費 <b>${yen(s.costs[index])}</b></span><span style="color:#ef7e9b">● 3割負担 <b>${yen(s.thirty[index])}</b></span><span style="color:#12805c">● 高額療養費適用後 <b>${yen(s.publicPays[index])}</b></span><span style="color:#16a37c">● 傷病手当金 <b>${yen(sickness)}</b></span><span style="color:#0b3b66">● 高額療養費適用後－傷病手当金 <b>${signedYen(diff)}</b></span><span style="color:#d4912d">● 減収額 <b>−${yen(s.reductions[index])}</b></span><span style="color:#687789">● その他支出 <b>−${yen(s.other[index])}</b></span><span style="color:#7357c8">■ 保険等の給付 <b>${yen(s.benefits[index])}</b></span>`;
+ tip.innerHTML += `<span style="color:#8b5fbf">● 実際の自己負担額 <b>${yen(actual)}</b></span><span style="color:#d4912d">● 減収額－傷病手当金 <b>${signedYen((s.reductions[index]||0)-sickness)}</b></span>`;
  tip.style.display="block";const tw=tip.offsetWidth,th=tip.offsetHeight;
  tip.style.left=Math.max(4,Math.min(rect.width-tw-4,s.px(index)-tw/2))+"px";
  tip.style.top=Math.max(4,Math.min(rect.height-th-4,e.clientY-rect.top-th-12))+"px";
@@ -511,12 +519,13 @@ document.querySelectorAll(".subhead-actions").forEach((host)=>{
  if(host.closest(".monthly-wrap")){const h3=host.closest(".monthly-wrap").querySelector("h3")?.textContent||"";const kind=h3.includes("総医療費")?"m":h3.includes("減収額")?"r":h3.includes("その他")?"o":null;if(kind)host.insertAdjacentHTML("afterbegin",`<button class="copy-btn" type="button" data-clear-all="${kind}">全クリア</button>`)}
 });
 document.querySelectorAll(".step h2")[1].textContent="任意加入の保障を入力";
-document.querySelector(".legend")?.insertAdjacentHTML("beforeend",'<span><i style="background:#16a37c"></i>傷病手当金</span><span><i style="background:#687789"></i>その他支出</span>');
+document.querySelector(".legend")?.insertAdjacentHTML("beforeend",'<span><i style="background:#8b5fbf"></i>実際の自己負担額</span><span><i style="background:#16a37c;height:9px"></i>傷病手当金</span><span><i style="background:#687789"></i>その他支出</span>');
 document.addEventListener("focusin",e=>{if(e.target.classList.contains("comma")){e.target.value=String(e.target.value).replace(/,/g,"");const match=e.target.id.match(/^([mro])(\d+)$/);if(match)lastMonth[match[1]]=Number(match[2])}});
 document.addEventListener("focusout",e=>{if(e.target.classList.contains("comma"))formatInput(e.target)});
 document.addEventListener("input",e=>{if(e.target.matches("input,select")){syncDiagnosisState();calculate()}});
 document.addEventListener("click",e=>{
- const tag=e.target.closest(".tag-btn"),unit=e.target.closest(".unit"),clear=e.target.closest("[data-clear]"),clearAll=e.target.closest("[data-clear-all]"),fieldClear=e.target.closest("[data-field-clear]"),planClear=e.target.closest("[data-plan-clear]"),money=e.target.closest("[data-money]"),field=e.target.closest(".month-field"),copy=e.target.closest(".copy-mode"),add=e.target.closest(".year-add"),remove=e.target.closest(".year-remove"),planAdd=e.target.closest("[data-plan-add]"),planRemove=e.target.closest("[data-plan-remove]");
+ const tag=e.target.closest(".tag-btn"),legend=e.target.closest(".legend span"),unit=e.target.closest(".unit"),clear=e.target.closest("[data-clear]"),clearAll=e.target.closest("[data-clear-all]"),fieldClear=e.target.closest("[data-field-clear]"),planClear=e.target.closest("[data-plan-clear]"),money=e.target.closest("[data-money]"),field=e.target.closest(".month-field"),copy=e.target.closest(".copy-mode"),add=e.target.closest(".year-add"),remove=e.target.closest(".year-remove"),planAdd=e.target.closest("[data-plan-add]"),planRemove=e.target.closest("[data-plan-remove]");
+ if(legend?.dataset.chartKey){const key=legend.dataset.chartKey;chartVisibility[key]=!chartVisibility[key];legend.classList.toggle("legend-off",!chartVisibility[key]);calculate();return}
  if(tag){const card=tag.closest(".plan-card"),next=!tag.classList.contains("active");if(card&&tag.dataset.planTag){card.querySelectorAll(`[data-plan-tag="${tag.dataset.planTag}"]`).forEach(b=>b.classList.toggle("active",next));syncPlanFields(card)}else tag.classList.toggle("active");calculate();return}
  if(unit){const input=unit.closest(".input-unit")?.querySelector("input");if(input){const text=unit.textContent||"",values=/％|%/.test(text)?[10,30,50,70,90,100]:/月|譛・/.test(text)?Array.from({length:12},(_,i)=>i+1):/日|譌・/.test(text)?[1,3,5,7,10,30,60,90,180,360,540]:paletteValues(input);openPaletteForInput(input,unit,values);return}}
  if(clear){$(clear.dataset.clear).value="0";calculate();return}
@@ -548,7 +557,7 @@ const chartCanvas=$("chart");
 chartCanvas.addEventListener("mousemove",showChartTooltip);
 chartCanvas.addEventListener("mouseleave",()=>{$("chartTooltip").style.display="none"});
 chartCanvas.addEventListener("touchstart",e=>{if(e.touches[0])showChartTooltip(e.touches[0])},{passive:true});
-document.querySelectorAll(".comma").forEach(formatInput);syncDiagnosisState();calculate();
+setupChartLegend();document.querySelectorAll(".comma").forEach(formatInput);syncDiagnosisState();calculate();
 })();
 </script>
 </body>
