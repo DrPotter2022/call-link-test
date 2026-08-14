@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YCC期間の債務残高(対GDP比)と長期金利の推移</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --baseline:       #c3c2b7;
+    --s-blue:         #2a78d6;
+    --s-orange:       #eb6834;
+    --s-aqua:         #1baf7a;
+    --band-fill:      rgba(42,120,214,0.07);
+    --band-line:      rgba(42,120,214,0.35);
+    --marker-line:    #898781;
+    --border:         rgba(11,11,11,0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --baseline:       #383835;
+      --s-blue:         #3987e5;
+      --s-orange:       #d95926;
+      --s-aqua:         #199e70;
+      --band-fill:      rgba(57,135,229,0.12);
+      --band-line:      rgba(57,135,229,0.4);
+      --marker-line:    #898781;
+      --border:         rgba(255,255,255,0.10);
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page:           #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --s-blue:         #3987e5;
+    --s-orange:       #d95926;
+    --s-aqua:         #199e70;
+    --band-fill:      rgba(57,135,229,0.12);
+    --band-line:      rgba(57,135,229,0.4);
+    --marker-line:    #898781;
+    --border:         rgba(255,255,255,0.10);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif; color: var(--text-primary); }
+  .viz-root { padding: 28px 20px 40px; max-width: 900px; margin: 0 auto; }
+
+  .theme-toggle {
+    position: absolute; top: 20px; right: 20px; font-size: 12px; color: var(--text-secondary);
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer;
+  }
+
+  header.page-head { margin-bottom: 16px; }
+  h1 { font-size: 19px; font-weight: 600; margin: 0 0 4px; }
+  .sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 2px; }
+  .meta { font-size: 12px; color: var(--text-muted); }
+
+  .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 16px 16px 14px; margin-bottom: 16px; position: relative; }
+  .card h2 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
+  .legend { display: flex; gap: 14px; align-items: center; font-size: 11.5px; color: var(--text-secondary); margin-bottom: 8px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .swatch-line { width: 14px; height: 2px; display: inline-block; }
+  .swatch-band { width: 12px; height: 10px; display: inline-block; border: 1px dashed var(--band-line); background: var(--band-fill); }
+
+  svg { width: 100%; height: auto; overflow: visible; }
+  .axis-label { fill: var(--text-muted); font-size: 10.5px; }
+  .tick-label { fill: var(--text-muted); font-size: 10px; }
+  .grid-line { stroke: var(--gridline); stroke-width: 1; }
+  .baseline { stroke: var(--baseline); stroke-width: 1; }
+  .series-line { fill: none; stroke-width: 2; }
+  .series-dot { stroke: var(--surface-1); stroke-width: 1.6; }
+  .hit { fill: transparent; cursor: pointer; }
+  .end-label { font-size: 11px; font-weight: 600; }
+  .ycc-band { fill: var(--band-fill); }
+  .ycc-band-edge { stroke: var(--band-line); stroke-width: 1; stroke-dasharray: 3 3; }
+  .ycc-text { fill: var(--text-muted); font-size: 10px; }
+  .kuroda-line { stroke: var(--marker-line); stroke-width: 1.2; stroke-dasharray: 2 2; }
+  .kuroda-text { fill: var(--text-secondary); font-size: 10px; }
+
+  .note { font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.6; }
+
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+  table.data-table caption { text-align: left; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+  table.data-table th, table.data-table td { text-align: right; padding: 3px 5px; border-bottom: 1px solid var(--gridline); font-variant-numeric: tabular-nums; }
+  table.data-table th:first-child, table.data-table td:first-child { text-align: left; }
+  table.data-table thead th { color: var(--text-muted); font-weight: 500; }
+  table.data-table tr.ycc-row td { background: var(--band-fill); }
+
+  .tooltip {
+    position: fixed; pointer-events: none; z-index: 50; background: var(--text-primary); color: var(--surface-1);
+    font-size: 11.5px; padding: 6px 9px; border-radius: 6px; line-height: 1.5; opacity: 0; transform: translate(-50%, -110%);
+    transition: opacity 0.08s ease; white-space: nowrap;
+  }
+  .tooltip.show { opacity: 0.95; }
+
+  footer.foot { margin-top: 16px; font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="viz-root">
+  <button class="theme-toggle" id="themeToggle" type="button">ダークモード切替</button>
+  <header class="page-head">
+    <h1>YCC期間の日本国債利回りと政府債務残高(対GDP比)</h1>
+    <p class="sub">2013〜2024年、年次(利回りは年平均・応募者利回りベース、債務残高はIMF一般政府粗債務)</p>
+    <p class="meta">作成日時: 2026/08/13 19:10 JST</p>
+  </header>
+
+  <div class="card">
+    <h2>政府債務残高(対GDP比)</h2>
+    <svg id="chartDebt" viewBox="0 0 820 220"></svg>
+    <p class="note">2020年はコロナ対策の財政出動で急上昇(206%→229%)。以降も220〜228%程度の高水準で推移。</p>
+  </div>
+
+  <div class="card">
+    <h2>国債利回り(10年・20年・30年、年平均)</h2>
+    <div class="legend">
+      <span class="legend-item"><span class="swatch-line" style="background:var(--s-blue)"></span>10年</span>
+      <span class="legend-item"><span class="swatch-line" style="background:var(--s-orange)"></span>20年</span>
+      <span class="legend-item"><span class="swatch-line" style="background:var(--s-aqua)"></span>30年</span>
+      <span class="legend-item"><span class="swatch-band"></span>YCC実施期間(2016/9〜2024/3)</span>
+    </div>
+    <svg id="chartYield" viewBox="0 0 820 260"></svg>
+    <p class="note">黒田総裁任期は2013年4月〜2023年4月(点線)。YCC自体は黒田総裁末期の2022年12月に変動幅を±0.25%→±0.5%へ拡大した後、退任後の植田総裁の下で2023年7月(事実上1.0%まで容認)・同10月(上限のめど化)と柔軟化が進み、2024年3月に解除された。</p>
+  </div>
+
+  <table class="data-table" id="dataTable"></table>
+
+  <footer class="foot">
+    出所: IMF World Economic Outlook(一般政府粗債務対GDP比)、財務省国債金利情報ベースの年平均応募者利回り(JPアクチュアリーコンサルティング e-PBO.jp集計)。YCC導入・変動幅拡大・解除の時期は日銀公表資料および各種報道(日本経済新聞、野村證券、第一生命経済研究所等)に基づく。<br>
+    ※本資料は情報提供のみを目的とし、投資助言や特定の投資判断を推奨するものではありません。
+  </footer>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+(function () {
+  const debt = [
+    { y: 2013, v: 201.2 }, { y: 2014, v: 203.6 }, { y: 2015, v: 200.1 }, { y: 2016, v: 202.1 },
+    { y: 2017, v: 203.1 }, { y: 2018, v: 203.7 }, { y: 2019, v: 206.3 }, { y: 2020, v: 228.8 },
+    { y: 2021, v: 222.7 }, { y: 2022, v: 227.8 }, { y: 2023, v: 220.3 },
+  ];
+  const y10 = [0.721,0.565,0.380,-0.031,0.061,0.082,-0.090,0.005,0.065,0.211,0.571,0.883];
+  const y20 = [1.638,1.402,1.138,0.437,0.591,0.566,0.298,0.351,0.447,0.841,1.247,1.712];
+  const y30 = [1.762,1.636,1.411,0.564,0.834,0.794,0.448,0.530,0.672,1.130,1.498,2.027];
+  const years = [2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+
+  const YCC_START = 2016.72; // 2016/9
+  const YCC_END = 2024.22;   // 2024/3
+  const KURODA_START = 2013.27; // 2013/4
+  const KURODA_END = 2023.27;   // 2023/4
+
+  const tooltip = document.getElementById("tooltip");
+  function bindTip(el, text) {
+    el.setAttribute("data-tip", text);
+    el.addEventListener("mousemove", e => {
+      tooltip.textContent = el.getAttribute("data-tip");
+      tooltip.style.left = e.clientX + "px";
+      tooltip.style.top = e.clientY + "px";
+      tooltip.classList.add("show");
+    });
+    el.addEventListener("mouseleave", () => tooltip.classList.remove("show"));
+  }
+
+  // ---------- Debt panel ----------
+  (function renderDebt() {
+    const svg = document.getElementById("chartDebt");
+    const W = 820, H = 220, M = { top: 14, right: 30, bottom: 26, left: 46 };
+    const plotW = W - M.left - M.right, plotH = H - M.top - M.bottom;
+    const xMin = 2013, xMax = 2023.6;
+    const yMin = 190, yMax = 235;
+    const xScale = yr => M.left + ((yr - xMin) / (xMax - xMin)) * plotW;
+    const yScale = v => M.top + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+
+    let s = "";
+    // YCC band
+    s += `<rect class="ycc-band" x="${xScale(YCC_START)}" y="${M.top}" width="${xScale(xMax) - xScale(YCC_START)}" height="${plotH}"></rect>`;
+    s += `<line class="ycc-band-edge" x1="${xScale(YCC_START)}" y1="${M.top}" x2="${xScale(YCC_START)}" y2="${M.top + plotH}"></line>`;
+
+    // gridlines
+    [190,200,210,220,230].forEach(v => {
+      const y = yScale(v);
+      s += `<line class="grid-line" x1="${M.left}" y1="${y}" x2="${W - M.right}" y2="${y}"></line>`;
+      s += `<text class="tick-label" x="${M.left - 8}" y="${y + 3}" text-anchor="end">${v}%</text>`;
+    });
+    debt.forEach(d => {
+      const x = xScale(d.y);
+      s += `<text class="tick-label" x="${x}" y="${H - M.bottom + 15}" text-anchor="middle">${d.y}</text>`;
+    });
+    s += `<line class="baseline" x1="${M.left}" y1="${M.top + plotH}" x2="${W - M.right}" y2="${M.top + plotH}"></line>`;
+
+    // Kuroda markers
+    [KURODA_START, KURODA_END].forEach(k => {
+      const x = xScale(k);
+      s += `<line class="kuroda-line" x1="${x}" y1="${M.top}" x2="${x}" y2="${M.top + plotH}"></line>`;
+    });
+    s += `<text class="kuroda-text" x="${xScale(KURODA_START) + 4}" y="${M.top + 10}">黒田総裁 就任(2013/4)</text>`;
+    s += `<text class="kuroda-text" x="${xScale(KURODA_END) + 4}" y="${M.top + 22}">退任(2023/4)</text>`;
+
+    // line
+    let path = "";
+    debt.forEach((d, i) => { path += (i === 0 ? "M" : "L") + xScale(d.y) + "," + yScale(d.v) + " "; });
+    s += `<path class="series-line" d="${path}" stroke="var(--s-blue)"></path>`;
+    debt.forEach(d => {
+      s += `<circle class="series-dot" cx="${xScale(d.y)}" cy="${yScale(d.v)}" r="3.5" fill="var(--s-blue)"></circle>`;
+      s += `<circle class="hit" cx="${xScale(d.y)}" cy="${yScale(d.v)}" r="10" data-tip="${d.y}年｜債務/GDP ${d.v}%"></circle>`;
+    });
+    s += `<text class="ycc-text" x="${xScale(YCC_START) + 4}" y="${M.top + plotH - 6}">YCC導入(2016/9)〜</text>`;
+
+    svg.innerHTML = s;
+    svg.querySelectorAll(".hit").forEach(el => bindTip(el, el.getAttribute("data-tip")));
+  })();
+
+  // ---------- Yield panel ----------
+  (function renderYield() {
+    const svg = document.getElementById("chartYield");
+    const W = 820, H = 260, M = { top: 14, right: 30, bottom: 26, left: 46 };
+    const plotW = W - M.left - M.right, plotH = H - M.top - M.bottom;
+    const xMin = 2013, xMax = 2024.6;
+    const yMin = -0.5, yMax = 2.3;
+    const xScale = yr => M.left + ((yr - xMin) / (xMax - xMin)) * plotW;
+    const yScale = v => M.top + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+
+    let s = "";
+    s += `<rect class="ycc-band" x="${xScale(YCC_START)}" y="${M.top}" width="${xScale(YCC_END) - xScale(YCC_START)}" height="${plotH}"></rect>`;
+    s += `<line class="ycc-band-edge" x1="${xScale(YCC_START)}" y1="${M.top}" x2="${xScale(YCC_START)}" y2="${M.top + plotH}"></line>`;
+    s += `<line class="ycc-band-edge" x1="${xScale(YCC_END)}" y1="${M.top}" x2="${xScale(YCC_END)}" y2="${M.top + plotH}"></line>`;
+
+    [0,0.5,1,1.5,2].forEach(v => {
+      const y = yScale(v);
+      s += `<line class="grid-line" x1="${M.left}" y1="${y}" x2="${W - M.right}" y2="${y}"></line>`;
+      s += `<text class="tick-label" x="${M.left - 8}" y="${y + 3}" text-anchor="end">${v}%</text>`;
+    });
+    years.forEach(yr => {
+      const x = xScale(yr);
+      s += `<text class="tick-label" x="${x}" y="${H - M.bottom + 15}" text-anchor="middle">${yr}</text>`;
+    });
+    s += `<line class="baseline" x1="${M.left}" y1="${yScale(0)}" x2="${W - M.right}" y2="${yScale(0)}"></line>`;
+
+    [KURODA_START, KURODA_END].forEach(k => {
+      const x = xScale(k);
+      s += `<line class="kuroda-line" x1="${x}" y1="${M.top}" x2="${x}" y2="${M.top + plotH}"></line>`;
+    });
+
+    function drawSeries(vals, color, label) {
+      let path = "";
+      years.forEach((yr, i) => { path += (i === 0 ? "M" : "L") + xScale(yr) + "," + yScale(vals[i]) + " "; });
+      s += `<path class="series-line" d="${path}" stroke="${color}"></path>`;
+      years.forEach((yr, i) => {
+        s += `<circle class="series-dot" cx="${xScale(yr)}" cy="${yScale(vals[i])}" r="3" fill="${color}"></circle>`;
+        s += `<circle class="hit" cx="${xScale(yr)}" cy="${yScale(vals[i])}" r="9" data-tip="${label}｜${yr}年｜${vals[i].toFixed(3)}%"></circle>`;
+      });
+      const lastX = xScale(years[years.length - 1]);
+      const lastY = yScale(vals[vals.length - 1]);
+      s += `<text class="end-label" x="${lastX + 6}" y="${lastY + 3}" fill="${color}">${label}</text>`;
+    }
+    drawSeries(y10, "var(--s-blue)", "10年");
+    drawSeries(y20, "var(--s-orange)", "20年");
+    drawSeries(y30, "var(--s-aqua)", "30年");
+
+    s += `<text class="ycc-text" x="${xScale(YCC_START) + 4}" y="${M.top + 12}">YCC期間</text>`;
+
+    svg.innerHTML = s;
+    svg.querySelectorAll(".hit").forEach(el => bindTip(el, el.getAttribute("data-tip")));
+  })();
+
+  // ---------- Table ----------
+  (function renderTable() {
+    const table = document.getElementById("dataTable");
+    let html = `<caption>年次データ一覧(黄色網掛け = YCC実施期間中の年)</caption>
+      <thead><tr><th>年</th><th>債務/GDP(%)</th><th>10年(%)</th><th>20年(%)</th><th>30年(%)</th></tr></thead><tbody>`;
+    years.forEach((yr, i) => {
+      const d = debt.find(x => x.y === yr);
+      const inYcc = yr >= 2016 && yr <= 2024;
+      html += `<tr class="${inYcc ? 'ycc-row' : ''}"><td>${yr}</td><td>${d ? d.v : '—'}</td><td>${y10[i].toFixed(3)}</td><td>${y20[i].toFixed(3)}</td><td>${y30[i].toFixed(3)}</td></tr>`;
+    });
+    html += "</tbody>";
+    table.innerHTML = html;
+  })();
+
+  document.getElementById("themeToggle").addEventListener("click", () => {
+    const root = document.documentElement;
+    const cur = root.getAttribute("data-theme");
+    root.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+  });
+})();
+</script>
+</body>
+</html>
