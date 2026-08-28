@@ -37,6 +37,38 @@ body.side-collapsed .side{display:none}
 .pdfBtn{background:#eaf3fb;color:#075d9c}
 @media(max-width:900px){#sideToggle{display:none}}
 
+
+/* v4: source selector + global search */
+.sourceTabs{display:grid!important;grid-template-columns:1fr!important;gap:6px!important;margin-bottom:0!important}
+.sourceChoice{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:6px;align-items:stretch}
+.sourceTab{
+ width:100%;min-height:36px!important;padding:5px 9px!important;border-radius:8px!important;
+ text-align:left!important;display:flex;align-items:center;justify-content:space-between;gap:8px;
+ background:#f7fbff!important;color:var(--blue)!important;border:1px solid #bdd4e4!important;
+}
+.sourceTab .srcName{font-weight:900;font-size:11px}
+.sourceTab .srcCount{font-size:9px;font-weight:700;color:#66758a;white-space:nowrap}
+.sourceTab.active{background:var(--blue)!important;color:#fff!important;border-color:var(--blue)!important}
+.sourceTab.active .srcCount{color:#eaf5ff}
+.sourceLink{
+ display:flex;align-items:center;justify-content:center;text-align:center;padding:5px 7px;border:1px solid #cfe1ef;
+ border-radius:8px;background:#fff;color:var(--blue);text-decoration:none;font-size:9px;font-weight:850;line-height:1.2
+}
+.sourceLink:hover{background:#eef7fd}
+.sourceAllRow{margin-top:1px}
+.sourceAllRow .sourceTab{justify-content:center;text-align:center!important}
+.globalSearch{max-width:1500px;margin:9px auto 0;padding:0 16px}
+.globalSearch .card{margin:0}
+.globalSearchTop{display:grid;grid-template-columns:minmax(300px,1fr) auto;gap:10px;align-items:end}
+.globalSearch .pills{margin-top:8px}
+.globalSearch .stitle{margin-top:8px}
+@media(max-width:760px){
+ .globalSearch{padding:0 9px;margin-top:7px}
+ .globalSearchTop{grid-template-columns:1fr}
+ .sourceChoice{grid-template-columns:minmax(0,1fr) 80px}
+ .sourceLink{font-size:8.5px}
+}
+
 /* consent */
 body.consent-pending{overflow:hidden}.consent-shield{position:fixed;inset:0;z-index:9999;background:rgba(19,31,44,.58);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:18px}.consent-box{width:min(720px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:18px;box-shadow:0 20px 70px #0007;padding:22px}.consent-box h2{margin:0 0 10px;font-size:clamp(20px,4vw,28px);color:#0b5c98}.consent-box p{margin:8px 0}.consent-warning{background:#fff5e8;border:1px solid #efc27d;border-radius:11px;padding:12px;font-size:13px}.consent-check{display:flex;gap:9px;align-items:flex-start;margin:15px 0;font-weight:800}.consent-check input{margin-top:6px;transform:scale(1.2)}#agreeBtn{width:100%;font-size:15px;padding:12px}#agreeBtn:disabled{opacity:.45;cursor:not-allowed}
 body.consent-pending>header,body.consent-pending>main,body.consent-pending>nav,body.consent-pending>.comparebar{filter:blur(8px);pointer-events:none;user-select:none}
@@ -75,6 +107,12 @@ body.consent-pending>header,body.consent-pending>main,body.consent-pending>nav,b
   </div>
  </section>
 </div></header>
+<div class="globalSearch"><section class="card">
+    <div class="globalSearchTop"><div><div class="label">全文検索</div>
+    <div class="search"><input id="q" type="text" enterkeyhint="search" autocomplete="off" placeholder="便宜供与、企業内代理店、特別利益…"><button class="x" id="clearQ">×</button></div></div><div class="mini" style="padding-bottom:7px">検索結果は入力と同時に更新</div></div>
+    <div class="pills" id="quick"><button class="pill">便宜供与</button><button class="pill">過度の便宜供与</button><button class="pill">特別利益</button><button class="pill">企業内代理店</button><button class="pill">手数料</button><button class="pill">インセンティブ</button><button class="pill">出向</button><button class="pill">本業支援</button><button class="pill">比較推奨</button><button class="pill">ハ方式</button><button class="pill">意向把握</button><button class="pill">証跡</button><button class="pill">サイバーセキュリティ</button><button class="pill">フィッシング</button><button class="pill">多要素認証</button><button class="pill">パスキー</button></div>
+    <div class="stitle">検索履歴 <button id="clearHist" class="btn secondary" style="padding:2px 6px;font-size:9px">削除</button></div><div class="history" id="history"></div>
+   </section></div>
 
 <main class="app">
  <div class="notice">4資料・合計1,190件の検索データはHTML内に収録済みです。PDFの読込や外部通信は不要です。検索結果は必ず必要に応じて金融庁の原資料と照合してください。</div>
@@ -83,32 +121,29 @@ body.consent-pending>header,body.consent-pending>main,body.consent-pending>nav,b
   <aside class="side">
    <section class="card">
     <div class="label">検索する公表資料</div>
-    <div class="sourceTabs">
-     <button class="sourceTab" data-source-tab="0330f">3/30<br>内閣府令等</button>
-     <button class="sourceTab" data-source-tab="0330">3/30<br>監督指針</button>
-     <button class="sourceTab" data-source-tab="0717c">7/17 監督指針</button>
-     <button class="sourceTab active" data-source-tab="0828">8/28<br>比較推奨</button>
-     <button class="sourceTab" data-source-tab="all">すべて</button>
-    </div>
-    <div class="sourceChecks">
-     <label><input type="checkbox" id="src0330f"> 3/30 内閣府令等（203件）</label>
-     <label><input type="checkbox" id="src0330"> 3/30 監督指針（152件）</label>
-     <label><input type="checkbox" id="src0717c"> 7/17 監督指針（76件）</label>
-     <label><input type="checkbox" id="src0828" checked> 8/28 比較推奨（759件）</label>
-    </div>
-    <div class="sourceOfficialLinks" style="margin-top:9px;display:grid;gap:6px;font-size:11px">
-     <a href="https://www.fsa.go.jp/news/r7/hoken/20260330/20260330.html" target="_blank" rel="noopener" style="display:block;padding:7px 9px;border:1px solid #cfe1ef;border-radius:8px;background:#f7fbff;text-decoration:none">金融庁公表ページ：3/30 内閣府令等 ↗</a>
-     <a href="https://www.fsa.go.jp/news/r7/hoken/20260330-2/20260330-2.html" target="_blank" rel="noopener" style="display:block;padding:7px 9px;border:1px solid #cfe1ef;border-radius:8px;background:#f7fbff;text-decoration:none">金融庁公表ページ：3/30 監督指針 ↗</a>
-     <a href="https://www.fsa.go.jp/news/r8/sonota/20260717-2/20260717.html" target="_blank" rel="noopener" style="display:block;padding:7px 9px;border:1px solid #cfe1ef;border-radius:8px;background:#f7fbff;text-decoration:none">金融庁公表ページ：7/17 監督指針 ↗</a>
-     <a href="https://www.fsa.go.jp/news/r8/hoken/20260828/20260828.html" target="_blank" rel="noopener" style="display:block;padding:7px 9px;border:1px solid #cfe1ef;border-radius:8px;background:#f7fbff;text-decoration:none">金融庁公表ページ：8/28 比較推奨 ↗</a>
+    <div class="sourceTabs" id="sourceTabs">
+     <div class="sourceChoice">
+      <button class="sourceTab" data-source-tab="0330f" aria-pressed="false"><span class="srcName">3/30 内閣府令等</span><span class="srcCount">203件</span></button>
+      <a class="sourceLink" href="https://www.fsa.go.jp/news/r7/hoken/20260330/20260330.html" target="_blank" rel="noopener">公表ページ ↗</a>
+     </div>
+     <div class="sourceChoice">
+      <button class="sourceTab" data-source-tab="0330" aria-pressed="false"><span class="srcName">3/30 監督指針</span><span class="srcCount">152件</span></button>
+      <a class="sourceLink" href="https://www.fsa.go.jp/news/r7/hoken/20260330-2/20260330-2.html" target="_blank" rel="noopener">公表ページ ↗</a>
+     </div>
+     <div class="sourceChoice">
+      <button class="sourceTab" data-source-tab="0717c" aria-pressed="false"><span class="srcName">7/17 監督指針</span><span class="srcCount">76件</span></button>
+      <a class="sourceLink" href="https://www.fsa.go.jp/news/r8/sonota/20260717-2/20260717.html" target="_blank" rel="noopener">公表ページ ↗</a>
+     </div>
+     <div class="sourceChoice">
+      <button class="sourceTab active" data-source-tab="0828" aria-pressed="true"><span class="srcName">8/28 比較推奨</span><span class="srcCount">759件</span></button>
+      <a class="sourceLink" href="https://www.fsa.go.jp/news/r8/hoken/20260828/20260828.html" target="_blank" rel="noopener">公表ページ ↗</a>
+     </div>
+     <div class="sourceAllRow">
+      <button class="sourceTab" data-source-tab="all" aria-pressed="false"><span class="srcName">すべて選択</span><span class="srcCount">1,190件</span></button>
+     </div>
     </div>
    </section>
-   <section class="card">
-    <div class="label">全文検索</div>
-    <div class="search"><input id="q" type="text" enterkeyhint="search" autocomplete="off" placeholder="便宜供与、企業内代理店、特別利益…"><button class="x" id="clearQ">×</button></div>
-    <div class="pills" id="quick"><button class="pill">便宜供与</button><button class="pill">過度の便宜供与</button><button class="pill">特別利益</button><button class="pill">企業内代理店</button><button class="pill">手数料</button><button class="pill">インセンティブ</button><button class="pill">出向</button><button class="pill">本業支援</button><button class="pill">比較推奨</button><button class="pill">ハ方式</button><button class="pill">意向把握</button><button class="pill">証跡</button><button class="pill">サイバーセキュリティ</button><button class="pill">フィッシング</button><button class="pill">多要素認証</button><button class="pill">パスキー</button></div>
-    <div class="stitle">検索履歴 <button id="clearHist" class="btn secondary" style="padding:2px 6px;font-size:9px">削除</button></div><div class="history" id="history"></div>
-   </section>
+   
    <button class="btn ghost mobileFilter" id="filterToggle">絞り込み・表示設定 ▾</button>
    <div class="filterExtra" id="filterExtra">
     <section class="card">
@@ -166,14 +201,36 @@ const key=r=>r.source+'-'+r.no, esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&'
 const saveSet=(k,s)=>localStorage.setItem(KEY+k,JSON.stringify([...s]));
 const debounce=(fn,ms=170)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}};
 
-function selectedSources(){let a=[];if($('src0330f').checked)a.push('0330f');if($('src0330').checked)a.push('0330');if($('src0717c').checked)a.push('0717c');if($('src0828').checked)a.push('0828');return a}
+const ALL_SOURCES=['0330f','0330','0717c','0828'];
+let activeSources=new Set(['0828']);
+
+function selectedSources(){return ALL_SOURCES.filter(x=>activeSources.has(x))}
 function syncSourceTabs(){
- const a=selectedSources(),v=a.length===4?'all':a.length===1?a[0]:'';
- document.querySelectorAll('[data-source-tab]').forEach(b=>b.classList.toggle('active',b.dataset.sourceTab===v));
+ const allSelected=ALL_SOURCES.every(x=>activeSources.has(x));
+ document.querySelectorAll('[data-source-tab]').forEach(b=>{
+  const v=b.dataset.sourceTab;
+  const on=v==='all'?allSelected:activeSources.has(v);
+  b.classList.toggle('active',on);
+  b.setAttribute('aria-pressed',on?'true':'false');
+  if(v==='all'){
+   const n=b.querySelector('.srcName');
+   if(n)n.textContent=allSelected?'すべて選択中':'すべて選択';
+  }
+ });
 }
-function setSources(v){$('src0330f').checked=v==='0330f'||v==='all';$('src0330').checked=v==='0330'||v==='all';$('src0717c').checked=v==='0717c'||v==='all';$('src0828').checked=v==='0828'||v==='all';syncSourceTabs();page=1;populateThemes();render()}
-document.querySelectorAll('[data-source-tab]').forEach(b=>b.onclick=()=>setSources(b.dataset.sourceTab));
-['src0330f','src0330','src0717c','src0828'].forEach(id=>$(id).onchange=()=>{if(!selectedSources().length){$(id).checked=true;return}syncSourceTabs();page=1;populateThemes();render()});
+function toggleSource(v){
+ if(v==='all'){
+  const allSelected=ALL_SOURCES.every(x=>activeSources.has(x));
+  activeSources=allSelected?new Set(['0828']):new Set(ALL_SOURCES);
+ }else{
+  if(activeSources.has(v)){
+   if(activeSources.size===1)return;
+   activeSources.delete(v);
+  }else activeSources.add(v);
+ }
+ syncSourceTabs();page=1;populateThemes();render();
+}
+document.querySelectorAll('[data-source-tab]').forEach(b=>b.onclick=()=>toggleSource(b.dataset.sourceTab));
 
 function terms(){let q=$('q').value.trim();if(!q)return[];return $('mode').value==='phrase'?[q]:q.split(/\s+/).filter(Boolean)}
 function hay(r){switch($('scope').value){case'comment':return r.comment;case'answer':return r.answer;case'location':return r.location;case'tag':return (r.tags||[]).join(' ');default:return [r.sourceLabel,r.theme,r.section,r.location,r.comment,r.answer,(r.tags||[]).join(' ')].join(' ')}}
