@@ -2,433 +2,485 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>金融庁 パブリックコメント検索｜令和7年保険業法改正 別紙1</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b4f87">
+<title>金融庁 パブコメ検索 2026/8/28｜別紙1</title>
 <style>
 :root{
-  --bg:#f4f7fb; --card:#fff; --ink:#182230; --muted:#64748b; --line:#dbe3ec;
-  --accent:#0f5ea8; --accent2:#eaf3fb; --warn:#8a5a00; --ok:#137333;
+ --bg:#f3f6fa;--card:#fff;--ink:#14202c;--muted:#66758a;--line:#d9e2ec;
+ --blue:#0d5e9f;--blue2:#eaf4fc;--blue3:#d6eafb;--green:#1c7c54;--red:#b42318;
+ --amber:#9a6700;--shadow:0 5px 22px rgba(21,56,90,.08);--radius:15px;
+ --fs:15px;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;line-height:1.65}
-header{background:linear-gradient(135deg,#0e4f8a,#1877c9);color:#fff;padding:24px 20px}
-header .inner,.wrap{max-width:1480px;margin:auto}
-h1{font-size:clamp(20px,2.2vw,31px);margin:0 0 5px}
-header p{margin:0;opacity:.92;font-size:14px}
-.wrap{padding:18px}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 16px rgba(15,50,80,.06);padding:16px;margin-bottom:14px}
-.status{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.statusbar{height:9px;background:#e8edf3;border-radius:99px;overflow:hidden;flex:1;min-width:180px}
-.statusbar>div{height:100%;width:0;background:var(--accent);transition:width .2s}
-.badge{display:inline-flex;align-items:center;border-radius:99px;padding:4px 9px;font-size:12px;font-weight:700;background:#edf2f7;color:#475569}
-.badge.ok{background:#e9f6ed;color:var(--ok)}
-.badge.warn{background:#fff4d8;color:var(--warn)}
-.grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
-@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){.grid{grid-template-columns:1fr}}
-label{font-size:12px;font-weight:700;color:#475569;display:block;margin-bottom:4px}
-input,select,button{font:inherit}
-input[type=text],input[type=number],select{width:100%;border:1px solid #cbd5e1;background:#fff;border-radius:9px;padding:9px 10px;color:#182230}
-input:focus,select:focus{outline:2px solid #b9dcfb;border-color:#68aee8}
-button,.btn{border:0;border-radius:9px;padding:9px 13px;cursor:pointer;font-weight:700;text-decoration:none;display:inline-block}
-.primary{background:var(--accent);color:#fff}
-.secondary{background:#edf2f7;color:#334155}
-.ghost{background:#fff;color:var(--accent);border:1px solid #b9d3ea}
-.quick{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
-.quick button{font-size:12px;padding:6px 9px;background:#edf5fc;color:#0f5ea8;border:1px solid #cfe3f5}
-.controls{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
-.results-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-#count{font-size:18px;font-weight:800}
-.small{font-size:12px;color:var(--muted)}
-.result{border:1px solid var(--line);border-radius:12px;background:#fff;margin:10px 0;overflow:hidden}
-.result summary{list-style:none;cursor:pointer;padding:12px 14px;display:grid;grid-template-columns:75px 220px 1fr auto;gap:10px;align-items:center}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;font-size:var(--fs);line-height:1.72}
+button,input,select,textarea{font:inherit}
+button{touch-action:manipulation}
+a{color:var(--blue)}
+header{background:linear-gradient(135deg,#0b4f87,#1377bd);color:#fff}
+.top{max-width:1500px;margin:auto;padding:18px 18px 14px}
+h1{font-size:clamp(20px,3vw,31px);line-height:1.3;margin:0 0 4px}
+.subtitle{font-size:13px;opacity:.92}
+.topmeta{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.topmeta span{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);padding:4px 8px;border-radius:999px;font-size:11px}
+.app{max-width:1500px;margin:auto;padding:14px 16px 80px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin-bottom:12px}
+.statusrow{display:flex;gap:9px;align-items:center}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:800;background:#eef2f7;color:#506070;white-space:nowrap}
+.badge.loading{background:#fff4d5;color:var(--amber)}
+.badge.ok{background:#e9f7ee;color:var(--green)}
+.badge.err{background:#ffefed;color:var(--red)}
+.progress{flex:1;height:7px;border-radius:999px;background:#e8edf3;overflow:hidden}
+.progress i{display:block;width:0;height:100%;background:var(--blue);transition:width .2s}
+.statusText{font-size:11px;color:var(--muted);margin-top:5px}
+.autonote{margin-top:9px;font-size:12px;color:#526174;background:#f8fafc;border:1px solid #e5eaf0;padding:8px 10px;border-radius:9px}
+.layout{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:12px;align-items:start}
+.sidebar{position:sticky;top:10px}
+label{display:block;color:#4b5a6b;font-size:11px;font-weight:800;margin-bottom:4px}
+.searchbox{position:relative}
+.searchbox input{padding-right:42px}
+.clearx{position:absolute;right:5px;top:5px;width:34px;height:34px;border:0;border-radius:8px;background:#eef3f7;color:#596a7c;font-weight:900}
+input[type=text],input[type=number],select,textarea{width:100%;border:1px solid #cbd6e2;border-radius:10px;padding:9px 10px;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid #b9dcf8;border-color:#69aee4}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:9px}
+.btn{border:0;border-radius:10px;padding:9px 11px;font-weight:800;cursor:pointer}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#edf2f7;color:#344657}
+.ghost{background:#fff;border:1px solid #bdd4e7;color:var(--blue)}
+.danger{background:#fff0ef;color:#a61b13}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.pill{border:1px solid #cfe1ef;background:#eff7fd;color:#0d5e9f;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:700;cursor:pointer}
+.pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.sectiontitle{font-size:12px;font-weight:900;margin:13px 0 5px;color:#3c4d60;display:flex;align-items:center;justify-content:space-between}
+.mini{font-size:10px;color:var(--muted)}
+.toggleline{display:flex;align-items:center;gap:7px;font-size:12px;margin:5px 0}
+.toggleline input{width:auto}
+.stickyhead{position:sticky;top:0;background:rgba(243,246,250,.94);backdrop-filter:blur(7px);z-index:4;padding:0 0 8px}
+.resulthead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.count{font-size:19px;font-weight:900}
+.resulttools{display:flex;gap:6px;flex-wrap:wrap}
+.resulttools button,.resulttools select{font-size:11px;padding:6px 8px;border-radius:8px}
+.result{background:#fff;border:1px solid var(--line);border-radius:13px;margin:9px 0;overflow:hidden;scroll-margin-top:90px}
+.result.read{opacity:.88}
+.result summary{list-style:none;cursor:pointer;padding:11px 12px;display:grid;grid-template-columns:62px minmax(130px,220px) 1fr auto;gap:9px;align-items:center}
 .result summary::-webkit-details-marker{display:none}
-@media(max-width:850px){.result summary{grid-template-columns:60px 1fr}.sum-snippet{grid-column:1/-1}.sum-page{display:none}}
-.num{font-weight:900;color:#0f5ea8;font-size:17px}
-.theme{font-weight:700}
-.sum-snippet{font-size:13px;color:#526274;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sum-page{font-size:12px;color:var(--muted)}
-.result[open] summary{border-bottom:1px solid var(--line);background:#f9fbfd}
-.detail{display:grid;grid-template-columns:1fr 1fr;gap:0}
-@media(max-width:800px){.detail{grid-template-columns:1fr}}
-.cell{padding:14px}
+.result[open] summary{background:#f8fbfd;border-bottom:1px solid var(--line)}
+.no{font-size:16px;font-weight:950;color:var(--blue)}
+.them{font-weight:800;font-size:13px}
+.them small{display:block;color:var(--muted);font-size:10px;font-weight:500}
+.snip{font-size:12px;color:#536477;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.actions{display:flex;gap:3px}
+.iconbtn{width:34px;height:34px;border:0;border-radius:9px;background:#eef3f7;cursor:pointer;font-size:16px}
+.iconbtn.fav{background:#fff6d8;color:#9b6900}
+.detail{display:grid;grid-template-columns:1fr 1fr}
+.cell{padding:13px}
 .cell+.cell{border-left:1px solid var(--line)}
-@media(max-width:800px){.cell+.cell{border-left:0;border-top:1px solid var(--line)}}
-.cell h3{font-size:13px;margin:0 0 7px;color:#475569}
-.text{white-space:pre-wrap;font-size:14px}
-.meta{padding:9px 14px;background:#f8fafc;border-top:1px solid var(--line);font-size:12px;color:#5b6776;display:flex;gap:12px;flex-wrap:wrap}
-mark{background:#fff0a7;padding:0 .1em;border-radius:2px}
-.notice{background:#fffbe9;border:1px solid #f3dd89;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
-.hidden{display:none!important}
-.footer{color:#64748b;font-size:12px;padding:15px 2px 30px}
-input[type=file]{max-width:100%}
-.kpi{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.kpi span{background:#f1f5f9;padding:5px 9px;border-radius:8px;font-size:12px}
+.cell h3{font-size:12px;margin:0 0 6px;color:#506074}
+.text{white-space:pre-wrap;word-break:break-word}
+.meta{border-top:1px solid var(--line);background:#f8fafc;padding:9px 12px;display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:#5e6d7c}
+.notearea{padding:10px 12px;border-top:1px solid var(--line);background:#fffdf8}
+.notearea textarea{min-height:60px;resize:vertical;font-size:12px}
+mark{background:#ffe98a;border-radius:2px;padding:0 .08em}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.drawer{display:none}
+.history{display:flex;gap:5px;flex-wrap:wrap}
+.history button{font-size:10px;border:0;background:#eef3f7;border-radius:999px;padding:4px 7px;cursor:pointer}
+.themegrid{max-height:210px;overflow:auto;border:1px solid #e1e7ee;border-radius:9px;margin-top:5px}
+.themeitem{display:flex;justify-content:space-between;gap:6px;padding:7px 8px;border-bottom:1px solid #edf1f5;font-size:11px;cursor:pointer}
+.themeitem:last-child{border-bottom:0}
+.themeitem:hover{background:#f5f9fc}
+.themeitem b{color:var(--blue)}
+.bottomnav{display:none}
+.fontBtns{display:flex;gap:5px}
+.fontBtns button{width:34px;height:30px;padding:0}
+kbd{font-family:inherit;background:#eef2f6;border:1px solid #d5dde6;border-bottom-width:2px;border-radius:5px;padding:1px 4px;font-size:10px}
+@media(max-width:900px){
+ .app{padding:10px 9px 90px}
+ .layout{grid-template-columns:1fr}
+ .sidebar{position:static}
+ .filtercard{display:none}
+ .filtercard.open{display:block}
+ .drawer{display:block}
+ .result summary{grid-template-columns:55px 1fr auto}
+ .snip{grid-column:1/-1}
+ .detail{grid-template-columns:1fr}
+ .cell+.cell{border-left:0;border-top:1px solid var(--line)}
+ .bottomnav{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;bottom:0;left:0;right:0;z-index:20;padding:6px max(6px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom));background:rgba(255,255,255,.97);border-top:1px solid #d9e2ec;box-shadow:0 -4px 18px rgba(20,48,75,.1)}
+ .bottomnav button{border:0;background:transparent;padding:6px 2px;font-size:10px;color:#526274}
+ .bottomnav b{display:block;font-size:17px;line-height:1.2;color:var(--blue)}
+ .stickyhead{top:0}
+}
+@media(max-width:520px){
+ .top{padding:14px 12px 11px}
+ .card{padding:11px;border-radius:12px}
+ .row2,.row3{grid-template-columns:1fr}
+ .result summary{padding:10px 9px}
+ .actions .iconbtn{width:31px;height:31px}
+ .meta{gap:6px}
+ .resulttools .desktopOnly{display:none}
+}
 </style>
 </head>
 <body>
 <header>
-  <div class="inner">
-    <h1>金融庁 パブリックコメント検索</h1>
-    <p>令和7年保険業法改正｜別紙1「コメントの概要及びコメントに対する金融庁の考え方」</p>
-  </div>
+ <div class="top">
+  <h1>金融庁 パブリックコメント検索</h1>
+  <div class="subtitle">令和7年保険業法改正｜2026年8月28日公表・別紙1</div>
+  <div class="topmeta"><span>759件</span><span>133先</span><span>比較推奨販売</span><span>施行・適用 2028/3/1</span></div>
+ </div>
 </header>
 
-<main class="wrap">
-  <section class="panel">
-    <div class="status">
-      <span id="stateBadge" class="badge warn">PDF未読込</span>
-      <div class="statusbar"><div id="progress"></div></div>
-      <span id="progressText" class="small">準備中</span>
-    </div>
-    <div class="controls" style="margin-top:11px">
-      <button class="primary" id="loadRemote">金融庁PDFを読み込む</button>
-      <label class="btn secondary" style="margin:0">PDFファイルを選択
-        <input id="pdfFile" type="file" accept="application/pdf" hidden>
-      </label>
-      <a class="btn ghost" href="https://www.fsa.go.jp/news/r8/hoken/20260828/01.pdf" target="_blank" rel="noopener">別紙1を開く</a>
-      <button class="secondary" id="clearCache">キャッシュ削除</button>
-    </div>
-    <div class="notice">
-      初回のみPDF（450ページ）を解析します。解析結果はこのブラウザ内に保存され、次回以降は高速に表示します。
-      金融庁サイト側のCORS制限等で直接読込できない場合は、別紙1を保存して「PDFファイルを選択」から指定してください。
-    </div>
-    <div class="kpi">
-      <span>公表コメント：759件</span><span>公表元：金融庁</span><span>公表日：2026年8月28日</span>
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="grid">
-      <div>
-        <label for="q">キーワード（コメント・金融庁回答・該当箇所・テーマを全文検索）</label>
-        <input id="q" type="text" placeholder="例：便宜供与 / 企業内代理店 / 手数料 / 比較推奨">
-      </div>
-      <div>
-        <label for="theme">テーマ</label>
-        <select id="theme"><option value="">すべて</option></select>
-      </div>
-      <div>
-        <label for="section">区分</label>
-        <select id="section">
-          <option value="">すべて</option>
-          <option value="保険業法施行規則">保険業法施行規則</option>
-          <option value="監督指針">監督指針</option>
-        </select>
-      </div>
-      <div>
-        <label>No.範囲</label>
-        <div style="display:flex;gap:5px"><input id="fromNo" type="number" min="1" max="759" placeholder="1"><input id="toNo" type="number" min="1" max="759" placeholder="759"></div>
-      </div>
-    </div>
-
-    <div class="quick">
-      <button data-q="便宜供与">便宜供与</button>
-      <button data-q="過度の便宜供与">過度の便宜供与</button>
-      <button data-q="手数料">手数料</button>
-      <button data-q="インセンティブ">インセンティブ</button>
-      <button data-q="企業内代理店">企業内代理店</button>
-      <button data-q="比較推奨">比較推奨</button>
-      <button data-q="ハ方式">ハ方式</button>
-      <button data-q="顧客の最善の利益">顧客の最善の利益</button>
-      <button data-q="意向把握">意向把握</button>
-      <button data-q="指名買い">指名買い</button>
-      <button data-q="証跡">証跡</button>
-      <button data-q="共同募集">共同募集</button>
-      <button data-q="更改">更改</button>
-      <button data-q="団体扱い">団体扱い</button>
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="results-head">
-      <div><span id="count">0件</span> <span class="small" id="queryInfo"></span></div>
-      <div class="controls">
-        <select id="sort" aria-label="並び順">
-          <option value="asc">No.昇順</option>
-          <option value="desc">No.降順</option>
-        </select>
-        <button class="secondary" id="exportCsv">表示結果をCSV出力</button>
-        <button class="secondary" id="reset">条件クリア</button>
-      </div>
-    </div>
-    <div id="results"><div class="small">PDFを読み込むと検索結果が表示されます。</div></div>
-  </section>
-
-  <div class="footer">
-    このHTMLは金融庁公表PDFの検索補助ツールです。法令・監督上の正式な確認は必ず金融庁の原資料で行ってください。
+<main class="app">
+ <section class="card" id="loadCard">
+  <div class="statusrow">
+   <span id="badge" class="badge loading">● 自動読込中</span>
+   <div class="progress"><i id="progress"></i></div>
   </div>
+  <div id="statusText" class="statusText">金融庁「別紙1」を自動取得しています。PDFの選択操作は不要です。</div>
+  <div class="autonote">
+   初回だけ自動取得・解析し、結果を端末内に保存します。2回目以降は保存済みデータから即時起動します。
+   通信環境や外部サイト制限で自動取得できない場合のみ、画面下部の「高度な設定」からPDFを指定できます。
+  </div>
+ </section>
+
+ <div class="layout">
+  <aside class="sidebar">
+   <section class="card">
+    <label>全文検索</label>
+    <div class="searchbox">
+     <input id="q" type="text" enterkeyhint="search" autocomplete="off" placeholder="便宜供与、企業内代理店、ハ方式…">
+     <button id="clearQ" class="clearx" aria-label="検索語を消す">×</button>
+    </div>
+    <div class="pills" id="quick">
+     <button class="pill">便宜供与</button><button class="pill">過度の便宜供与</button><button class="pill">手数料</button>
+     <button class="pill">インセンティブ</button><button class="pill">企業内代理店</button><button class="pill">比較推奨</button>
+     <button class="pill">ハ方式</button><button class="pill">顧客の最善の利益</button><button class="pill">証跡</button>
+     <button class="pill">共同募集</button><button class="pill">更改</button><button class="pill">団体扱い</button>
+    </div>
+    <div id="historyWrap" class="hidden">
+     <div class="sectiontitle">検索履歴 <button id="clearHistory" class="btn secondary" style="padding:3px 6px;font-size:9px">削除</button></div>
+     <div id="history" class="history"></div>
+    </div>
+   </section>
+
+   <button id="filterToggle" class="btn ghost drawer" style="width:100%;margin-bottom:9px">絞り込み・表示設定 ▾</button>
+
+   <section class="card filtercard" id="filterCard">
+    <div class="sectiontitle">検索対象</div>
+    <div class="row2">
+     <div><label>検索範囲</label><select id="scope"><option value="all">すべて</option><option value="comment">コメントのみ</option><option value="answer">金融庁回答のみ</option><option value="location">該当箇所のみ</option></select></div>
+     <div><label>検索方式</label><select id="mode"><option value="and">すべて含む（AND）</option><option value="or">いずれか含む（OR）</option><option value="phrase">完全一致フレーズ</option></select></div>
+    </div>
+
+    <div class="sectiontitle">分類</div>
+    <div><label>テーマ</label><select id="theme"><option value="">すべて</option></select></div>
+    <div class="row2">
+     <div><label>区分</label><select id="section"><option value="">すべて</option><option>保険業法施行規則</option><option>監督指針</option></select></div>
+     <div><label>表示対象</label><select id="favFilter"><option value="">すべて</option><option value="fav">★ お気に入り</option><option value="unread">未閲覧のみ</option><option value="noted">メモあり</option></select></div>
+    </div>
+
+    <div class="sectiontitle">No.指定</div>
+    <div class="row3">
+     <div><label>直接移動</label><input id="jumpNo" type="number" min="1" max="759" placeholder="例 6"></div>
+     <div><label>開始</label><input id="fromNo" type="number" min="1" max="759" placeholder="1"></div>
+     <div><label>終了</label><input id="toNo" type="number" min="1" max="759" placeholder="759"></div>
+    </div>
+    <button id="jumpBtn" class="btn ghost" style="width:100%;margin-top:7px">No.へ移動</button>
+
+    <div class="sectiontitle">テーマ別件数</div>
+    <div id="themeGrid" class="themegrid"></div>
+
+    <div class="sectiontitle">表示設定</div>
+    <div class="toggleline"><input id="showSnippet" type="checkbox" checked><label for="showSnippet" style="margin:0;font-weight:500">一覧に本文抜粋を表示</label></div>
+    <div class="toggleline"><input id="autoOpen" type="checkbox"><label for="autoOpen" style="margin:0;font-weight:500">検索結果が少ない場合は自動展開</label></div>
+    <div class="sectiontitle">文字サイズ <div class="fontBtns"><button class="btn secondary" data-fs="13">小</button><button class="btn secondary" data-fs="15">中</button><button class="btn secondary" data-fs="17">大</button></div></div>
+    <button id="reset" class="btn secondary" style="width:100%;margin-top:8px">検索条件をリセット</button>
+   </section>
+
+   <details class="card">
+    <summary style="cursor:pointer;font-weight:800;font-size:12px">高度な設定・バックアップ</summary>
+    <div style="margin-top:9px;font-size:11px;color:var(--muted)">
+     自動取得に失敗した場合だけ使用してください。
+    </div>
+    <label class="btn secondary" style="display:block;text-align:center;margin-top:8px;cursor:pointer">別紙1 PDFを指定
+     <input id="pdfFile" type="file" accept="application/pdf" hidden>
+    </label>
+    <button id="retry" class="btn ghost" style="width:100%;margin-top:6px">自動取得を再試行</button>
+    <button id="clearCache" class="btn danger" style="width:100%;margin-top:6px">解析データを削除</button>
+   </details>
+  </aside>
+
+  <section>
+   <div class="stickyhead">
+    <div class="card" style="margin-bottom:0;padding:10px 12px">
+     <div class="resulthead">
+      <div><span id="count" class="count">0件</span><span id="countSub" class="mini"></span></div>
+      <div class="resulttools">
+       <select id="sort"><option value="asc">No.昇順</option><option value="desc">No.降順</option><option value="theme">テーマ順</option></select>
+       <button id="expandAll" class="btn secondary desktopOnly">展開</button>
+       <button id="collapseAll" class="btn secondary desktopOnly">閉じる</button>
+       <button id="csv" class="btn secondary">CSV</button>
+      </div>
+     </div>
+    </div>
+   </div>
+   <div id="results"><div class="card empty">データを自動取得しています…</div></div>
+  </section>
+ </div>
 </main>
 
+<nav class="bottomnav">
+ <button id="bnSearch"><b>⌕</b>検索</button>
+ <button id="bnFilter"><b>☷</b>絞込</button>
+ <button id="bnFav"><b>★</b>お気に入り</button>
+ <button id="bnTop"><b>↑</b>上へ</button>
+</nav>
+
 <script type="module">
-const PDF_URL = 'https://www.fsa.go.jp/news/r8/hoken/20260828/01.pdf';
-const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
-const WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
-const CACHE_KEY = 'fsa_pubcom_20260828_besshi1_v3';
+const PDF='https://www.fsa.go.jp/news/r8/hoken/20260828/01.pdf';
+const PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
+const WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+const DATAKEY='fsa20260828_besshi1_data_v6';
+const FAVKEY='fsa20260828_favs';
+const READKEY='fsa20260828_read';
+const NOTEKEY='fsa20260828_notes';
+const HISTKEY='fsa20260828_history';
+const PREFKEY='fsa20260828_prefs';
 
-const ranges = [
- ['顧客の最善の利益',1,13,'保険業法施行規則'],['顧客の最善の利益',223,254,'監督指針'],
- ['意向がない場合',14,25,'保険業法施行規則'],['意向がない場合',255,284,'監督指針'],
- ['指名買い',26,30,'保険業法施行規則'],['指名買い',285,301,'監督指針'],
- ['意向推定',31,32,'保険業法施行規則'],['意向推定',302,310,'監督指針'],
- ['比較ツール',33,38,'保険業法施行規則'],['比較ツール',311,318,'監督指針'],
- ['比較可能な同種の保険契約',39,57,'保険業法施行規則'],['比較可能な同種の保険契約',319,377,'監督指針'],
- ['推奨商品群',58,58,'保険業法施行規則'],['推奨商品群',378,384,'監督指針'],
- ['合理的かつ一定の具体性を有する基準や理由',59,94,'保険業法施行規則'],['合理的かつ一定の具体性を有する基準や理由',385,507,'監督指針'],
- ['情報提供',95,100,'保険業法施行規則'],['情報提供',508,543,'監督指針'],
- ['共同募集',101,106,'保険業法施行規則'],['共同募集',544,564,'監督指針'],
- ['共同保険',565,569,'監督指針'],
- ['更改・継続契約',107,121,'保険業法施行規則'],['更改・継続契約',570,617,'監督指針'],
- ['団体・団体扱い',122,127,'保険業法施行規則'],['団体・団体扱い',618,645,'監督指針'],
- ['別個登録',646,649,'監督指針'],
- ['自賠責保険',128,131,'保険業法施行規則'],['自賠責保険',650,653,'監督指針'],
- ['体制整備',132,151,'保険業法施行規則'],['体制整備',654,672,'監督指針'],
- ['証跡保存',152,162,'保険業法施行規則'],['証跡保存',673,711,'監督指針'],
- ['施行時期',163,184,'保険業法施行規則'],
- ['ご意見',185,212,'保険業法施行規則'],['ご意見',712,748,'監督指針'],
- ['その他',213,222,'保険業法施行規則'],['その他',749,759,'監督指針']
+const ranges=[
+['顧客の最善の利益',1,13,'保険業法施行規則'],['顧客の最善の利益',223,254,'監督指針'],
+['意向がない場合',14,25,'保険業法施行規則'],['意向がない場合',255,284,'監督指針'],
+['指名買い',26,30,'保険業法施行規則'],['指名買い',285,301,'監督指針'],
+['意向推定',31,32,'保険業法施行規則'],['意向推定',302,310,'監督指針'],
+['比較ツール',33,38,'保険業法施行規則'],['比較ツール',311,318,'監督指針'],
+['比較可能な同種の保険契約',39,57,'保険業法施行規則'],['比較可能な同種の保険契約',319,377,'監督指針'],
+['推奨商品群',58,58,'保険業法施行規則'],['推奨商品群',378,384,'監督指針'],
+['合理的かつ一定の具体性を有する基準や理由',59,94,'保険業法施行規則'],['合理的かつ一定の具体性を有する基準や理由',385,507,'監督指針'],
+['情報提供',95,100,'保険業法施行規則'],['情報提供',508,543,'監督指針'],
+['共同募集',101,106,'保険業法施行規則'],['共同募集',544,564,'監督指針'],
+['共同保険',565,569,'監督指針'],
+['更改・継続契約',107,121,'保険業法施行規則'],['更改・継続契約',570,617,'監督指針'],
+['団体・団体扱い',122,127,'保険業法施行規則'],['団体・団体扱い',618,645,'監督指針'],
+['別個登録',646,649,'監督指針'],
+['自賠責保険',128,131,'保険業法施行規則'],['自賠責保険',650,653,'監督指針'],
+['体制整備',132,151,'保険業法施行規則'],['体制整備',654,672,'監督指針'],
+['証跡保存',152,162,'保険業法施行規則'],['証跡保存',673,711,'監督指針'],
+['施行時期',163,184,'保険業法施行規則'],
+['ご意見',185,212,'保険業法施行規則'],['ご意見',712,748,'監督指針'],
+['その他',213,222,'保険業法施行規則'],['その他',749,759,'監督指針']
 ];
+const $=x=>document.getElementById(x);
+const themes=[...new Set(ranges.map(x=>x[0]))];
+themes.forEach(t=>{let o=document.createElement('option');o.value=t;o.textContent=t;$('theme').appendChild(o)});
+let records=[], favs=new Set(JSON.parse(localStorage.getItem(FAVKEY)||'[]')), reads=new Set(JSON.parse(localStorage.getItem(READKEY)||'[]'));
+let notes=JSON.parse(localStorage.getItem(NOTEKEY)||'{}'), history=JSON.parse(localStorage.getItem(HISTKEY)||'[]');
 
-function metaFor(n){
-  const r=ranges.find(x=>n>=x[1]&&n<=x[2]);
-  return r ? {theme:r[0],section:r[3]} : {theme:'未分類',section:n<=222?'保険業法施行規則':'監督指針'};
+const metaFor=n=>{
+ const r=ranges.find(x=>n>=x[1]&&n<=x[2]);
+ return r?{theme:r[0],section:r[3]}:{theme:'未分類',section:n<=222?'保険業法施行規則':'監督指針'};
+};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s??'').replace(/\s+/g,' ').trim();
+const join=(a,b)=>!a?(b||''):!b?a:a+(/[ぁ-んァ-ヶ一-龠々。、）」』】]/.test(b[0])?'':' ')+b;
+const saveSet=(k,s)=>localStorage.setItem(k,JSON.stringify([...s]));
+const debounce=(fn,ms=180)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}};
+
+function status(text,pct,state='loading'){
+ $('statusText').textContent=text;$('progress').style.width=(pct||0)+'%';
+ $('badge').className='badge '+state;
+ $('badge').textContent=state==='ok'?'● 読込完了':state==='err'?'● 自動取得失敗':'● 自動読込中';
 }
-
-const $=id=>document.getElementById(id);
-let records=[];
-let currentQuery='';
-
-[...new Set(ranges.map(r=>r[0]))].forEach(t=>{
-  const o=document.createElement('option'); o.value=t;o.textContent=t;$('theme').appendChild(o);
-});
-
-function setStatus(text,pct,badge='warn'){
-  $('progressText').textContent=text;
-  $('progress').style.width=(pct||0)+'%';
-  $('stateBadge').textContent = pct>=100 ? '読込完了' : '解析中';
-  $('stateBadge').className='badge '+(pct>=100?'ok':badge);
-}
-
-function normalize(s){return (s||'').replace(/\s+/g,' ').trim();}
-function joinText(a,b){
-  if(!a)return b||''; if(!b)return a;
-  const noSpace=/[ぁ-んァ-ヶ一-龠々〆〤ー、。）」』】〕〉》]/;
-  const leftNoSpace=/[（「『【〔〈《]/;
-  return a + ((noSpace.test(b[0])||leftNoSpace.test(a[a.length-1]))?'':' ') + b;
-}
-
-function getTheme(n){return metaFor(n).theme}
 
 async function getPdfjs(){
-  const mod=await import(PDFJS);
-  mod.GlobalWorkerOptions.workerSrc=WORKER;
-  return mod;
+ const p=await import(PDFJS);p.GlobalWorkerOptions.workerSrc=WORKER;return p;
 }
 
-async function loadPdf(src){
+// direct + CORS proxy fallbacks. Users do not need to choose a file.
+async function fetchPdfArrayBuffer(){
+ const candidates=[
+   PDF,
+   'https://api.allorigins.win/raw?url='+encodeURIComponent(PDF),
+   'https://corsproxy.io/?'+encodeURIComponent(PDF)
+ ];
+ let last;
+ for(const u of candidates){
+   try{
+     const r=await fetch(u,{cache:'no-store'});
+     if(!r.ok)throw new Error('HTTP '+r.status);
+     const b=await r.arrayBuffer();
+     if(b.byteLength<100000)throw new Error('invalid PDF');
+     return b;
+   }catch(e){last=e}
+ }
+ throw last||new Error('取得できませんでした');
+}
+
+async function parsePdf(buf){
+ const pdfjs=await getPdfjs(),pdf=await pdfjs.getDocument({data:buf}).promise;
+ let out=[],cur=null;
+ for(let p=1;p<=pdf.numPages;p++){
+  const page=await pdf.getPage(p),tc=await page.getTextContent();
+  let its=tc.items.filter(i=>i.str&&i.str.trim()).map(i=>({s:i.str.trim(),x:i.transform[4],y:i.transform[5],w:i.width||0}));
+  const hs=['No.','該当箇所','コメントの概要','金融庁の考え方'].map(h=>its.find(i=>i.s===h));
+  if(hs.every(Boolean)){
+   const cx=hs.map(i=>i.x+i.w/2),bd=[(cx[0]+cx[1])/2,(cx[1]+cx[2])/2,(cx[2]+cx[3])/2],hy=Math.min(...hs.map(i=>i.y));
+   its=its.filter(i=>!['No.','該当箇所','コメントの概要','金融庁の考え方'].includes(i.s)&&!(i.y<18&&/^\d+$/.test(i.s))&&i.y<=hy+8);
+   its.sort((a,b)=>Math.abs(b.y-a.y)>1.8?b.y-a.y:a.x-b.x);
+   let lines=[];
+   for(const it of its){let l=lines.find(x=>Math.abs(x.y-it.y)<=1.8);if(!l){l={y:it.y,items:[]};lines.push(l)}l.items.push(it)}
+   lines.sort((a,b)=>b.y-a.y);
+   for(const l of lines){
+    let c=['','','',''];l.items.sort((a,b)=>a.x-b.x).forEach(it=>{let n=it.x<bd[0]?0:it.x<bd[1]?1:it.x<bd[2]?2:3;c[n]=join(c[n],it.s)});c=c.map(norm);
+    const m=c[0].match(/^(\d{1,3})\.?$/);
+    if(m&&+m[1]>=1&&+m[1]<=759){
+      if(cur)out.push(cur);const n=+m[1],me=metaFor(n);
+      cur={no:n,location:c[1],comment:c[2],answer:c[3],pageStart:p,pageEnd:p,theme:me.theme,section:me.section};
+    }else if(cur){
+      if(/^(保険業法施行規則|監督指針)$/.test(c.join('')))continue;
+      cur.location=join(cur.location,c[1]);cur.comment=join(cur.comment,c[2]);cur.answer=join(cur.answer,c[3]);if(c.join(''))cur.pageEnd=p;
+    }
+   }
+  }
+  if(p%5===0||p===pdf.numPages)status(`別紙1を解析中：${p} / ${pdf.numPages}ページ`,Math.round(p/pdf.numPages*100));
+ }
+ if(cur)out.push(cur);
+ const map=new Map();
+ out.forEach(r=>{
+  if(!map.has(r.no))map.set(r.no,r);else{
+   let x=map.get(r.no);x.location=join(x.location,r.location);x.comment=join(x.comment,r.comment);x.answer=join(x.answer,r.answer);x.pageEnd=Math.max(x.pageEnd,r.pageEnd);
+  }
+ });
+ return [...map.values()].sort((a,b)=>a.no-b.no);
+}
+
+async function autoLoad(force=false){
+ if(!force){
   try{
-    const pdfjs=await getPdfjs();
-    setStatus('PDFを開いています…',1);
-    const task = src instanceof ArrayBuffer
-      ? pdfjs.getDocument({data:src})
-      : pdfjs.getDocument({url:src});
-    const pdf=await task.promise;
-    const out=[];
-    let current=null;
-
-    for(let p=1;p<=pdf.numPages;p++){
-      const page=await pdf.getPage(p);
-      const vp=page.getViewport({scale:1});
-      const tc=await page.getTextContent();
-      let items=tc.items.filter(i=>i.str&&i.str.trim()).map(i=>({
-        s:i.str.trim(), x:i.transform[4], y:i.transform[5], w:i.width||0
-      }));
-
-      // Header centers determine the 4 table columns.
-      const headerNames=['No.','該当箇所','コメントの概要','金融庁の考え方'];
-      const headers=headerNames.map(h=>items.find(i=>i.s===h));
-      if(headers.every(Boolean)){
-        const cx=headers.map(i=>i.x+i.w/2);
-        const bounds=[(cx[0]+cx[1])/2,(cx[1]+cx[2])/2,(cx[2]+cx[3])/2];
-        const headerY=Math.min(...headers.map(i=>i.y));
-        items=items.filter(i=>{
-          if(headerNames.includes(i.s))return false;
-          // page number at bottom and section/title lines above table
-          if(i.y<18 && /^\d+$/.test(i.s))return false;
-          if(i.y>headerY+8)return false;
-          return true;
-        });
-
-        // Group by visual lines.
-        items.sort((a,b)=>Math.abs(b.y-a.y)>1.8?b.y-a.y:a.x-b.x);
-        const lines=[];
-        for(const it of items){
-          let line=lines.find(l=>Math.abs(l.y-it.y)<=1.8);
-          if(!line){line={y:it.y,items:[]};lines.push(line);}
-          line.items.push(it);
-        }
-        lines.sort((a,b)=>b.y-a.y);
-        const rows=lines.map(l=>{
-          const cols=['','','',''];
-          l.items.sort((a,b)=>a.x-b.x).forEach(it=>{
-            const c=it.x<bounds[0]?0:it.x<bounds[1]?1:it.x<bounds[2]?2:3;
-            cols[c]=joinText(cols[c],it.s);
-          });
-          return cols.map(normalize);
-        });
-
-        let seenNew=false;
-        for(const cols of rows){
-          let m=cols[0].match(/^(\d{1,3})\s*\.?$/);
-          if(m && +m[1]>=1 && +m[1]<=759){
-            if(current) out.push(current);
-            const n=+m[1], meta=metaFor(n);
-            current={no:n,location:cols[1],comment:cols[2],answer:cols[3],pageStart:p,pageEnd:p,theme:meta.theme,section:meta.section};
-            seenNew=true;
-          }else if(current){
-            // Ignore obvious section labels / empty structural rows
-            const combined=cols.join('');
-            if(/^(保険業法施行規則|監督指針)$/.test(combined))continue;
-            current.location=joinText(current.location,cols[1]);
-            current.comment=joinText(current.comment,cols[2]);
-            current.answer=joinText(current.answer,cols[3]);
-            if(combined)current.pageEnd=p;
-          }
-        }
-      } else {
-        // Page without standard header: append text conservatively to previous record.
-        if(current){
-          const text=normalize(items.map(i=>i.s).join(' '));
-          current.comment=joinText(current.comment,text);
-          current.pageEnd=p;
-        }
-      }
-      if(p%5===0||p===pdf.numPages)setStatus(`解析中：${p} / ${pdf.numPages}ページ`,Math.round(p/pdf.numPages*100));
-    }
-    if(current)out.push(current);
-
-    // Deduplicate and keep valid No.
-    const map=new Map();
-    out.forEach(r=>{
-      if(!map.has(r.no)) map.set(r.no,r);
-      else{
-        const x=map.get(r.no);
-        x.location=joinText(x.location,r.location);
-        x.comment=joinText(x.comment,r.comment);
-        x.answer=joinText(x.answer,r.answer);
-        x.pageEnd=Math.max(x.pageEnd,r.pageEnd);
-      }
-    });
-    records=[...map.values()].sort((a,b)=>a.no-b.no);
-
-    // Remove residual header artifacts and normalize.
-    records.forEach(r=>{
-      ['location','comment','answer'].forEach(k=>{
-        r[k]=normalize(r[k])
-          .replace(/\bNo\.\s*該当箇所\s*コメントの概要\s*金融庁の考え方\b/g,'')
-          .trim();
-      });
-    });
-
-    localStorage.setItem(CACHE_KEY,JSON.stringify(records));
-    setStatus(`解析完了：${records.length}件を取得`,100,'ok');
-    render();
-    if(records.length<730){
-      alert(`解析結果が${records.length}件でした。PDFの文字配置により一部のNo.を取得できていない可能性があります。検索結果は原PDFでも確認してください。`);
-    }
-  }catch(e){
-    console.error(e);
-    $('stateBadge').textContent='読込失敗';
-    $('stateBadge').className='badge warn';
-    $('progressText').textContent='金融庁PDFを直接取得できませんでした。「PDFファイルを選択」から別紙1を指定してください。';
-  }
+   const c=JSON.parse(localStorage.getItem(DATAKEY)||'null');
+   if(Array.isArray(c)&&c.length>700){records=c;status(`保存済みデータを読み込みました（${records.length}件）`,100,'ok');renderAll();return}
+  }catch(e){}
+ }
+ try{
+  status('金融庁の別紙1を自動取得しています…',2);
+  const buf=await fetchPdfArrayBuffer();
+  records=await parsePdf(buf);
+  if(records.length<700)throw new Error('取得件数が少なすぎます: '+records.length);
+  localStorage.setItem(DATAKEY,JSON.stringify(records));
+  status(`別紙1の検索データを作成しました（${records.length}件）`,100,'ok');renderAll();
+ }catch(e){
+  console.error(e);
+  status('自動取得に失敗しました。通信制限がある場合は「高度な設定」からPDFを1回だけ指定してください。',0,'err');
+  // Fallback index lets filtering by No/theme work even without body text.
+  records=Array.from({length:759},(_,i)=>{const n=i+1,m=metaFor(n);return{no:n,theme:m.theme,section:m.section,location:'',comment:'',answer:'',pageStart:null,pageEnd:null,indexOnly:true}});
+  renderAll();
+ }
 }
 
-function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function highlight(s,q){
-  let t=esc(s); if(!q)return t;
-  const terms=q.trim().split(/\s+/).filter(Boolean).sort((a,b)=>b.length-a.length);
-  for(const term of terms){
-    const re=new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');
-    t=t.replace(re,m=>`<mark>${m}</mark>`);
-  }
-  return t;
+function terms(){
+ const q=$('q').value.trim();if(!q)return[];
+ return $('mode').value==='phrase'?[q]:q.split(/\s+/).filter(Boolean);
 }
-function matches(r,q){
-  if(!q)return true;
-  const hay=[r.no,r.theme,r.section,r.location,r.comment,r.answer].join(' ').toLowerCase();
-  return q.trim().toLowerCase().split(/\s+/).every(t=>hay.includes(t));
+function hay(r){
+ switch($('scope').value){
+  case'comment':return r.comment;case'answer':return r.answer;case'location':return r.location;
+  default:return [r.theme,r.section,r.location,r.comment,r.answer].join(' ');
+ }
 }
-
+function isMatch(r){
+ const ts=terms().map(x=>x.toLowerCase()),h=hay(r).toLowerCase();
+ if(!ts.length)return true;
+ return $('mode').value==='or'?ts.some(t=>h.includes(t)):ts.every(t=>h.includes(t));
+}
 function filtered(){
-  const q=$('q').value.trim(), theme=$('theme').value, section=$('section').value;
-  const f=+$('fromNo').value||1, t=+$('toNo').value||759;
-  let arr=records.filter(r=>r.no>=f&&r.no<=t&&(!theme||r.theme===theme)&&(!section||r.section===section)&&matches(r,q));
-  if($('sort').value==='desc')arr.reverse();
-  currentQuery=q;
-  return arr;
+ const theme=$('theme').value,sect=$('section').value,ff=$('favFilter').value,f=+$('fromNo').value||1,t=+$('toNo').value||759;
+ let a=records.filter(r=>r.no>=f&&r.no<=t&&(!theme||r.theme===theme)&&(!sect||r.section===sect)&&isMatch(r));
+ if(ff==='fav')a=a.filter(r=>favs.has(r.no));if(ff==='unread')a=a.filter(r=>!reads.has(r.no));if(ff==='noted')a=a.filter(r=>notes[r.no]?.trim());
+ if($('sort').value==='desc')a.reverse();
+ if($('sort').value==='theme')a.sort((x,y)=>x.theme.localeCompare(y.theme,'ja')||x.no-y.no);
+ return a;
 }
-
+function hi(s){
+ let x=esc(s),ts=terms().sort((a,b)=>b.length-a.length);for(const t of ts){let re=new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');x=x.replace(re,m=>`<mark>${m}</mark>`)}return x;
+}
+function addHistory(){
+ const q=$('q').value.trim();if(q.length<2)return;
+ history=[q,...history.filter(x=>x!==q)].slice(0,8);localStorage.setItem(HISTKEY,JSON.stringify(history));renderHistory();
+}
+function renderHistory(){
+ $('historyWrap').classList.toggle('hidden',!history.length);$('history').innerHTML=history.map(x=>`<button data-h="${esc(x)}">${esc(x)}</button>`).join('');
+ $('history').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('q').value=b.dataset.h;render()});
+}
+function renderThemeGrid(){
+ const counts={};records.forEach(r=>counts[r.theme]=(counts[r.theme]||0)+1);
+ $('themeGrid').innerHTML=themes.map(t=>`<div class="themeitem" data-t="${esc(t)}"><span>${esc(t)}</span><b>${counts[t]||0}</b></div>`).join('');
+ $('themeGrid').querySelectorAll('.themeitem').forEach(x=>x.onclick=()=>{$('theme').value=x.dataset.t;render();if(innerWidth<901)$('filterCard').classList.remove('open')});
+}
 function render(){
-  const arr=filtered(),q=currentQuery;
-  $('count').textContent=`${arr.length}件`;
-  $('queryInfo').textContent=records.length?`/ ${records.length}件を索引化`:'';
-  if(!records.length){$('results').innerHTML='<div class="small">PDFを読み込むと検索結果が表示されます。</div>';return;}
-  if(!arr.length){$('results').innerHTML='<div class="small">該当するコメントはありません。</div>';return;}
-  $('results').innerHTML=arr.map(r=>{
-    const pageLink=`${PDF_URL}#page=${r.pageStart}`;
-    const snip=(r.comment||r.answer||'').slice(0,110);
-    return `<details class="result">
-      <summary>
-        <div class="num">No.${r.no}</div>
-        <div class="theme">${esc(r.theme)}<div class="small">${esc(r.section)}</div></div>
-        <div class="sum-snippet">${highlight(snip,q)}</div>
-        <div class="sum-page">PDF ${r.pageStart}頁</div>
-      </summary>
-      <div class="detail">
-        <div class="cell"><h3>コメントの概要</h3><div class="text">${highlight(r.comment,q)}</div></div>
-        <div class="cell"><h3>金融庁の考え方</h3><div class="text">${highlight(r.answer,q)}</div></div>
-      </div>
-      <div class="meta">
-        <span><b>該当箇所：</b>${highlight(r.location||'－',q)}</span>
-        <span><b>PDF：</b>${r.pageStart}${r.pageEnd>r.pageStart?'–'+r.pageEnd:''}ページ</span>
-        <a href="${pageLink}" target="_blank" rel="noopener">原PDFの該当ページを開く</a>
-      </div>
-    </details>`;
-  }).join('');
+ const a=filtered(),q=$('q').value.trim();$('count').textContent=a.length+'件';$('countSub').textContent=records.length?` / ${records.length}件`:'';
+ if(q)addHistory();
+ if(!a.length){$('results').innerHTML='<div class="card empty">条件に一致するコメントはありません。</div>';return}
+ const openAuto=$('autoOpen').checked&&a.length<=8, showSnip=$('showSnippet').checked;
+ $('results').innerHTML=a.map(r=>{
+  const fav=favs.has(r.no),rd=reads.has(r.no),note=notes[r.no]||'',snip=(r.comment||r.answer||'本文データ未取得').slice(0,125);
+  return `<details class="result ${rd?'read':''}" id="no-${r.no}" data-no="${r.no}" ${openAuto?'open':''}>
+   <summary>
+    <div class="no">No.${r.no}</div>
+    <div class="them">${esc(r.theme)}<small>${esc(r.section)}</small></div>
+    ${showSnip?`<div class="snip">${hi(snip)}</div>`:''}
+    <div class="actions">
+     <button class="iconbtn ${fav?'fav':''}" data-act="fav" title="お気に入り">${fav?'★':'☆'}</button>
+     <button class="iconbtn" data-act="share" title="このNo.へのリンク">↗</button>
+    </div>
+   </summary>
+   ${r.indexOnly?`<div class="cell"><div class="autonote">本文データを取得できていません。ネットワーク制限が解除された状態で「自動取得を再試行」してください。</div></div>`:
+   `<div class="detail"><div class="cell"><h3>コメントの概要</h3><div class="text">${hi(r.comment)}</div></div><div class="cell"><h3>金融庁の考え方</h3><div class="text">${hi(r.answer)}</div></div></div>
+    <div class="meta"><span><b>該当箇所：</b>${hi(r.location||'－')}</span><span>PDF ${r.pageStart}${r.pageEnd>r.pageStart?'–'+r.pageEnd:''}頁</span><a href="${PDF}${r.pageStart?'#page='+r.pageStart:''}" target="_blank" rel="noopener">原資料</a></div>
+    <div class="notearea"><label>自分用メモ（この端末内に保存）</label><textarea data-note="${r.no}" placeholder="実務上の留意点、確認事項など">${esc(note)}</textarea></div>`}
+  </details>`
+ }).join('');
+ document.querySelectorAll('.result').forEach(d=>{
+  d.addEventListener('toggle',()=>{if(d.open){let n=+d.dataset.no;reads.add(n);saveSet(READKEY,reads);d.classList.add('read')}});
+  d.querySelectorAll('[data-act]').forEach(b=>b.onclick=e=>{
+   e.preventDefault();e.stopPropagation();let n=+d.dataset.no;
+   if(b.dataset.act==='fav'){favs.has(n)?favs.delete(n):favs.add(n);saveSet(FAVKEY,favs);render()}
+   else{const u=location.href.split('#')[0]+'#no-'+n;navigator.clipboard?.writeText(u);history.replaceState(null,'','#no-'+n);alert('No.'+n+' へのリンクをコピーしました')}
+  });
+ });
+ document.querySelectorAll('[data-note]').forEach(t=>t.oninput=debounce(()=>{notes[t.dataset.note]=t.value;localStorage.setItem(NOTEKEY,JSON.stringify(notes))},300));
+ if(location.hash.startsWith('#no-'))setTimeout(()=>document.querySelector(location.hash)?.scrollIntoView({block:'start'}),30);
 }
+function renderAll(){renderHistory();renderThemeGrid();render()}
 
-function debounce(fn,ms=180){let x;return (...a)=>{clearTimeout(x);x=setTimeout(()=>fn(...a),ms)}}
-['q','theme','section','fromNo','toNo','sort'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',debounce(render)));
-document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{$('q').value=b.dataset.q;render();});
-$('reset').onclick=()=>{ $('q').value='';$('theme').value='';$('section').value='';$('fromNo').value='';$('toNo').value='';$('sort').value='asc';render();};
-$('loadRemote').onclick=()=>loadPdf(PDF_URL);
-$('pdfFile').onchange=async e=>{
-  const f=e.target.files[0];if(!f)return;
-  await loadPdf(await f.arrayBuffer());
+['q'].forEach(id=>$(id).addEventListener('input',debounce(render)));
+['scope','mode','theme','section','favFilter','fromNo','toNo','sort','showSnippet','autoOpen'].forEach(id=>$(id).addEventListener('change',render));
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter'){addHistory();render();$('q').blur()}});
+$('clearQ').onclick=()=>{$('q').value='';render();$('q').focus()};
+$('quick').querySelectorAll('.pill').forEach(b=>b.onclick=()=>{$('q').value=b.textContent;render()});
+$('clearHistory').onclick=()=>{history=[];localStorage.removeItem(HISTKEY);renderHistory()};
+$('filterToggle').onclick=()=>{$('filterCard').classList.toggle('open')};
+$('reset').onclick=()=>{for(const id of ['q','theme','section','favFilter','fromNo','toNo'])$(id).value='';$('scope').value='all';$('mode').value='and';$('sort').value='asc';render()};
+$('jumpBtn').onclick=()=>{let n=+$('jumpNo').value;if(n<1||n>759)return; if(!$('results').querySelector('#no-'+n)){$('q').value='';$('theme').value='';$('section').value='';$('favFilter').value='';$('fromNo').value='';$('toNo').value='';render()} setTimeout(()=>{let d=$('results').querySelector('#no-'+n);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});history.replaceState(null,'','#no-'+n)}},30)};
+$('expandAll').onclick=()=>document.querySelectorAll('.result').forEach(x=>x.open=true);
+$('collapseAll').onclick=()=>document.querySelectorAll('.result').forEach(x=>x.open=false);
+$('retry').onclick=()=>autoLoad(true);
+$('clearCache').onclick=()=>{localStorage.removeItem(DATAKEY);records=[];autoLoad(true)};
+$('pdfFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{status('指定PDFを解析しています…',2);records=await parsePdf(await f.arrayBuffer());localStorage.setItem(DATAKEY,JSON.stringify(records));status(`${records.length}件を読み込みました`,100,'ok');renderAll()}catch(x){status('PDF解析に失敗しました',0,'err')}};
+$('csv').onclick=()=>{
+ const a=filtered();if(!a.length)return;
+ const q=x=>'"'+String(x??'').replaceAll('"','""')+'"';
+ const rows=[['No.','テーマ','区分','該当箇所','コメントの概要','金融庁の考え方','お気に入り','メモ'],...a.map(r=>[r.no,r.theme,r.section,r.location,r.comment,r.answer,favs.has(r.no)?'★':'',notes[r.no]||''])];
+ const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(blob),ael=document.createElement('a');ael.href=u;ael.download='FSA_pubcomment_search_result.csv';ael.click();URL.revokeObjectURL(u)
 };
-$('clearCache').onclick=()=>{localStorage.removeItem(CACHE_KEY);records=[];setStatus('キャッシュを削除しました',0);$('stateBadge').textContent='PDF未読込';render();};
-
-$('exportCsv').onclick=()=>{
-  const arr=filtered();
-  if(!arr.length)return alert('出力対象がありません。');
-  const head=['No.','テーマ','区分','該当箇所','コメントの概要','金融庁の考え方','PDF開始ページ','PDF終了ページ'];
-  const qs=v=>'"'+String(v??'').replaceAll('"','""')+'"';
-  const csv='\uFEFF'+[head,...arr.map(r=>[r.no,r.theme,r.section,r.location,r.comment,r.answer,r.pageStart,r.pageEnd])].map(row=>row.map(qs).join(',')).join('\r\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='fsa_pubcom_filtered.csv';a.click();URL.revokeObjectURL(a.href);
-};
-
-try{
-  const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
-  if(Array.isArray(cached)&&cached.length){
-    records=cached;
-    setStatus(`キャッシュ読込：${records.length}件`,100,'ok');
-    render();
-  }else{
-    $('stateBadge').textContent='PDF未読込';
-    $('progressText').textContent='「金融庁PDFを読み込む」を押してください';
-  }
-}catch(e){localStorage.removeItem(CACHE_KEY);}
+document.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{document.documentElement.style.setProperty('--fs',b.dataset.fs+'px');let p=JSON.parse(localStorage.getItem(PREFKEY)||'{}');p.fs=b.dataset.fs;localStorage.setItem(PREFKEY,JSON.stringify(p))});
+try{let p=JSON.parse(localStorage.getItem(PREFKEY)||'{}');if(p.fs)document.documentElement.style.setProperty('--fs',p.fs+'px')}catch(e){}
+$('bnSearch').onclick=()=>{scrollTo({top:0,behavior:'smooth'});setTimeout(()=>$('q').focus(),250)};
+$('bnFilter').onclick=()=>{$('filterCard').classList.add('open');$('filterCard').scrollIntoView({behavior:'smooth'})};
+$('bnFav').onclick=()=>{$('favFilter').value='fav';render();scrollTo({top:0,behavior:'smooth'})};
+$('bnTop').onclick=()=>scrollTo({top:0,behavior:'smooth'});
+window.addEventListener('hashchange',()=>{let d=document.querySelector(location.hash);if(d){d.open=true;d.scrollIntoView({block:'start'})}});
+autoLoad();
 </script>
 </body>
 </html>
