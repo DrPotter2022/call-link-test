@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>金融庁 パブリックコメント検索｜令和7年保険業法改正 別紙1</title>
+<style>
+:root{
+  --bg:#f4f7fb; --card:#fff; --ink:#182230; --muted:#64748b; --line:#dbe3ec;
+  --accent:#0f5ea8; --accent2:#eaf3fb; --warn:#8a5a00; --ok:#137333;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;line-height:1.65}
+header{background:linear-gradient(135deg,#0e4f8a,#1877c9);color:#fff;padding:24px 20px}
+header .inner,.wrap{max-width:1480px;margin:auto}
+h1{font-size:clamp(20px,2.2vw,31px);margin:0 0 5px}
+header p{margin:0;opacity:.92;font-size:14px}
+.wrap{padding:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 16px rgba(15,50,80,.06);padding:16px;margin-bottom:14px}
+.status{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.statusbar{height:9px;background:#e8edf3;border-radius:99px;overflow:hidden;flex:1;min-width:180px}
+.statusbar>div{height:100%;width:0;background:var(--accent);transition:width .2s}
+.badge{display:inline-flex;align-items:center;border-radius:99px;padding:4px 9px;font-size:12px;font-weight:700;background:#edf2f7;color:#475569}
+.badge.ok{background:#e9f6ed;color:var(--ok)}
+.badge.warn{background:#fff4d8;color:var(--warn)}
+.grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
+@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+label{font-size:12px;font-weight:700;color:#475569;display:block;margin-bottom:4px}
+input,select,button{font:inherit}
+input[type=text],input[type=number],select{width:100%;border:1px solid #cbd5e1;background:#fff;border-radius:9px;padding:9px 10px;color:#182230}
+input:focus,select:focus{outline:2px solid #b9dcfb;border-color:#68aee8}
+button,.btn{border:0;border-radius:9px;padding:9px 13px;cursor:pointer;font-weight:700;text-decoration:none;display:inline-block}
+.primary{background:var(--accent);color:#fff}
+.secondary{background:#edf2f7;color:#334155}
+.ghost{background:#fff;color:var(--accent);border:1px solid #b9d3ea}
+.quick{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.quick button{font-size:12px;padding:6px 9px;background:#edf5fc;color:#0f5ea8;border:1px solid #cfe3f5}
+.controls{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.results-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+#count{font-size:18px;font-weight:800}
+.small{font-size:12px;color:var(--muted)}
+.result{border:1px solid var(--line);border-radius:12px;background:#fff;margin:10px 0;overflow:hidden}
+.result summary{list-style:none;cursor:pointer;padding:12px 14px;display:grid;grid-template-columns:75px 220px 1fr auto;gap:10px;align-items:center}
+.result summary::-webkit-details-marker{display:none}
+@media(max-width:850px){.result summary{grid-template-columns:60px 1fr}.sum-snippet{grid-column:1/-1}.sum-page{display:none}}
+.num{font-weight:900;color:#0f5ea8;font-size:17px}
+.theme{font-weight:700}
+.sum-snippet{font-size:13px;color:#526274;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sum-page{font-size:12px;color:var(--muted)}
+.result[open] summary{border-bottom:1px solid var(--line);background:#f9fbfd}
+.detail{display:grid;grid-template-columns:1fr 1fr;gap:0}
+@media(max-width:800px){.detail{grid-template-columns:1fr}}
+.cell{padding:14px}
+.cell+.cell{border-left:1px solid var(--line)}
+@media(max-width:800px){.cell+.cell{border-left:0;border-top:1px solid var(--line)}}
+.cell h3{font-size:13px;margin:0 0 7px;color:#475569}
+.text{white-space:pre-wrap;font-size:14px}
+.meta{padding:9px 14px;background:#f8fafc;border-top:1px solid var(--line);font-size:12px;color:#5b6776;display:flex;gap:12px;flex-wrap:wrap}
+mark{background:#fff0a7;padding:0 .1em;border-radius:2px}
+.notice{background:#fffbe9;border:1px solid #f3dd89;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
+.hidden{display:none!important}
+.footer{color:#64748b;font-size:12px;padding:15px 2px 30px}
+input[type=file]{max-width:100%}
+.kpi{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.kpi span{background:#f1f5f9;padding:5px 9px;border-radius:8px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="inner">
+    <h1>金融庁 パブリックコメント検索</h1>
+    <p>令和7年保険業法改正｜別紙1「コメントの概要及びコメントに対する金融庁の考え方」</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="panel">
+    <div class="status">
+      <span id="stateBadge" class="badge warn">PDF未読込</span>
+      <div class="statusbar"><div id="progress"></div></div>
+      <span id="progressText" class="small">準備中</span>
+    </div>
+    <div class="controls" style="margin-top:11px">
+      <button class="primary" id="loadRemote">金融庁PDFを読み込む</button>
+      <label class="btn secondary" style="margin:0">PDFファイルを選択
+        <input id="pdfFile" type="file" accept="application/pdf" hidden>
+      </label>
+      <a class="btn ghost" href="https://www.fsa.go.jp/news/r8/hoken/20260828/01.pdf" target="_blank" rel="noopener">別紙1を開く</a>
+      <button class="secondary" id="clearCache">キャッシュ削除</button>
+    </div>
+    <div class="notice">
+      初回のみPDF（450ページ）を解析します。解析結果はこのブラウザ内に保存され、次回以降は高速に表示します。
+      金融庁サイト側のCORS制限等で直接読込できない場合は、別紙1を保存して「PDFファイルを選択」から指定してください。
+    </div>
+    <div class="kpi">
+      <span>公表コメント：759件</span><span>公表元：金融庁</span><span>公表日：2026年8月28日</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="grid">
+      <div>
+        <label for="q">キーワード（コメント・金融庁回答・該当箇所・テーマを全文検索）</label>
+        <input id="q" type="text" placeholder="例：便宜供与 / 企業内代理店 / 手数料 / 比較推奨">
+      </div>
+      <div>
+        <label for="theme">テーマ</label>
+        <select id="theme"><option value="">すべて</option></select>
+      </div>
+      <div>
+        <label for="section">区分</label>
+        <select id="section">
+          <option value="">すべて</option>
+          <option value="保険業法施行規則">保険業法施行規則</option>
+          <option value="監督指針">監督指針</option>
+        </select>
+      </div>
+      <div>
+        <label>No.範囲</label>
+        <div style="display:flex;gap:5px"><input id="fromNo" type="number" min="1" max="759" placeholder="1"><input id="toNo" type="number" min="1" max="759" placeholder="759"></div>
+      </div>
+    </div>
+
+    <div class="quick">
+      <button data-q="便宜供与">便宜供与</button>
+      <button data-q="過度の便宜供与">過度の便宜供与</button>
+      <button data-q="手数料">手数料</button>
+      <button data-q="インセンティブ">インセンティブ</button>
+      <button data-q="企業内代理店">企業内代理店</button>
+      <button data-q="比較推奨">比較推奨</button>
+      <button data-q="ハ方式">ハ方式</button>
+      <button data-q="顧客の最善の利益">顧客の最善の利益</button>
+      <button data-q="意向把握">意向把握</button>
+      <button data-q="指名買い">指名買い</button>
+      <button data-q="証跡">証跡</button>
+      <button data-q="共同募集">共同募集</button>
+      <button data-q="更改">更改</button>
+      <button data-q="団体扱い">団体扱い</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="results-head">
+      <div><span id="count">0件</span> <span class="small" id="queryInfo"></span></div>
+      <div class="controls">
+        <select id="sort" aria-label="並び順">
+          <option value="asc">No.昇順</option>
+          <option value="desc">No.降順</option>
+        </select>
+        <button class="secondary" id="exportCsv">表示結果をCSV出力</button>
+        <button class="secondary" id="reset">条件クリア</button>
+      </div>
+    </div>
+    <div id="results"><div class="small">PDFを読み込むと検索結果が表示されます。</div></div>
+  </section>
+
+  <div class="footer">
+    このHTMLは金融庁公表PDFの検索補助ツールです。法令・監督上の正式な確認は必ず金融庁の原資料で行ってください。
+  </div>
+</main>
+
+<script type="module">
+const PDF_URL = 'https://www.fsa.go.jp/news/r8/hoken/20260828/01.pdf';
+const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
+const WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+const CACHE_KEY = 'fsa_pubcom_20260828_besshi1_v3';
+
+const ranges = [
+ ['顧客の最善の利益',1,13,'保険業法施行規則'],['顧客の最善の利益',223,254,'監督指針'],
+ ['意向がない場合',14,25,'保険業法施行規則'],['意向がない場合',255,284,'監督指針'],
+ ['指名買い',26,30,'保険業法施行規則'],['指名買い',285,301,'監督指針'],
+ ['意向推定',31,32,'保険業法施行規則'],['意向推定',302,310,'監督指針'],
+ ['比較ツール',33,38,'保険業法施行規則'],['比較ツール',311,318,'監督指針'],
+ ['比較可能な同種の保険契約',39,57,'保険業法施行規則'],['比較可能な同種の保険契約',319,377,'監督指針'],
+ ['推奨商品群',58,58,'保険業法施行規則'],['推奨商品群',378,384,'監督指針'],
+ ['合理的かつ一定の具体性を有する基準や理由',59,94,'保険業法施行規則'],['合理的かつ一定の具体性を有する基準や理由',385,507,'監督指針'],
+ ['情報提供',95,100,'保険業法施行規則'],['情報提供',508,543,'監督指針'],
+ ['共同募集',101,106,'保険業法施行規則'],['共同募集',544,564,'監督指針'],
+ ['共同保険',565,569,'監督指針'],
+ ['更改・継続契約',107,121,'保険業法施行規則'],['更改・継続契約',570,617,'監督指針'],
+ ['団体・団体扱い',122,127,'保険業法施行規則'],['団体・団体扱い',618,645,'監督指針'],
+ ['別個登録',646,649,'監督指針'],
+ ['自賠責保険',128,131,'保険業法施行規則'],['自賠責保険',650,653,'監督指針'],
+ ['体制整備',132,151,'保険業法施行規則'],['体制整備',654,672,'監督指針'],
+ ['証跡保存',152,162,'保険業法施行規則'],['証跡保存',673,711,'監督指針'],
+ ['施行時期',163,184,'保険業法施行規則'],
+ ['ご意見',185,212,'保険業法施行規則'],['ご意見',712,748,'監督指針'],
+ ['その他',213,222,'保険業法施行規則'],['その他',749,759,'監督指針']
+];
+
+function metaFor(n){
+  const r=ranges.find(x=>n>=x[1]&&n<=x[2]);
+  return r ? {theme:r[0],section:r[3]} : {theme:'未分類',section:n<=222?'保険業法施行規則':'監督指針'};
+}
+
+const $=id=>document.getElementById(id);
+let records=[];
+let currentQuery='';
+
+[...new Set(ranges.map(r=>r[0]))].forEach(t=>{
+  const o=document.createElement('option'); o.value=t;o.textContent=t;$('theme').appendChild(o);
+});
+
+function setStatus(text,pct,badge='warn'){
+  $('progressText').textContent=text;
+  $('progress').style.width=(pct||0)+'%';
+  $('stateBadge').textContent = pct>=100 ? '読込完了' : '解析中';
+  $('stateBadge').className='badge '+(pct>=100?'ok':badge);
+}
+
+function normalize(s){return (s||'').replace(/\s+/g,' ').trim();}
+function joinText(a,b){
+  if(!a)return b||''; if(!b)return a;
+  const noSpace=/[ぁ-んァ-ヶ一-龠々〆〤ー、。）」』】〕〉》]/;
+  const leftNoSpace=/[（「『【〔〈《]/;
+  return a + ((noSpace.test(b[0])||leftNoSpace.test(a[a.length-1]))?'':' ') + b;
+}
+
+function getTheme(n){return metaFor(n).theme}
+
+async function getPdfjs(){
+  const mod=await import(PDFJS);
+  mod.GlobalWorkerOptions.workerSrc=WORKER;
+  return mod;
+}
+
+async function loadPdf(src){
+  try{
+    const pdfjs=await getPdfjs();
+    setStatus('PDFを開いています…',1);
+    const task = src instanceof ArrayBuffer
+      ? pdfjs.getDocument({data:src})
+      : pdfjs.getDocument({url:src});
+    const pdf=await task.promise;
+    const out=[];
+    let current=null;
+
+    for(let p=1;p<=pdf.numPages;p++){
+      const page=await pdf.getPage(p);
+      const vp=page.getViewport({scale:1});
+      const tc=await page.getTextContent();
+      let items=tc.items.filter(i=>i.str&&i.str.trim()).map(i=>({
+        s:i.str.trim(), x:i.transform[4], y:i.transform[5], w:i.width||0
+      }));
+
+      // Header centers determine the 4 table columns.
+      const headerNames=['No.','該当箇所','コメントの概要','金融庁の考え方'];
+      const headers=headerNames.map(h=>items.find(i=>i.s===h));
+      if(headers.every(Boolean)){
+        const cx=headers.map(i=>i.x+i.w/2);
+        const bounds=[(cx[0]+cx[1])/2,(cx[1]+cx[2])/2,(cx[2]+cx[3])/2];
+        const headerY=Math.min(...headers.map(i=>i.y));
+        items=items.filter(i=>{
+          if(headerNames.includes(i.s))return false;
+          // page number at bottom and section/title lines above table
+          if(i.y<18 && /^\d+$/.test(i.s))return false;
+          if(i.y>headerY+8)return false;
+          return true;
+        });
+
+        // Group by visual lines.
+        items.sort((a,b)=>Math.abs(b.y-a.y)>1.8?b.y-a.y:a.x-b.x);
+        const lines=[];
+        for(const it of items){
+          let line=lines.find(l=>Math.abs(l.y-it.y)<=1.8);
+          if(!line){line={y:it.y,items:[]};lines.push(line);}
+          line.items.push(it);
+        }
+        lines.sort((a,b)=>b.y-a.y);
+        const rows=lines.map(l=>{
+          const cols=['','','',''];
+          l.items.sort((a,b)=>a.x-b.x).forEach(it=>{
+            const c=it.x<bounds[0]?0:it.x<bounds[1]?1:it.x<bounds[2]?2:3;
+            cols[c]=joinText(cols[c],it.s);
+          });
+          return cols.map(normalize);
+        });
+
+        let seenNew=false;
+        for(const cols of rows){
+          let m=cols[0].match(/^(\d{1,3})\s*\.?$/);
+          if(m && +m[1]>=1 && +m[1]<=759){
+            if(current) out.push(current);
+            const n=+m[1], meta=metaFor(n);
+            current={no:n,location:cols[1],comment:cols[2],answer:cols[3],pageStart:p,pageEnd:p,theme:meta.theme,section:meta.section};
+            seenNew=true;
+          }else if(current){
+            // Ignore obvious section labels / empty structural rows
+            const combined=cols.join('');
+            if(/^(保険業法施行規則|監督指針)$/.test(combined))continue;
+            current.location=joinText(current.location,cols[1]);
+            current.comment=joinText(current.comment,cols[2]);
+            current.answer=joinText(current.answer,cols[3]);
+            if(combined)current.pageEnd=p;
+          }
+        }
+      } else {
+        // Page without standard header: append text conservatively to previous record.
+        if(current){
+          const text=normalize(items.map(i=>i.s).join(' '));
+          current.comment=joinText(current.comment,text);
+          current.pageEnd=p;
+        }
+      }
+      if(p%5===0||p===pdf.numPages)setStatus(`解析中：${p} / ${pdf.numPages}ページ`,Math.round(p/pdf.numPages*100));
+    }
+    if(current)out.push(current);
+
+    // Deduplicate and keep valid No.
+    const map=new Map();
+    out.forEach(r=>{
+      if(!map.has(r.no)) map.set(r.no,r);
+      else{
+        const x=map.get(r.no);
+        x.location=joinText(x.location,r.location);
+        x.comment=joinText(x.comment,r.comment);
+        x.answer=joinText(x.answer,r.answer);
+        x.pageEnd=Math.max(x.pageEnd,r.pageEnd);
+      }
+    });
+    records=[...map.values()].sort((a,b)=>a.no-b.no);
+
+    // Remove residual header artifacts and normalize.
+    records.forEach(r=>{
+      ['location','comment','answer'].forEach(k=>{
+        r[k]=normalize(r[k])
+          .replace(/\bNo\.\s*該当箇所\s*コメントの概要\s*金融庁の考え方\b/g,'')
+          .trim();
+      });
+    });
+
+    localStorage.setItem(CACHE_KEY,JSON.stringify(records));
+    setStatus(`解析完了：${records.length}件を取得`,100,'ok');
+    render();
+    if(records.length<730){
+      alert(`解析結果が${records.length}件でした。PDFの文字配置により一部のNo.を取得できていない可能性があります。検索結果は原PDFでも確認してください。`);
+    }
+  }catch(e){
+    console.error(e);
+    $('stateBadge').textContent='読込失敗';
+    $('stateBadge').className='badge warn';
+    $('progressText').textContent='金融庁PDFを直接取得できませんでした。「PDFファイルを選択」から別紙1を指定してください。';
+  }
+}
+
+function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function highlight(s,q){
+  let t=esc(s); if(!q)return t;
+  const terms=q.trim().split(/\s+/).filter(Boolean).sort((a,b)=>b.length-a.length);
+  for(const term of terms){
+    const re=new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');
+    t=t.replace(re,m=>`<mark>${m}</mark>`);
+  }
+  return t;
+}
+function matches(r,q){
+  if(!q)return true;
+  const hay=[r.no,r.theme,r.section,r.location,r.comment,r.answer].join(' ').toLowerCase();
+  return q.trim().toLowerCase().split(/\s+/).every(t=>hay.includes(t));
+}
+
+function filtered(){
+  const q=$('q').value.trim(), theme=$('theme').value, section=$('section').value;
+  const f=+$('fromNo').value||1, t=+$('toNo').value||759;
+  let arr=records.filter(r=>r.no>=f&&r.no<=t&&(!theme||r.theme===theme)&&(!section||r.section===section)&&matches(r,q));
+  if($('sort').value==='desc')arr.reverse();
+  currentQuery=q;
+  return arr;
+}
+
+function render(){
+  const arr=filtered(),q=currentQuery;
+  $('count').textContent=`${arr.length}件`;
+  $('queryInfo').textContent=records.length?`/ ${records.length}件を索引化`:'';
+  if(!records.length){$('results').innerHTML='<div class="small">PDFを読み込むと検索結果が表示されます。</div>';return;}
+  if(!arr.length){$('results').innerHTML='<div class="small">該当するコメントはありません。</div>';return;}
+  $('results').innerHTML=arr.map(r=>{
+    const pageLink=`${PDF_URL}#page=${r.pageStart}`;
+    const snip=(r.comment||r.answer||'').slice(0,110);
+    return `<details class="result">
+      <summary>
+        <div class="num">No.${r.no}</div>
+        <div class="theme">${esc(r.theme)}<div class="small">${esc(r.section)}</div></div>
+        <div class="sum-snippet">${highlight(snip,q)}</div>
+        <div class="sum-page">PDF ${r.pageStart}頁</div>
+      </summary>
+      <div class="detail">
+        <div class="cell"><h3>コメントの概要</h3><div class="text">${highlight(r.comment,q)}</div></div>
+        <div class="cell"><h3>金融庁の考え方</h3><div class="text">${highlight(r.answer,q)}</div></div>
+      </div>
+      <div class="meta">
+        <span><b>該当箇所：</b>${highlight(r.location||'－',q)}</span>
+        <span><b>PDF：</b>${r.pageStart}${r.pageEnd>r.pageStart?'–'+r.pageEnd:''}ページ</span>
+        <a href="${pageLink}" target="_blank" rel="noopener">原PDFの該当ページを開く</a>
+      </div>
+    </details>`;
+  }).join('');
+}
+
+function debounce(fn,ms=180){let x;return (...a)=>{clearTimeout(x);x=setTimeout(()=>fn(...a),ms)}}
+['q','theme','section','fromNo','toNo','sort'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',debounce(render)));
+document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{$('q').value=b.dataset.q;render();});
+$('reset').onclick=()=>{ $('q').value='';$('theme').value='';$('section').value='';$('fromNo').value='';$('toNo').value='';$('sort').value='asc';render();};
+$('loadRemote').onclick=()=>loadPdf(PDF_URL);
+$('pdfFile').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  await loadPdf(await f.arrayBuffer());
+};
+$('clearCache').onclick=()=>{localStorage.removeItem(CACHE_KEY);records=[];setStatus('キャッシュを削除しました',0);$('stateBadge').textContent='PDF未読込';render();};
+
+$('exportCsv').onclick=()=>{
+  const arr=filtered();
+  if(!arr.length)return alert('出力対象がありません。');
+  const head=['No.','テーマ','区分','該当箇所','コメントの概要','金融庁の考え方','PDF開始ページ','PDF終了ページ'];
+  const qs=v=>'"'+String(v??'').replaceAll('"','""')+'"';
+  const csv='\uFEFF'+[head,...arr.map(r=>[r.no,r.theme,r.section,r.location,r.comment,r.answer,r.pageStart,r.pageEnd])].map(row=>row.map(qs).join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='fsa_pubcom_filtered.csv';a.click();URL.revokeObjectURL(a.href);
+};
+
+try{
+  const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
+  if(Array.isArray(cached)&&cached.length){
+    records=cached;
+    setStatus(`キャッシュ読込：${records.length}件`,100,'ok');
+    render();
+  }else{
+    $('stateBadge').textContent='PDF未読込';
+    $('progressText').textContent='「金融庁PDFを読み込む」を押してください';
+  }
+}catch(e){localStorage.removeItem(CACHE_KEY);}
+</script>
+</body>
+</html>
