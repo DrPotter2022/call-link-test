@@ -141,11 +141,21 @@ const UIModule = (function () {
     return `<div class="panel-field"><div class="pf-label">${label}</div><div class="pf-value">${value}</div></div>`;
   }
 
+  function afterPanelResize() {
+    setTimeout(() => {
+      const map = window.MapModule && MapModule.getMap && MapModule.getMap();
+      if (map) map.invalidateSize();
+    }, 220);
+  }
+
   function showEmptyPanel() {
     const panel = document.getElementById('side-panel');
     panel.innerHTML = `<div class="panel-drag-handle" id="panel-drag-handle"></div><div class="panel-empty">地図上の地点を選択してください</div>`;
     bindDragHandle();
     panel.classList.remove('expanded');
+    const wasEmpty = panel.classList.contains('is-empty');
+    panel.classList.add('is-empty');
+    if (!wasEmpty) afterPanelResize();
   }
 
   function showCountryPanel(c, total) {
@@ -164,6 +174,9 @@ const UIModule = (function () {
     panel.innerHTML = html;
     bindDragHandle();
     panel.classList.add('expanded');
+    const wasEmpty = panel.classList.contains('is-empty');
+    panel.classList.remove('is-empty');
+    if (wasEmpty) afterPanelResize();
   }
 
   function showItemPanel(it) {
@@ -192,6 +205,9 @@ const UIModule = (function () {
     panel.innerHTML = html;
     bindDragHandle();
     panel.classList.add('expanded');
+    const wasEmpty = panel.classList.contains('is-empty');
+    panel.classList.remove('is-empty');
+    if (wasEmpty) afterPanelResize();
   }
 
   function showFlowPanel(f) {
@@ -205,6 +221,9 @@ const UIModule = (function () {
     panel.innerHTML = html;
     bindDragHandle();
     panel.classList.add('expanded');
+    const wasEmpty = panel.classList.contains('is-empty');
+    panel.classList.remove('is-empty');
+    if (wasEmpty) afterPanelResize();
   }
 
   function showComparePanel(selected) {
@@ -234,6 +253,9 @@ const UIModule = (function () {
     panel.innerHTML = html;
     bindDragHandle();
     panel.classList.add('expanded');
+    const wasEmpty = panel.classList.contains('is-empty');
+    panel.classList.remove('is-empty');
+    if (wasEmpty) afterPanelResize();
   }
 
   function bindDragHandle() {

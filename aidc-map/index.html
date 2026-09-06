@@ -13,8 +13,13 @@
 
   <header class="app-header">
     <div class="title-row">
-      <h1>世界AIデータセンター・インフラマップ</h1>
-      <p class="subtitle">Global AI &amp; Data Center Infrastructure Map</p>
+      <div>
+        <h1>世界AIデータセンター・インフラマップ</h1>
+        <p class="subtitle">Global AI &amp; Data Center Infrastructure Map</p>
+      </div>
+      <button class="header-collapse-btn" id="header-collapse-btn" title="フィルター・統計を折りたたんで地図を広げる">
+        <span id="header-collapse-icon">▲</span><span>地図を広げる</span>
+      </button>
     </div>
 
     <div class="mode-bar" id="mode-bar">
@@ -82,7 +87,7 @@
   <main class="layout">
     <div id="map"></div>
     <div class="legend-box" id="legend-box"></div>
-    <aside id="side-panel">
+    <aside id="side-panel" class="is-empty">
       <div class="panel-drag-handle" id="panel-drag-handle"></div>
       <div class="panel-empty">地図上の地点を選択してください</div>
     </aside>

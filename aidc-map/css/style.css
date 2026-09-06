@@ -42,6 +42,13 @@ header.app-header {
   flex-shrink: 0;
 }
 
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .title-row h1 {
   margin: 0;
   font-size: 20px;
@@ -56,6 +63,25 @@ header.app-header {
   letter-spacing: 0.03em;
 }
 
+.header-collapse-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: #dce7f5;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.header-collapse-btn:hover { background: rgba(255,255,255,0.16); }
+#header-collapse-icon { display: inline-block; transition: transform 0.2s ease; font-size: 9px; }
+#app.header-collapsed #header-collapse-icon { transform: rotate(180deg); }
+
 .header-meta {
   display: flex;
   gap: 16px;
@@ -64,6 +90,9 @@ header.app-header {
   color: #9fb3cc;
   margin-top: 6px;
   flex-wrap: wrap;
+  overflow: hidden;
+  max-height: 40px;
+  transition: max-height 0.2s ease, opacity 0.2s ease, margin 0.2s ease;
 }
 
 /* ---------- Mode buttons ---------- */
@@ -72,6 +101,23 @@ header.app-header {
   gap: 8px;
   margin-top: 12px;
   flex-wrap: wrap;
+}
+
+/* ---------- Collapsed header state (more room for the map) ---------- */
+#app.header-collapsed header.app-header { padding-bottom: 6px; }
+#app.header-collapsed .header-meta { max-height: 0; opacity: 0; margin-top: 0; }
+#app.header-collapsed .filter-bar,
+#app.header-collapsed .stats-bar {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  overflow: hidden;
+  border-bottom-width: 0;
+}
+.filter-bar, .stats-bar {
+  max-height: 120px;
+  transition: max-height 0.2s ease, opacity 0.15s ease, padding 0.2s ease;
 }
 
 .mode-btn {
@@ -209,6 +255,27 @@ main.layout {
 .leaflet-container { background: #eef1f4; font-family: inherit; }
 .leaflet-popup-content-wrapper { border-radius: 10px; }
 
+/* Fullscreen control (matches the zoom control styling) */
+.leaflet-control-fullscreen-bar { margin-top: 8px !important; }
+.leaflet-control-fullscreen-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  line-height: 1;
+  background: #fff;
+  color: var(--navy);
+  text-decoration: none;
+}
+.leaflet-control-fullscreen-btn:hover { background: var(--blue-light); }
+
+#app:fullscreen header.app-header,
+#app:fullscreen .filter-bar,
+#app:fullscreen .stats-bar { flex-shrink: 0; }
+#app:-webkit-full-screen { width: 100%; height: 100%; }
+
 /* ---------- Legend ---------- */
 .legend-box {
   position: absolute;
@@ -237,6 +304,15 @@ main.layout {
   overflow-y: auto;
   padding: 16px;
   font-size: 13px;
+  transition: width 0.2s ease, padding 0.2s ease;
+}
+
+/* No selection yet: collapse the panel so the map takes the full width */
+#side-panel.is-empty {
+  width: 0;
+  padding: 0;
+  border-left: none;
+  overflow: hidden;
 }
 
 #side-panel .panel-empty {
@@ -379,6 +455,15 @@ main.layout {
   }
   #side-panel.expanded { transform: translateY(0); }
   #side-panel .panel-empty { margin-top: 10px; }
+  #side-panel.is-empty {
+    width: auto;
+    padding: 16px;
+    border-left: none;
+    overflow: visible;
+  }
+
+  .header-collapse-btn span:last-child { display: none; }
+  .header-collapse-btn { padding: 6px 8px; }
 
   .panel-drag-handle {
     display: block;

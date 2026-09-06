@@ -35,6 +35,26 @@ const MapModule = (function () {
 
     L.control.zoom({ position: 'topright' }).addTo(map);
 
+    const FullscreenControl = L.Control.extend({
+      options: { position: 'topright' },
+      onAdd: function () {
+        const bar = L.DomUtil.create('div', 'leaflet-bar leaflet-control-fullscreen-bar');
+        const btn = L.DomUtil.create('a', 'leaflet-control-fullscreen-btn', bar);
+        btn.href = '#';
+        btn.title = '全画面表示';
+        btn.innerHTML = '⛶';
+        btn.setAttribute('role', 'button');
+        btn.setAttribute('aria-label', '全画面表示');
+        L.DomEvent.disableClickPropagation(bar);
+        L.DomEvent.on(btn, 'click', L.DomEvent.stop);
+        L.DomEvent.on(btn, 'click', () => {
+          if (window.AppController && AppController.toggleFullscreen) AppController.toggleFullscreen();
+        });
+        return bar;
+      }
+    });
+    map.addControl(new FullscreenControl());
+
     // Esri World Light Gray Canvas: ビジネス向けの明るい配色、APIキー不要
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',

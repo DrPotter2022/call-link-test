@@ -107,6 +107,35 @@ const AppController = (function () {
     render();
   }
 
+  function toggleFullscreen() {
+    const el = document.getElementById('app');
+    if (!document.fullscreenElement) {
+      const request = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (request) {
+        const result = request.call(el);
+        if (result && result.catch) {
+          result.catch(err => console.warn('[AI DCマップ] 全画面表示に失敗しました:', err));
+        }
+      }
+    } else {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit) exit.call(document);
+    }
+  }
+
+  function toggleHeaderCollapse() {
+    const app = document.getElementById('app');
+    app.classList.toggle('header-collapsed');
+    const collapsed = app.classList.contains('header-collapsed');
+    document.getElementById('header-collapse-btn').title = collapsed
+      ? 'フィルター・統計を再表示する'
+      : 'フィルター・統計を折りたたんで地図を広げる';
+    setTimeout(() => {
+      const map = MapModule.getMap();
+      if (map) map.invalidateSize();
+    }, 220);
+  }
+
   function selectCountry(c) {
     if (state.compareMode) {
       const exists = state.compareSelection.find(x => x.code === c.code);
@@ -155,6 +184,12 @@ const AppController = (function () {
 
     document.getElementById('expansion-switch').addEventListener('click', toggleExpansion);
     document.getElementById('compare-btn').addEventListener('click', toggleCompare);
+    document.getElementById('header-collapse-btn').addEventListener('click', toggleHeaderCollapse);
+
+    document.addEventListener('fullscreenchange', () => {
+      const map = MapModule.getMap();
+      if (map) setTimeout(() => map.invalidateSize(), 100);
+    });
   }
 
   async function init() {
@@ -181,7 +216,7 @@ const AppController = (function () {
     }
   }
 
-  return { init, onZoomChange, selectCountry, selectItem, selectFlow };
+  return { init, onZoomChange, selectCountry, selectItem, selectFlow, toggleFullscreen };
 })();
 
 window.AppController = AppController;
