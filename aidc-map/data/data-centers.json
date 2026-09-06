@@ -1,0 +1,5 @@
+{
+  "lastUpdated": "2026-09-07",
+  "note": "施設(Facility)・キャンパス(Campus)・地域クラスター(Cluster)の個別データは data/clusters.json に統合して管理しています(granularityフィールドで区別)。本ファイルは将来的に個別施設データを追加拡張する際の分離ポイントとして予約されています。",
+  "items": []
+}

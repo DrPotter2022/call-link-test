@@ -1,1 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>世界AIデータセンター・インフラマップ</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
 
+  <header class="app-header">
+    <div class="title-row">
+      <h1>世界AIデータセンター・インフラマップ</h1>
+      <p class="subtitle">Global AI &amp; Data Center Infrastructure Map</p>
+    </div>
+
+    <div class="mode-bar" id="mode-bar">
+      <button class="mode-btn" data-mode="count">
+        <span>データセンター総数</span>
+        <span class="info-dot" data-info="count">?</span>
+      </button>
+      <button class="mode-btn" data-mode="hyperscale">
+        <span>AI / Hyperscale</span>
+        <span class="info-dot" data-info="hyperscale">?</span>
+      </button>
+      <button class="mode-btn" data-mode="cluster">
+        <span>主要集積地域</span>
+        <span class="info-dot" data-info="cluster">?</span>
+      </button>
+      <button class="mode-btn" data-mode="power">
+        <span>計算能力・電力規模</span>
+        <span class="info-dot" data-info="power">?</span>
+      </button>
+    </div>
+
+    <div class="header-meta">
+      <span id="meta-updated">データ最終更新：読み込み中...</span>
+      <span>｜ 数値は各種公開情報に基づく推計を含みます。詳細は各地点の出典をご確認ください。</span>
+    </div>
+  </header>
+
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label class="fg-label">地域:</label>
+      <button class="chip active" data-region="all">世界</button>
+      <button class="chip" data-region="North America">北米</button>
+      <button class="chip" data-region="China">中国</button>
+      <button class="chip" data-region="Europe">欧州</button>
+      <button class="chip" data-region="Japan">日本</button>
+      <button class="chip" data-region="Asia Pacific">アジア太平洋</button>
+    </div>
+    <div class="filter-group" id="operator-filter-group">
+      <label class="fg-label">事業者:</label>
+      <button class="chip active" data-op="all">All</button>
+      <button class="chip" data-op="Amazon Web Services">AWS</button>
+      <button class="chip" data-op="Microsoft">Microsoft</button>
+      <button class="chip" data-op="Google">Google</button>
+      <button class="chip" data-op="Meta">Meta</button>
+      <button class="chip" data-op="Oracle">Oracle</button>
+      <button class="chip" data-op="OpenAI">OpenAI</button>
+      <button class="chip" data-op="xAI">xAI</button>
+      <button class="chip" data-op="CoreWeave">CoreWeave</button>
+      <button class="chip" data-op="Alibaba Cloud">Alibaba</button>
+      <button class="chip" data-op="Tencent Cloud">Tencent</button>
+      <button class="chip" data-op="ByteDance">ByteDance</button>
+      <button class="chip" data-op="SoftBank">SoftBank</button>
+      <button class="chip" data-op="NTT">NTT</button>
+      <button class="chip" data-op="__other">その他</button>
+    </div>
+    <button class="compare-btn" id="compare-btn">比較モード</button>
+    <div class="toggle-switch">
+      <label>インフラ移動・拡大方向</label>
+      <div class="switch" id="expansion-switch"><div class="knob"></div></div>
+    </div>
+  </div>
+
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <main class="layout">
+    <div id="map"></div>
+    <div class="legend-box" id="legend-box"></div>
+    <aside id="side-panel">
+      <div class="panel-drag-handle" id="panel-drag-handle"></div>
+      <div class="panel-empty">地図上の地点を選択してください</div>
+    </aside>
+  </main>
+</div>
+
+<div id="load-status">データを読み込み中...</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="js/data.js"></script>
+<script src="js/map.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

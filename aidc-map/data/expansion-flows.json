@@ -1,0 +1,83 @@
+{
+  "lastUpdated": "2026-09-07",
+  "note": "各フローは複数の報道・業界分析に基づく傾向の要約であり、単一の確定的な移転統計ではありません。",
+  "flows": [
+    {
+      "id": "flow-us-nova-to-sunbelt",
+      "region": "North America",
+      "fromName": "Northern Virginia",
+      "fromLatLng": [39.0438, -77.4874],
+      "toName": "Ohio / Texas / Arizona / Georgia",
+      "toLatLng": [35.5, -90.0],
+      "background": "北バージニアは世界最大のDC集積地だが、送電網の新規接続待ちが数年規模に達し、土地・水資源も逼迫している。",
+      "reasons": ["電力制約", "送電容量", "土地価格"],
+      "reasonsJa": ["電力制約", "送電容量不足", "土地価格上昇"]
+    },
+    {
+      "id": "flow-cn-coastal-to-west",
+      "region": "China",
+      "fromName": "Beijing / Shanghai / Shenzhen",
+      "fromLatLng": [34.0, 112.0],
+      "toName": "Inner Mongolia / Ningxia / Gansu / Guizhou",
+      "toLatLng": [38.0, 106.0],
+      "background": "中国政府の『東数西算』(東部データを西部で計算する)国家プロジェクトにより、電力・土地コストが低い西部内陸へ計算基盤の移転が政策的に推進されている。",
+      "reasons": ["電力制約", "土地価格", "政府政策", "冷却"],
+      "reasonsJa": ["沿海部の電力制約", "土地価格", "政府政策(東数西算)", "冷却コスト"]
+    },
+    {
+      "id": "flow-eu-core-to-nordics",
+      "region": "Europe",
+      "fromName": "Frankfurt / London / Dublin / Amsterdam",
+      "fromLatLng": [51.0, 3.0],
+      "toName": "Nordic countries (AI Factories)",
+      "toLatLng": [61.0, 20.0],
+      "background": "欧州の伝統的な4大DCハブ(FLAP-D)は送電網の容量不足や自治体によるモラトリアムに直面しており、豊富な水力・風力発電と冷涼な気候を持つ北欧への分散が進んでいる。EUの『AI Gigafactories』構想も後押し。",
+      "reasons": ["電力制約", "送電容量", "再生可能エネルギー", "冷却"],
+      "reasonsJa": ["電力制約", "送電容量不足", "再生可能エネルギーの豊富さ", "冷却コストの低さ"]
+    },
+    {
+      "id": "flow-jp-tokyo-to-regional",
+      "region": "Japan",
+      "fromName": "Tokyo / Osaka",
+      "fromLatLng": [35.6762, 139.6503],
+      "toName": "Hokkaido / Tohoku (再エネ地域)",
+      "toLatLng": [43.0, 141.5],
+      "background": "首都圏の地価・電力制約と自然災害リスクの分散を背景に、日本政府は再生可能エネルギーが豊富な北海道・東北地方などへのデータセンター立地の地方分散を後押ししている。",
+      "reasons": ["土地価格", "再生可能エネルギー", "災害リスク", "政府政策"],
+      "reasonsJa": ["首都圏の地価上昇", "再生可能エネルギーの活用", "地震等の災害リスク分散", "政府の地方分散policy"]
+    },
+    {
+      "id": "flow-sg-to-johor",
+      "region": "Asia Pacific",
+      "fromName": "Singapore",
+      "fromLatLng": [1.3521, 103.8198],
+      "toName": "Johor, Malaysia",
+      "toLatLng": [1.4927, 103.7414],
+      "background": "シンガポールは土地・電力・水資源の制約から新規DC建設に一時モラトリアムを課した経緯があり、その受け皿として国境を接するマレーシア・ジョホール州へのDC投資が急拡大している。",
+      "reasons": ["電力制約", "土地価格", "データ主権"],
+      "reasonsJa": ["シンガポールの土地・電力制約", "土地価格の相対的な低さ", "データ主権上の東南アジア拠点需要"]
+    },
+    {
+      "id": "flow-us-west-to-nevada",
+      "region": "North America",
+      "fromName": "Silicon Valley",
+      "fromLatLng": [37.3875, -122.0575],
+      "toName": "Reno, Nevada",
+      "toLatLng": [39.5296, -119.8138],
+      "background": "カリフォルニア州の高い電力コスト・地価・規制環境を避け、税優遇のあるネバダ州への立地が進んでいる。",
+      "reasons": ["電力制約", "土地価格", "政府政策"],
+      "reasonsJa": ["カリフォルニアの電力・土地コスト", "ネバダ州の税優遇策"]
+    },
+    {
+      "id": "flow-global-to-gulf",
+      "region": "Asia Pacific",
+      "fromName": "米国・欧州の既存ハブ",
+      "fromLatLng": [45.0, 0.0],
+      "toName": "UAE / Saudi Arabia (湾岸諸国)",
+      "toLatLng": [24.5, 50.0],
+      "background": "潤沢なエネルギー資源と政府主導の巨額投資を背景に、湾岸諸国が新興のAI計算インフラ拠点として台頭している。米国企業との提携(Stargate UAE等)も報じられている。",
+      "reasons": ["AI需要", "政府政策", "電力制約"],
+      "reasonsJa": ["世界的なAI計算需要の急増", "政府主導の投資誘致策", "既存ハブの電力制約"]
+    }
+  ]
+}
