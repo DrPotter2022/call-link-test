@@ -106,37 +106,34 @@ const MapModule = (function () {
     return n.toLocaleString('ja-JP') + (unit || '');
   }
 
-  // ---------- Mode 1: データセンター総数 (国別ヒートマップ) ----------
-  function renderCountMode(countries) {
-    const points = [];
-    let maxCount = 1;
-    countries.forEach(c => { if (c.dataCenterCount) maxCount = Math.max(maxCount, c.dataCenterCount); });
+  // ---------- Mode 1: データセンター総数 (国別バブル、凡例の絶対件数バケットと一致させる) ----------
+  // 凡例(ui.js の LEGEND_THRESHOLDS.count)と必ず同じ閾値・配色にすること
+  function countColor(count) {
+    if (count <= 20) return '#3b82f6';
+    if (count <= 100) return '#60a5fa';
+    if (count <= 300) return '#f59e0b';
+    if (count <= 1000) return '#f97316';
+    return '#dc2626';
+  }
 
+  function renderCountMode(countries) {
     countries.forEach(c => {
       if (!c.dataCenterCount) return;
-      const intensity = c.dataCenterCount / maxCount;
-      // 複数点を撒いてヒートマップらしい面を作る（国の中心から少しばらす）
-      const n = Math.max(3, Math.round(intensity * 18));
-      for (let i = 0; i < n; i++) {
-        const jitterLat = (Math.random() - 0.5) * 6;
-        const jitterLng = (Math.random() - 0.5) * 8;
-        points.push([c.lat + jitterLat, c.lng + jitterLng, intensity]);
-      }
-    });
+      const color = countColor(c.dataCenterCount);
+      const radius = Math.min(60, 14 + Math.sqrt(c.dataCenterCount) * 1.6);
 
-    heatLayer = L.heatLayer(points, {
-      radius: 34, blur: 28, maxZoom: 6, max: 1.0,
-      gradient: { 0.2: '#3b82f6', 0.45: '#60a5fa', 0.65: '#f59e0b', 0.85: '#f97316', 1.0: '#dc2626' }
-    }).addTo(map);
-
-    // 国クリック用の透明マーカー
-    countries.forEach(c => {
-      const marker = L.circleMarker([c.lat, c.lng], {
-        radius: 16, fillOpacity: 0, opacity: 0, weight: 0
+      // ぼかしの見た目を出すための外側ハロー（クリック不可）
+      const halo = L.circleMarker([c.lat, c.lng], {
+        radius: radius * 1.8, weight: 0, fillColor: color, fillOpacity: 0.16, interactive: false
       });
-      marker.on('click', () => window.AppController.selectCountry(c));
-      marker.bindTooltip(`${c.nameJa || c.name}: ${fmtNum(c.dataCenterCount)}件`, { direction: 'top' });
-      markerLayer.addLayer(marker);
+      circleLayer.addLayer(halo);
+
+      const core = L.circleMarker([c.lat, c.lng], {
+        radius, color: '#fff', weight: 1.5, fillColor: color, fillOpacity: 0.7
+      });
+      core.on('click', () => window.AppController.selectCountry(c));
+      core.bindTooltip(`${c.nameJa || c.name}: ${fmtNum(c.dataCenterCount)}件`, { direction: 'top' });
+      circleLayer.addLayer(core);
 
       // ズームが大きい場合は国名ラベルも表示
       if (currentZoom >= 4) {
@@ -147,7 +144,7 @@ const MapModule = (function () {
           }),
           interactive: false
         });
-        markerLayer.addLayer(label);
+        circleLayer.addLayer(label);
       }
     });
   }
