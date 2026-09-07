@@ -150,6 +150,18 @@ const MapModule = (function () {
   }
 
   // ---------- Mode 2: AI / Hyperscale ----------
+  // 凡例（● 稼働中 / ▲ 建設中 / ○ 計画）と同じ形状で描画する
+  function markerShapeHtml(status, color, size) {
+    if (status === 'under_construction') {
+      const half = size / 2;
+      return `<div class="dc-marker-triangle" style="width:0;height:0;border-left:${half}px solid transparent;border-right:${half}px solid transparent;border-bottom:${size}px solid ${color};"></div>`;
+    }
+    if (status === 'planned') {
+      return `<div class="dc-marker-ring" style="width:${size}px;height:${size}px;border-color:${color};"></div>`;
+    }
+    return `<div class="dc-marker-dot" style="width:${size}px;height:${size}px;background:${color};"></div>`;
+  }
+
   function renderHyperscaleMode(items) {
     const hs = items.filter(it => it.hyperscale);
     hs.forEach(it => {
@@ -159,7 +171,7 @@ const MapModule = (function () {
 
       const icon = L.divIcon({
         className: 'marker-op',
-        html: `<div class="dc-marker-dot" style="width:${size}px;height:${size}px;background:${color};"></div>`,
+        html: markerShapeHtml(it.status, color, size),
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2]
       });
