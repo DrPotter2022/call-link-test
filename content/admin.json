@@ -1,0 +1,14 @@
+{
+  "_comment": "管理画面のログイン設定。パスワードそのものはここに書かず、Googleスプレッドシートで管理します。設定手順は README の「管理画面にパスワードをかける」を参照してください。",
+  "auth": {
+    "enabled": true,
+    "_mode": "gasEndpoint と sheetCsvUrl のどちらか一方を設定します。両方ある場合は gasEndpoint が優先されます。",
+    "_gasEndpoint": "【推奨】Google Apps Script のウェブアプリURL。パスワードは照合だけがGoogle側で行われ、シートの中身は外部に出ません。",
+    "gasEndpoint": "https://script.google.com/macros/s/AKfycbwdWzdNk4jE-e40MxWY2nqvty2kuHdWb4KIbgi4r0gpSnYBejHPw5uI0kiTxqKXeFj4nw/exec",
+    "_sheetCsvUrl": "【簡易・非推奨】スプレッドシートを「ウェブに公開」してCSV形式にしたURL。設定は簡単ですが、このファイルはサイト上で誰でも読めるため、URLが知られるとパスワード一覧も読まれます。上の gasEndpoint が使えているなら、ここは空のままにしてください。",
+    "sheetCsvUrl": "",
+    "_sessionHours": "一度ログインしたあと、再入力を求めるまでの時間（時間単位）。管理画面と /note/ の編集モードで共通です。共用パソコンでは離席前に「ログアウト」を押してください。",
+    "sessionHours": 12,
+    "hint": "パスワードが分からない場合は管理者にお問い合わせください。"
+  }
+}

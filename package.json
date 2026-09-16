@@ -1,0 +1,19 @@
+{
+  "name": "wize-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "合同会社WIZE コーポレートサイト（www.wize.uno）",
+  "type": "module",
+  "scripts": {
+    "dev": "node tools/serve.mjs",
+    "scrape": "node tools/scrape-peraichi.mjs",
+    "build:content": "node tools/build-content.mjs",
+    "optimize:images": "node tools/optimize-images.mjs",
+    "export:html": "node tools/export-html.mjs",
+    "export:standalone": "node tools/export-html.mjs --standalone",
+    "export:inplace": "node tools/export-html.mjs --inplace"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.6"
+  }
+}

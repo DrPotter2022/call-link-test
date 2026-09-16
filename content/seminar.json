@@ -1,0 +1,235 @@
+{
+  "_comment": "セミナーページの掲載内容。管理画面（/admin/）の「セミナー」タブから編集できます。",
+  "meta": {
+    "title": "セミナー ｜ WIZE LLC",
+    "description": "年金・社会保障を学ぶBASICコース、投資信託と資産形成を体系的に学ぶSTANDARDコース、保険をテーマにしたコース。WIZEの動画セミナー一覧です。"
+  },
+  "hero": {
+    "eyebrow": "SEMINAR — 動画セミナー",
+    "tate": "学んでから、始める",
+    "title": "iDeCo？新NISA？変額保険？\n何も知らずに始めて、<em>大丈夫</em>ですか。",
+    "body": "2019年6月『老後2000万円問題』がニュースで話題となり、大炎上しました。年金不安、老後の生活に向けての準備として金融庁は各種税制優遇制度を推奨しています。\nしかし、そもそも投資をしたことのない多くの日本人が、投資で資産を築くことは可能なのでしょうか？\n\niDeCo？企業型確定拠出年金？新NISA？　国はどうしてこれらの投資性の制度を推奨しているのでしょう。そもそもiDeCoやつみたてNISAってどんな制度なの？　投資信託って何？\nそれぞれのテーマに合わせたセミナーを、難易度別に開催しています。",
+    "primaryCta": {
+      "label": "コース一覧を見る",
+      "href": "#courses"
+    },
+    "secondaryCta": {
+      "label": "相談を予約する",
+      "href": "https://www.wize.uno/reserve.html"
+    },
+    "hankoMain": "教習",
+    "hankoSub": "WIZE SEMINAR"
+  },
+  "message": {
+    "eyebrow": "MESSAGE — 主催者・講師から",
+    "title": "車を運転できるようになるために教習所には通うのに、\nお金を扱うのには学ばない。",
+    "body": "日本では今もお金の話をタブー視する傾向があります。これまで日本人が長く目を背けてきたお金の問題、投資はその中でも預貯金とは異なるリスクを伴うものです。\n\n投資は現代を生きる全ての人が年齢を問わずにもはや避けることができない課題です。しかし何も学ばずにいきなり投資、何か新しい制度や商品が出たから飛びつく…すると、あなたの大切なお金はどうなってしまうでしょうか。\n\n投資を始める上で理解しておかなくてはならないことはほぼ無限にあります。しかし15年以上前に投資を私自身が初めてしたとき、お金を払ってでもこんなことを教えてくれる所があったら…どんなことを知っておく必要があるのかを1日に凝縮しました。\n\n投資は“目的”ではなく“手段”です。解決策として保険・証券・年金の全てを扱う投資経験が豊富なFP・IFAだから、投資について現場で日頃から得ているタイムリーな情報を講座に織り込んでお伝えできる。これがこのコースの最大の魅力だと考えています。\n\n1人でも多くの人にメディアが持ち上げている嘘と現実をお伝えして、正しい投資知識と金融教育をお伝えするために低料金で開講しています。お金のことを真剣に考えている方は、是非ご参加いただければと思います。"
+  },
+  "voices": {
+    "eyebrow": "VOICE — 参加者の声",
+    "title": "投資信託の教科書セミナー\nSTANDARDコース参加者の声",
+    "items": [
+      "つみたてNISAの悪い部分が見えて良かったです。",
+      "全項目、有益でした。また、海外の話も聞けて良かった。",
+      "全般的に自分一人では勉強しても分からないことが多く聞け、非常に有意義であった。",
+      "株、経済全般聞けて良かった",
+      "投資信託のアクティブ型について",
+      "投資という所だけでなく、世の中のお金の流れが分かった事が今後の勉強の役にたつと思う。"
+    ]
+  },
+  "courses": [
+    {
+      "id": "basic",
+      "tag": "BASIC",
+      "title": "働く世代のためのじぶん年金セミナー",
+      "for": "年金・社会保障の現在地から確かめたい方へ",
+      "lead": "年金制度を中心に社会保障の歴史とこれから、将来の受給額などの試算方法、気を付けるべき点等を解説します。",
+      "focus": false,
+      "lessons": [
+        "ねんきん定期便・ねんきんネットの見方と老後受給額の試算",
+        "日本の社会、社会保障（年金等）の現状と将来"
+      ],
+      "lecturesTitle": "収録済みの講座",
+      "lectures": [
+        {
+          "code": "BASIC 1",
+          "title": "ねんきん定期便・ねんきんネット",
+          "duration": "",
+          "body": "",
+          "price": "",
+          "free": false,
+          "ctaLabel": "Udemyで受講する",
+          "href": "https://www.udemy.com/course/nenkin-basic2020/?referralCode=0B5E03C975DB1C542DE4",
+          "published": true
+        },
+        {
+          "code": "BASIC 2",
+          "title": "年金制度の歴史とこれから",
+          "duration": "",
+          "body": "",
+          "price": "無料",
+          "free": true,
+          "ctaLabel": "Udemyで無料受講する",
+          "href": "https://www.udemy.com/course/nenkin-basic2021/?referralCode=84006B94D44A3E402E7C",
+          "published": true
+        },
+        {
+          "code": "BASIC 3",
+          "title": "トランプ2.0への警戒〜映画と歴史に学ぶ米国の黄金時代",
+          "duration": "",
+          "body": "",
+          "price": "",
+          "free": false,
+          "ctaLabel": "Udemyで受講する",
+          "href": "https://www.udemy.com/course/back-to-the-basic-part1/?referralCode=A2572622361387CD9458",
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "standard",
+      "tag": "STANDARD",
+      "title": "投資信託の教科書セミナー",
+      "for": "投資信託で資産形成を始める前に、体系立てて学びたい方へ",
+      "lead": "講師が投資を始めた頃に知りたかった、投資信託での投資のために次の6つのテーマを解説します。",
+      "focus": true,
+      "lessons": [
+        "お金の仕組みを理解する",
+        "あなたの知らない投資の世界",
+        "お金と投資の基本を学ぶ",
+        "投資信託の基本的な仕組み",
+        "投資信託の分析と組み合わせ",
+        "失敗しない資産形成の始め方"
+      ],
+      "lecturesTitle": "収録済みの講座",
+      "lectures": [
+        {
+          "code": "STANDARD 2020",
+          "title": "投資信託の教科書STANDARD2020",
+          "duration": "Udemy学習コース",
+          "body": "お金の基礎知識と投資の基礎、投資信託の選び方を徹底解説。",
+          "price": "13,800円（税込／一括払）",
+          "free": false,
+          "ctaLabel": "Udemyで受講する",
+          "href": "https://www.udemy.com/course/2020-ykj/?referralCode=9F85A72947106D774CF6",
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "money",
+      "tag": "STEP COURSE",
+      "title": "お金の教科書／資産形成の教科書2023",
+      "for": "高校4年生程度の理解度を前提に、教養から積み上げたい方へ",
+      "lead": "日本で唯一（?）の本格的カリキュラム。高校で学ぶ世界史と経済などの一般教養の上に、社会人のためのお金を学び直す『投資信託の教科書』の最新版です。\n『お金の教科書』はSTEP別、『資産形成の教科書』はコースセットとなります。",
+      "focus": false,
+      "lessons": [],
+      "lecturesTitle": "STEP別の学習コース",
+      "lectures": [
+        {
+          "code": "STEP 1",
+          "title": "お金の仕組みと社会の流れを学び直す",
+          "duration": "3H",
+          "body": "「お金」はなぜ「お金」と呼ぶの？　銀行・証券会社・保険会社のそれぞれの役割とは？\n高校卒業までに学ぶ世界史および経済を振り返りながら、私たちの暮らしや人生を豊かにするためのお金についての基本から学び直すコースです。『投資信託の教科書2020』を高校金融教育2022の内容を踏まえて改訂。学習コンテンツ 1/6。",
+          "price": "",
+          "free": false,
+          "ctaLabel": "Udemy受講ページへ",
+          "href": "https://www.udemy.com/course/moneyliteracy01/?referralCode=83CA7C68B8BF5C628852",
+          "published": true
+        },
+        {
+          "code": "STEP 2",
+          "title": "中央銀行という仕組みと貨幣経済",
+          "duration": "3H8M",
+          "body": "大航海時代の到来によって資金の移動が活性化された中世ヨーロッパで始まった中央銀行という仕組みは、現在でもなお金融政策と貨幣経済の仕組みにとてつもなく大きな影響を与えています。\n投資・資産形成をするうえでの基礎となるお金の仕組みと社会全体における流れを再学習するコース 2/6。",
+          "price": "",
+          "free": false,
+          "ctaLabel": "Udemy受講ページへ",
+          "href": "https://www.udemy.com/course/moneyliteracy02/?referralCode=5D4105AE345080D0CFE7",
+          "published": true
+        },
+        {
+          "code": "STEP 3",
+          "title": "米国建国史と投資信託の登場",
+          "duration": "3H50M",
+          "body": "北米開拓史と建国の父たち\n世界三大バブル崩壊に学ぶ失敗の教訓\n米国建国史と株式投資普及の背景\n英国のアジア進出と世界初の投資信託の登場\n投資信託の基礎を学ぶ",
+          "price": "",
+          "free": false,
+          "ctaLabel": "Udemy受講ページへ",
+          "href": "https://www.udemy.com/course/moneyliteracy03/?referralCode=864072480AD71E617C50",
+          "published": true
+        },
+        {
+          "code": "STEP 4",
+          "title": "産業革命と資本主義／運用方針の確立",
+          "duration": "4H28M",
+          "body": "産業革命と資本主義\n経済学の系譜\nアクティブvsパッシブ論争\n七人の伝説の投資家と運用方針の確立\nGDPと株価の関係\nスプートニクショックと米国経済の復活\n3つの運用方針\n市場リスクとリスクプレミアム",
+          "price": "",
+          "free": false,
+          "ctaLabel": "Udemy受講ページへ",
+          "href": "https://www.udemy.com/course/moneyliteracy04/?referralCode=D83CE4E49033668EFEC3",
+          "published": true
+        },
+        {
+          "code": "STEP 5.0",
+          "title": "インデックスの世代交代とパッシブ運用",
+          "duration": "7H54M",
+          "body": "アメリカの証券取引所の再編\n米国経済死と代表インデックスの世代交代（NYダウ／S&P500／NASDAQ）\nインデックス運用の特徴と課題\n戦後日本の証券取引所の変遷\n世界初の先物取引所と証券取引所の近代化\n地方証券取引所（日経平均株価／TOPIX／JPX日経インデックス400／全世界株式と先進国株式／MSCIとFTSE）\nアクティブ運用が目指しているもの、パッシブ運用との違い",
+          "price": "",
+          "free": false,
+          "ctaLabel": "Udemy受講ページへ",
+          "href": "https://www.udemy.com/course/moneyliteracy05/?referralCode=7FFB59EB1B782E8C5E61",
+          "published": true
+        },
+        {
+          "code": "STEP 5.5 / 6.0",
+          "title": "経済学の系譜とインデックスファンドの功罪",
+          "duration": "13H51M",
+          "body": "＜STEP5.5＞\n・古典派経済学〜アダム・スミスは何を語ったのか？\n・新古典派経済学〜マクロ経済学とアルフレッド・マーシャルの提唱\n・シカゴ学派〜パッシブファンドの誕生\n・過去の運用成果は将来の運用成果を保証しない\n・将来の株価は予測できないのに、株価が長期的に上昇すると信じられる理由\n・世界最大の伝説のアクティブファンドの浮沈\n・投資家たちの失敗に共通することは？\n・若きボーグルの悩み〜ヴァンガードショック\n・世界初のインデックスファンドがたどった数奇な運命\n・パッシブ運用の弊害\n・金融庁が警鐘を鳴らすパッシブ運用の寡占化と海外資産運用会社の現状\n・分散投資の誤解とS&P495(493)の指摘\n・投資信託を分析する方法と基本的理解\n・一括投資と積立投資の違い\n・資産配分と「効率的フロンティア」の追求\n・4つの投資方法\n\n＜STEP6.0＞\n・NISA/iDeCoが抱える老後資産形成のリスク\n・都合よく報じられた「老後2000万円問題」と見逃された老齢期の課題\n\n== ここが証券投資を始めるまでに知っておきたい基礎知識のライン ==",
+          "price": "",
+          "free": false,
+          "ctaLabel": "Udemy受講ページへ",
+          "href": "https://www.udemy.com/course/step55-60/?referralCode=F3A7D4302FC761842C9E",
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "insurance",
+      "tag": "ほけん",
+      "title": "生命保険の秘密",
+      "for": "保険を「なんとなく」で決めたくない方へ",
+      "lead": "生命保険をテーマにしたコースです。お試し版を無料公開中です。",
+      "focus": false,
+      "lessons": [],
+      "lecturesTitle": "収録済みの講座",
+      "lectures": [
+        {
+          "code": "お試し版",
+          "title": "生命保険の秘密 Part1",
+          "duration": "",
+          "body": "無料公開中です。",
+          "price": "無料",
+          "free": true,
+          "ctaLabel": "Udemy受講ページへ",
+          "href": "https://www.udemy.com/course/secrets_insurance1/?referralCode=56DC974B64B77F0DA6EB",
+          "published": true
+        }
+      ]
+    }
+  ],
+  "cta": {
+    "eyebrow": "RESERVE — ご相談",
+    "title": "学んだうえで、個別に決めたいときは。",
+    "body": "セミナーは「考え方」をお伝えするものです。\nご自身の家計・保障・資産形成をどうするかは、有料相談で個別にご一緒します。",
+    "primaryCta": {
+      "label": "相談を予約する",
+      "href": "https://www.wize.uno/reserve.html"
+    },
+    "secondaryCta": {
+      "label": ".note を読む",
+      "href": "note/"
+    },
+    "note": "受講生・クライアントの方は、配信後2週間 .note の記事を無料でお読みいただけます。"
+  }
+}

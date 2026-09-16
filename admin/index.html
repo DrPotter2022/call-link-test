@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>管理画面 ｜ WIZE LLC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand">
+      <strong>WIZE 管理画面</strong>
+      <span class="mono">content editor</span>
+    </div>
+    <div class="bar-actions">
+      <span class="status" id="status"></span>
+      <button class="btn ghost" id="btn-reload" type="button">公開中の内容に戻す</button>
+      <button class="btn ghost" id="btn-download" type="button">JSONを書き出す</button>
+      <button class="btn ghost" id="btn-html" type="button">HTMLを書き出す</button>
+      <a class="btn ghost" id="btn-preview" href="../" target="_blank" rel="noopener">プレビュー</a>
+      <button class="btn primary" id="btn-publish" type="button">GitHubへ公開</button>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+
+<main class="layout">
+  <aside class="side">
+    <input class="search" id="jump" type="search" placeholder="記事名・URL・本文で探す" aria-label="項目を絞り込む">
+    <p class="jump-count" id="jump-count"></p>
+    <div id="outline" class="outline"></div>
+    <div class="side-note">
+      <p><strong>記事の探し方</strong></p>
+      <p>上の欄に記事名やURLの一部を入れると、その記事だけが開いた状態で表示されます。<code>.note</code> の記事は「分野 → グループ → 項目」の順に入っているため、探すときは検索が確実です。</p>
+      <p style="margin-top:12px"><strong>下書きの扱い</strong></p>
+      <p>編集した内容はこのブラウザに自動保存されます。プレビューでは下書きが優先表示され、実際のサイトには「GitHubへ公開」するまで反映されません。</p>
+    </div>
+  </aside>
+
+  <section class="editor">
+    <div id="form"></div>
+  </section>
+</main>
+
+<!-- GitHub 公開ダイアログ -->
+<dialog id="publish-dialog">
+  <form method="dialog" class="dlg">
+    <h2>GitHubへ公開</h2>
+    <p class="hint">変更した JSON を GitHub リポジトリへコミットします。GitHub Pages が再ビルドされ、数十秒〜数分でサイトに反映されます。</p>
+    <label>リポジトリ（owner/repo）
+      <input id="gh-repo" type="text" placeholder="例：wize-uno/wize-site" autocomplete="off">
+    </label>
+    <label>ブランチ
+      <input id="gh-branch" type="text" placeholder="main" autocomplete="off">
+    </label>
+    <label>アクセストークン（fine-grained PAT / Contents: Read and write）
+      <input id="gh-token" type="password" placeholder="github_pat_..." autocomplete="off">
+    </label>
+    <label class="row"><input id="gh-remember" type="checkbox"> このブラウザにトークンを保存する</label>
+    <label>コミットメッセージ
+      <input id="gh-message" type="text" value="サイト掲載内容の更新" autocomplete="off">
+    </label>
+    <p class="warn" id="gh-warn"></p>
+    <div class="dlg-actions">
+      <button class="btn ghost" value="cancel" type="submit">キャンセル</button>
+      <button class="btn primary" id="gh-go" value="go" type="button">公開する</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- HTML書き出しダイアログ -->
+<dialog id="html-dialog">
+  <form method="dialog" class="dlg">
+    <h2>HTMLを書き出す</h2>
+    <p class="hint">編集中の内容を埋め込んだ完成HTMLを作り、ZIPでダウンロードします。</p>
+
+    <fieldset class="choices">
+      <legend>書き出し方</legend>
+      <label class="choice">
+        <input type="radio" name="html-mode" value="site" checked>
+        <span>
+          <strong>サイト用</strong>
+          <em>index.html / note/index.html / seminar/index.html。CSSや画像は assets/ を参照します。リポジトリの同じ場所へ上書きすれば、そのまま公開できます。</em>
+        </span>
+      </label>
+      <label class="choice">
+        <input type="radio" name="html-mode" value="standalone">
+        <span>
+          <strong>単体HTML（1ファイルで完結）</strong>
+          <em>CSS・JavaScript・掲載内容・画像をすべて1ファイルに埋め込みます。ダブルクリックで開け、メール添付や他サーバーへの設置もできます。.note は画像をすべて含むため11MB前後になります。</em>
+        </span>
+      </label>
+    </fieldset>
+
+    <fieldset class="choices">
+      <legend>対象のページ</legend>
+      <label class="row"><input type="checkbox" class="html-page" value="home" checked> トップ</label>
+      <label class="row"><input type="checkbox" class="html-page" value="note" checked> .note（バックナンバー）</label>
+      <label class="row"><input type="checkbox" class="html-page" value="seminar" checked> セミナー</label>
+    </fieldset>
+
+    <p class="warn" id="html-warn"></p>
+    <div class="result" id="html-result" hidden></div>
+    <div class="dlg-actions">
+      <button class="btn ghost" value="cancel" type="submit">閉じる</button>
+      <button class="btn primary" id="html-go" value="go" type="button">書き出す</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="auth.js"></script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/page-home.js"></script>
+<script src="../assets/js/page-note.js"></script>
+<script src="../assets/js/page-seminar.js"></script>
+<script src="export-html.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

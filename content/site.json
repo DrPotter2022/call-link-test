@@ -1,0 +1,62 @@
+{
+  "_comment": "サイト共通の設定。管理画面（/admin/）の「共通設定」タブから編集できます。",
+  "brand": {
+    "nameJa": "WIZE",
+    "nameEn": "WIZE LLC",
+    "siteUrl": "https://www.wize.uno/",
+    "concept": "正しい金融経済教育を通じて、自立した個人投資家を育てる"
+  },
+  "nav": [
+    {
+      "id": "home",
+      "label": "WIZEについて",
+      "href": ""
+    },
+    {
+      "id": "note",
+      "label": ".note（バックナンバー）",
+      "href": "note/"
+    },
+    {
+      "id": "seminar",
+      "label": "セミナー",
+      "href": "seminar/"
+    }
+  ],
+  "navCta": {
+    "label": "相談予約",
+    "href": "https://www.wize.uno/reserve.html"
+  },
+  "footer": {
+    "links": [
+      {
+        "label": "WIZEについて",
+        "href": ""
+      },
+      {
+        "label": ".note",
+        "href": "note/"
+      },
+      {
+        "label": "セミナー",
+        "href": "seminar/"
+      },
+      {
+        "label": "相談予約",
+        "href": "https://www.wize.uno/reserve.html"
+      },
+      {
+        "label": "プライバシーポリシー",
+        "href": "https://wize.uno/privacy_policies/view/xcfnirpkrd8"
+      },
+      {
+        "label": "決済に関する利用規約",
+        "href": "https://wize.uno/terms_for_customer/view/xcfnirpkrd8"
+      }
+    ],
+    "legal": "本サイトは金融経済教育および相談サービスの案内であり、特定の金融商品の勧誘を目的とするものではありません。掲載している記事・セミナーの内容は、一般的な情報提供を目的としたものであり、個別の投資判断を推奨・保証するものではありません。投資にはリスクがあり、運用成果を保証するものではありません。最終的なご判断はご自身の責任でお願いいたします。",
+    "copyright": "© 2026 WIZE LLC",
+    "adminLink": true,
+    "_adminLink": "フッターに管理画面への入口を出すかどうか。false にすると消えます（その場合は /admin/ を直接開いてください）。"
+  }
+}

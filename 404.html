@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>ページが見つかりません ｜ WIZE LLC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- サーバー上ではどの階層で表示されるか分からないので絶対パス。
+     file:// で直接開いたときだけ相対パスに直す（下のスクリプト） -->
+<link id="site-css" rel="stylesheet" href="/assets/css/site.css">
+<script>
+  (function () {
+    if (location.protocol !== 'file:') return;
+    document.getElementById('site-css').href = 'assets/css/site.css';
+  })();
+</script>
+<script>
+  /* ペライチ時代のURLからの流入を、新しい場所へ寄せる */
+  (function () {
+    var map = {
+      '/.note': '/note/',
+      '/.note/': '/note/',
+      '/seminar': '/seminar/',
+      '/note': '/note/',
+    };
+    var to = map[location.pathname] || map[location.pathname.toLowerCase()];
+    if (to && to !== location.pathname) location.replace(to + location.hash);
+  })();
+</script>
+</head>
+<body>
+
+<a class="skip" href="#main">本文へスキップ</a>
+<header data-chrome="header"></header>
+
+<main id="main">
+  <section class="nf">
+    <div class="wrap nf-inner">
+      <p class="eyebrow">404 — PAGE NOT FOUND</p>
+
+      <button type="button" class="nf-code" id="nf-reload" title="もう一度読み込む" aria-label="404。このページをもう一度読み込む">
+        <span class="nf-digit nf-d1" aria-hidden="true">4</span>
+        <span class="nf-digit nf-d2" aria-hidden="true">0</span>
+        <span class="nf-digit nf-d3" aria-hidden="true">4</span>
+      </button>
+
+      <h1 class="nf-title">このページは、<br>見つかりませんでした。</h1>
+
+      <p class="nf-lead">URLが変わったか、ページが引っ越したのかもしれません。<br>数字を押すと、もう一度だけ読み込みます。</p>
+
+      <ul class="nf-links">
+        <li>
+          <a href="/">
+            <span class="nf-idx">01</span>
+            <span class="nf-body">
+              <span class="nf-ttl">WIZEについて</span>
+              <span class="nf-sub">正しい金融経済教育を通じて、自立した個人投資家を育てる</span>
+            </span>
+            <span class="nf-arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+        <li>
+          <a href="/note/">
+            <span class="nf-idx">02</span>
+            <span class="nf-body">
+              <span class="nf-ttl">.note（バックナンバー）</span>
+              <span class="nf-sub">History・Finance・Insurance の記事と、年別のメールマガジン</span>
+            </span>
+            <span class="nf-arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+        <li>
+          <a href="/seminar/">
+            <span class="nf-idx">03</span>
+            <span class="nf-body">
+              <span class="nf-ttl">セミナー</span>
+              <span class="nf-sub">年金・投資信託・保険を、難易度別に学べる動画コース</span>
+            </span>
+            <span class="nf-arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+      </ul>
+
+      <p class="nf-foot">旧サイト（ペライチ）のURLでお越しの場合は、自動的に新しいページへ移動します。</p>
+    </div>
+  </section>
+</main>
+
+<footer data-chrome="footer"></footer>
+
+<script>
+  (function () {
+    var root = location.protocol === 'file:' ? '' : '/';
+
+    /* ヘッダー・フッターは共通スクリプトから組み立てる */
+    var s = document.createElement('script');
+    s.src = root + 'assets/js/site.js';
+    s.onload = function () {
+      WIZE.load('site').then(function (site) { WIZE.renderChrome(site, ''); });
+    };
+    document.body.appendChild(s);
+
+    /* 数字を押したら、勢いよく回してから読み込み直す */
+    var btn = document.getElementById('nf-reload');
+    btn.addEventListener('click', function () {
+      var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduced) return location.reload();
+      btn.classList.add('is-boost');
+      setTimeout(function () { location.reload(); }, 900);
+    });
+  })();
+</script>
+</body>
+</html>
