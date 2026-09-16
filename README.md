@@ -1,12 +1,6 @@
 # wize-site
 
 合同会社WIZE のコーポレートサイト（www.wize.uno）。
-
-> **このリポジトリについて：** ここには本サイト以外のページも同居しています
-> （`advise/` `freeadvise/` `reserve.html` の相談まわり、保険各社の問合せ窓口一覧、
-> `aomori-snow-demo/` `automobile/` `jili/` などのツール類）。
-> 本サイトが使うのは、ルートの `index.html` と `note/` `seminar/` `admin/`
-> `assets/` `content/` `tools/` だけです。他のフォルダには手を触れません。
 ペライチで運用していた3ページ（トップ／.note／セミナー）を、GitHub Pages で公開できる静的サイトへ移行したものです。
 
 デザインは `fairfee_lp_4.html`（フェアフィー・プロジェクト）と同じデザイントークン（藍・紙・墨・朱／明朝＋ゴシック＋等幅）を使い、2つのサイトが同じ「家族」に見えるようにしています。
@@ -203,36 +197,33 @@ npm run export:inplace      # リポジトリ内のHTMLを直接更新する
 
 ---
 
-## 4. GitHub Pages への公開手順
+## 4. 公開先
 
-1. GitHub でリポジトリを作成し、このフォルダを push する
+**https://www.wize.uno/ で公開済みです。**
 
-   ```bash
-   git init
-   git add .
-   git commit -m "WIZEサイト初期構築"
-   git branch -M main
-   git remote add origin https://github.com/<owner>/wize-site.git
-   git push -u origin main
-   ```
+配信しているのは **`DrPotter2022/call-link-test`（ブランチ `main`）** です。
+このリポジトリには本サイト以外のページも同居しているため、
+**本サイトのフォルダ以外には触れないでください。**
 
-2. リポジトリの **Settings → Pages** で
-   - Source: `Deploy from a branch`
-   - Branch: `main` / `/ (root)`
+| 同居しているもの | |
+|---|---|
+| `advise/` `freeadvise/` `reserve.html` | 相談の案内と予約 |
+| `*_call_links_*.html` ほか | 保険各社の問合せ窓口一覧 |
+| `aomori-snow-demo/` `automobile/` `jili/` `deduction/` `tax/` など | 各種ツール・デモ |
+| `project/fairfee.html` | フェアフィーLP |
 
-3. 同じ画面の **Custom domain** に `www.wize.uno` を入力（`CNAME` ファイルが既に入っています）
+### 更新のしかた
 
-4. DNS（wize.uno を管理しているサービス）に以下を設定
+- **掲載内容だけ変える** … 管理画面の「GitHubへ公開」。リポジトリ欄には
+  `DrPotter2022/call-link-test`、ブランチは `main` を入れます。
+- **HTMLやCSSも変える** … このフォルダで編集し、`npm run export:inplace` を実行してから
+  `call-link-test` へ反映します（`git remote` に `publish` として登録済み）。
 
-   | 種別 | ホスト名 | 値 |
-   |---|---|---|
-   | CNAME | `www` | `<owner>.github.io` |
-   | A | `@`（apex） | `185.199.108.153` `185.199.109.153` `185.199.110.153` `185.199.111.153` |
+### DNS
 
-   apex（wize.uno）の A レコードを設定しておくと、`wize.uno` → `www.wize.uno` へ GitHub 側が転送します。
-   **ペライチ側の公開を止める（またはDNSを切り替える）まで、旧サイトはそのまま動きます。**
-
-5. Pages の設定画面で **Enforce HTTPS** にチェック（証明書の発行に数分〜1時間ほどかかります）
+すでに `www.wize.uno` が GitHub Pages を向いているため、**変更は不要**です。
+apex（`wize.uno`）は現在もペライチを向いており、旧サイトが動いています。
+そちらを止めるかどうかは別途ご判断ください。
 
 ---
 
