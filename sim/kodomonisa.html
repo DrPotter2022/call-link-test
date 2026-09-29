@@ -5,8 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>こどもNISA 積立シミュレーター</title>
 <style>
-:root{--bg:#f4f6fa;--card:#fff;--fg:#1f2937;--mute:#6b7280;--line:#d8dee9;--pri:#2563eb;--c1:#2563eb;--c2:#16a34a;--c3:#ea580c;--err:#b91c1c;--warn:#b45309}
+:root{--bg:#f4f6fa;--card:#fff;--fg:#1f2937;--mute:#6b7280;--line:#d8dee9;--pri:#2563eb;--c1:#2563eb;--c2:#16a34a;--c3:#ea580c;--err:#b91c1c;--warn:#b45309;--dk:#1c1f26}
 *{box-sizing:border-box}
+.topbar{position:sticky;top:0;z-index:31;background:var(--dk)}
+.topbar-in{max-width:1100px;margin:0 auto;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tb-title{color:#fff;font-size:.92rem;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menuwrap{position:relative;flex:none}
+.menubtn{background:var(--dk);color:#fff;border:1px solid #444;border-radius:6px;padding:8px 16px;font-weight:bold;letter-spacing:.05em}
+.menulist{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.18);min-width:200px;overflow:hidden}
+.menulist a{display:block;padding:12px 16px;color:var(--fg);text-decoration:none;font-size:.92rem;border-bottom:1px solid var(--line)}
+.menulist a:last-child{border-bottom:none}
+.menulist a:hover{background:#f4f6fa}
+.cta{position:sticky;top:0;z-index:29;background:#eef4ff;border-bottom:1px solid var(--line)}
+.cta-in{max-width:1100px;margin:0 auto;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.cta-txt{font-size:.88rem;color:var(--fg);line-height:1.5}
+.cta-btns{display:flex;gap:10px;flex-wrap:wrap}
+.cta-btn{display:inline-block;padding:8px 18px;border-radius:22px;font-weight:bold;font-size:.9rem;text-decoration:none;text-align:center;line-height:1.35}
+.cta-free{background:var(--pri);color:#fff}
+.cta-paid{background:#fff;color:var(--pri);border:2px solid var(--pri)}
+@media(max-width:760px){.cta-in{flex-direction:column;align-items:stretch}.cta-btns{justify-content:stretch}.cta-btn{flex:1;text-align:center;display:block}.tb-title{font-size:.82rem}}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;line-height:1.6;font-size:15px}
 .wrap{max-width:1100px;margin:0 auto;padding:0 12px 12px}
 h1{font-size:1.3rem;margin:10px 0 2px}
@@ -81,6 +98,7 @@ canvas{cursor:crosshair}
 body.pdfshow .cw{width:700px}
 .tip{position:fixed;z-index:50;background:rgba(17,24,39,.94);color:#fff;padding:6px 9px;border-radius:6px;font-size:12px;line-height:1.55;pointer-events:none;white-space:nowrap;display:none}
 .tip b{font-weight:bold}.tip .hl{color:#fde68a}
+body.pdfshow .topbar,body.pdfshow .cta{display:none}
 body.pdfshow canvas{width:700px;height:300px}
 #inSum table{border-collapse:collapse;width:100%;font-size:.85rem}
 #inSum td{border-bottom:1px dotted var(--line);padding:2px 6px;vertical-align:top}
@@ -88,7 +106,7 @@ body.pdfshow canvas{width:700px;height:300px}
 @page{size:A4;margin:12mm}
 @media print{
  body{background:#fff;font-size:11pt}
- .tabs,.inputs,.noprint,.next{display:none!important}
+ .tabs,.inputs,.noprint,.next,.topbar,.cta{display:none!important}
  .tp:not(.on){display:none!important}
  .card{border:none;padding:0;break-inside:avoid}
  details{border:none;padding:0}
@@ -118,6 +136,29 @@ body.pdfshow canvas{width:700px;height:300px}
 </style>
 </head>
 <body>
+<div class="topbar noprint">
+ <div class="topbar-in">
+  <span class="tb-title">こどもNISA 積立シミュレーター</span>
+  <div class="menuwrap">
+   <button type="button" id="menuBtn" class="menubtn">MENU</button>
+   <div id="menuList" class="menulist" hidden>
+    <a href="https://www.wize.uno/advise/" target="_blank" rel="noopener">有料相談</a>
+    <a href="https://www.wize.uno/freeadvise/" target="_blank" rel="noopener">無料相談</a>
+    <a href="https://www.wize.uno/note/" target="_blank" rel="noopener">バックナンバー</a>
+    <a href="https://www.wize.uno/seminar/" target="_blank" rel="noopener">セミナー</a>
+   </div>
+  </div>
+ </div>
+</div>
+<div class="cta noprint">
+ <div class="cta-in">
+  <div class="cta-txt"><b>もっと詳しく相談したい方へ</b><br>お金の専門家に、あなたの状況に合わせて相談できます。</div>
+  <div class="cta-btns">
+   <a class="cta-btn cta-free" href="https://www.wize.uno/freeadvise/" target="_blank" rel="noopener">まずは無料相談</a>
+   <a class="cta-btn cta-paid" href="https://www.wize.uno/advise/" target="_blank" rel="noopener">2回目以降の方は<br>有料IFA相談</a>
+  </div>
+ </div>
+</div>
 <div class="wrap">
 <div style="padding-top:2px">
 <h1>こどもNISA 積立シミュレーター</h1>
@@ -964,6 +1005,16 @@ function setTab(n){
 }
 $('tb1').onclick=function(){setTab(1);};$('tb2').onclick=function(){setTab(2);};
 $('goNext').onclick=function(){setTab(2);};
+function syncStick(){
+  var h=document.querySelector('.topbar').offsetHeight;
+  document.querySelector('.cta').style.top=h+'px';
+  var h2=h+document.querySelector('.cta').offsetHeight;
+  document.querySelector('.tabs').style.top=h2+'px';
+}
+syncStick();window.addEventListener('resize',syncStick);
+$('menuBtn').onclick=function(e){e.stopPropagation();$('menuList').hidden=!$('menuList').hidden;};
+document.addEventListener('click',function(e){if(!e.target.closest('.menuwrap'))$('menuList').hidden=true;});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')$('menuList').hidden=true;});
 $('pdfPrint').onclick=function(){
   if(!res)return;
   var any=false;
