@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>生命保険料控除シミュレーター（2026年特例対応）</title>
+<title>生命保険料控除シミュレーター（2026年・2027年特例対応）</title>
 <style>
   :root{
     --blue:#e8f1ff; --blue-deep:#cfe2ff;
@@ -45,7 +45,7 @@
 </style>
 </head>
 <body>
-<h1>◆ 生命保険料控除シミュレーター（2026年特例対応）</h1>
+<h1>◆ 生命保険料控除シミュレーター（2026年・2027年特例対応）</h1>
 
 <!-- ① 入力 -->
 <div class="card">
@@ -64,9 +64,9 @@
   <div id="inputs"></div>
   <label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
     <input id="sp2026" type="checkbox" />
-    <span>2026年特例（23歳未満扶養親族あり）を適用</span>
+    <span>2026年・2027年特例：年齢23歳未満の扶養親族「有」（②・⑤を使用）</span>
   </label>
-  <div class="small">※適用時は「新・一般（所得税）」上限 <b>60,000円</b>・計算式もしきいを 30/60/120 千円基準に変更。</div>
+  <div class="small">※「有」の場合、新・一般は計算式Ⅱ（30/60/120千円基準）で②・⑤（上限 <b>60,000円</b>）を使用。生命保険料控除の合計上限は <b>120,000円</b>。</div>
   <div style="margin-top:12px"><button id="calc" class="btn primary">計算</button></div>
 </div>
 
@@ -79,22 +79,33 @@
     <div class="res-row res-card bg-new">
       <div>
         <div class="chip">✏️ A合計 <span class="mono" id="aTotal">0</span></div>
-        <div class="small">（新制度・一般生命保険料の合計）</div>
+        <div class="small">（(a)のうち新保険料等の金額の合計額）</div>
       </div>
-      <div><span class="badge">①</span><span class="capnote">控除（新・上限 <span id="capA"></span>）</span></div>
+      <div><span class="badge">①</span><span class="capnote">Aを計算式Ⅰ（新保険料等用）に当てはめた金額（最高40,000）</span></div>
       <div class="num mono" id="v1">0</div>
-      <div><span class="badge">③</span><span class="capnote">①＋②（上限 <span id="capAB"></span>）</span></div>
-      <div class="num mono" id="v3">0</div>
+      <div><span class="badge">④</span><span class="capnote">計（①＋③）（最高40,000）</span></div>
+      <div class="num mono" id="v4">0</div>
+    </div>
+
+    <div class="res-row res-card bg-new" style="margin-top:6px" id="rowA2">
+      <div>
+        <div class="chip">年齢23歳未満の扶養親族：<b id="depState">無</b></div>
+        <div class="small">（「有」の場合のみ②・⑤を使用）</div>
+      </div>
+      <div><span class="badge">②</span><span class="capnote">Aを計算式Ⅱ（23歳未満の扶養親族を有する場合の新保険料等用）に当てはめた金額（最高60,000）</span></div>
+      <div class="num mono" id="v2">0</div>
+      <div><span class="badge">⑤</span><span class="capnote">計（②＋③）（最高60,000）</span></div>
+      <div class="num mono" id="v5">0</div>
     </div>
 
     <div class="res-row res-card bg-old" style="margin-top:6px">
       <div>
         <div class="chip">✏️ B合計 <span class="mono" id="bTotal">0</span></div>
-        <div class="small">（旧制度・一般生命保険料の合計）</div>
+        <div class="small">（(a)のうち旧保険料等の金額の合計額）</div>
       </div>
-      <div><span class="badge">②</span><span class="capnote">控除（旧・上限50,000）</span></div>
-      <div class="num mono" id="v2">0</div>
-      <div><span class="badge">㋑</span><span class="capnote">② と ③ の大きい方</span></div>
+      <div><span class="badge">③</span><span class="capnote">Bを計算式Ⅲ（旧保険料等用）に当てはめた金額（最高50,000）</span></div>
+      <div class="num mono" id="v3">0</div>
+      <div><span class="badge">㋑</span><span class="capnote">③と④のいずれか大きい金額 又は⑤の金額<span class="small">（無：③と④の大きい方／有：⑤）</span></span></div>
       <div class="num mono" id="vI">0</div>
     </div>
   </div>
@@ -104,12 +115,12 @@
     <div class="res-row res-card bg-care">
       <div>
         <div class="chip">✏️ C合計 <span class="mono" id="cTotal">0</span></div>
-        <div class="small">（介護医療保険料の合計）</div>
+        <div class="small">（(a)の金額の合計額）</div>
       </div>
-      <div><span class="badge">④</span><span class="capnote">控除（上限40,000）</span></div>
-      <div class="num mono" id="v4">0</div>
+      <div><span class="badge">㋺</span><span class="capnote">Cを計算式Ⅰに当てはめた金額（最高40,000）</span></div>
+      <div class="num mono" id="vRo">0</div>
       <div></div>
-      <div class="num mono">25,000</div>
+      <div></div>
     </div>
   </div>
 
@@ -118,29 +129,29 @@
     <div class="res-row res-card bg-dnew">
       <div>
         <div class="chip">✏️ D合計 <span class="mono" id="dTotal">0</span></div>
-        <div class="small">（新制度・個人年金の合計）</div>
+        <div class="small">（(a)のうち新保険料等の金額の合計額）</div>
       </div>
-      <div><span class="badge">④</span><span class="capnote">控除（新・上限40,000）</span></div>
-      <div class="num mono" id="v4d">0</div>
-      <div><span class="badge">⑥</span><span class="capnote">④＋⑤（上限40,000）</span></div>
+      <div><span class="badge">⑥</span><span class="capnote">Dを計算式Ⅰに当てはめた金額（最高40,000）</span></div>
       <div class="num mono" id="v6">0</div>
+      <div><span class="badge">⑧</span><span class="capnote">計（⑥＋⑦）（最高40,000）</span></div>
+      <div class="num mono" id="v8">0</div>
     </div>
 
     <div class="res-row res-card bg-eold" style="margin-top:6px">
       <div>
         <div class="chip">✏️ E合計 <span class="mono" id="eTotal">0</span></div>
-        <div class="small">（旧制度・個人年金の合計）</div>
+        <div class="small">（(a)のうち旧保険料等の金額の合計額）</div>
       </div>
-      <div><span class="badge">⑤</span><span class="capnote">控除（旧・上限50,000）</span></div>
-      <div class="num mono" id="v5">0</div>
-      <div><span class="badge">㋩</span><span class="capnote">⑤ と ⑥ の大きい方</span></div>
+      <div><span class="badge">⑦</span><span class="capnote">Eを計算式Ⅲに当てはめた金額（最高50,000）</span></div>
+      <div class="num mono" id="v7">0</div>
+      <div><span class="badge">㋩</span><span class="capnote">⑦又は⑧のいずれか大きい金額</span></div>
       <div class="num mono" id="vP">0</div>
     </div>
   </div>
 
   <div class="sumbar row" style="justify-content:space-between;margin-top:10px">
-    <div><span class="badge">計</span>生命保険料控除額（㋑＋㋺＋㋩）</div>
-    <div class="mono" style="font-weight:700" id="grand">0</div>
+    <div><span class="badge">計</span>生命保険料控除額計（㋑＋㋺＋㋩）（最高120,000円）</div>
+    <div class="mono" style="font-weight:700"><span id="grand">0</span></div>
   </div>
 </div>
 
@@ -250,42 +261,37 @@ function calculate(){
   state.special2026 = document.getElementById('sp2026').checked;
 
   const A=sum(state.A), B=sum(state.B), C=sum(state.C), D=sum(state.D), E=sum(state.E);
+  const dep = state.special2026;
 
-  // ①〜⑥・㋑㋩
-  const d1 = state.special2026? dedNew2026(A) : dedNew(A);
-  const d2 = dedOld(B);
-  const capGeneral = state.special2026? 60000:40000;
-  const d3 = Math.min(d1+d2, capGeneral);
-  const vI = Math.max(d2,d3);
+  // 控除証明書（2026年分〜）の様式に対応：①〜⑧・㋑㋺㋩
+  const d1 = dedNew(A);                 // ① 計算式Ⅰ
+  const d2 = dedNew2026(A);             // ② 計算式Ⅱ（23歳未満の扶養親族あり）
+  const d3 = dedOld(B);                 // ③ 計算式Ⅲ
+  const d4 = Math.min(d1+d3, 40000);    // ④ ①＋③
+  const d5 = Math.min(d2+d3, 60000);    // ⑤ ②＋③
+  const vI = dep? d5 : Math.max(d3, d4); // ㋑（有：⑤／無：③と④の大きい方）
+  const dRo = dedNew(C);                // ㋺
+  const d6 = dedNew(D);                 // ⑥
+  const d7 = dedOld(E);                 // ⑦
+  const d8 = Math.min(d6+d7, 40000);    // ⑧
+  const vP = Math.max(d7, d8);          // ㋩
 
-  const d4C = dedNew(C);
-  const d4D = dedNew(D);
-  const d5 = dedOld(E);
-  const d6 = Math.min(d4D+d5,40000);
-  const vP = Math.max(d5,d6);
-
-  const grand = vI + d4C + vP;
+  const grand = Math.min(vI + dRo + vP, 120000); // 合計上限12万円
 
   // ② 表示
   document.getElementById('resultsCard').style.display='block';
-  document.getElementById('capA').textContent = state.special2026? '60,000':'40,000';
-  document.getElementById('capAB').textContent = state.special2026? '60,000':'40,000';
+  document.getElementById('depState').textContent = dep? '有':'無';
+  document.getElementById('rowA2').style.opacity = dep? 1 : 0.4;
   document.getElementById('aTotal').textContent = fmt(A);
   document.getElementById('bTotal').textContent = fmt(B);
   document.getElementById('cTotal').textContent = fmt(C);
   document.getElementById('dTotal').textContent = fmt(D);
   document.getElementById('eTotal').textContent = fmt(E);
 
-  document.getElementById('v1').textContent = fmt(d1);
-  document.getElementById('v2').textContent = fmt(d2);
-  document.getElementById('v3').textContent = fmt(d3);
-  document.getElementById('vI').textContent = fmt(vI);
-  document.getElementById('v4').textContent = fmt(d4C);
-  document.getElementById('v4d').textContent = fmt(d4D);
-  document.getElementById('v5').textContent = fmt(d5);
-  document.getElementById('v6').textContent = fmt(d6);
-  document.getElementById('vP').textContent = fmt(vP);
-  document.getElementById('grand').textContent = fmt(grand);
+  const setv=(id,v)=>document.getElementById(id).textContent=fmt(v);
+  setv('v1',d1); setv('v2',d2); setv('v3',d3); setv('v4',d4); setv('v5',d5); setv('vI',vI);
+  setv('vRo',dRo); setv('v6',d6); setv('v7',d7); setv('v8',d8); setv('vP',vP);
+  setv('grand',grand);
 
   // ③ 年収レンジ（★修正：入力年収に連動してハイライト）
   document.getElementById('rangeCard').style.display='block';
@@ -320,10 +326,10 @@ function calculate(){
 
   // ④ 未使用枠
   document.getElementById('unusedCard').style.display='block';
-  const capA2 = state.special2026?60000:40000, capD=40000, capC=40000;
-  const unusedA = Math.max(0, capA2 - Math.min(capA2, d1 + d2));
-  const unusedD = Math.max(0, capD  - Math.min(capD , d4D + d5));
-  const unusedC = Math.max(0, capC  - d4C);
+  const capA2 = dep?60000:40000, capD=40000, capC=40000;
+  const unusedA = Math.max(0, capA2 - (dep? d5 : d4));
+  const unusedD = Math.max(0, capD  - d8);
+  const unusedC = Math.max(0, capC  - dRo);
   const utb=document.querySelector('#unusedTable tbody'); utb.innerHTML='';
   [{nm:'一般生命保険料（新制度）',now:A,rest:unusedA},
    {nm:'介護医療保険料（新制度）',now:C,rest:unusedC},
