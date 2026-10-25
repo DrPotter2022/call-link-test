@@ -271,4 +271,88 @@ function legend(){
   if(tab==="pre"){items=[["🟦民主党が現有","var(--sD)"],["🟥共和党が現有","var(--sR)"],["今回改選なし","var(--none)"]];
     N.textContent=mode==="sen"?"色＝改選される議席を今持っている党":"色＝現知事の党（改選州のみ）";}
   else if(tab==="fc"){items=["SD","KD","LD","TU","LR","KR","SR"].map(k=>RATE[k]);items.push(["改選なし","var(--none)"]);
-    N.textContent=mode==="sen"?"競合州はRealClearPolitics（10月中旬）、それ以外はCook（8/20〜10/20）の評価":"Cook 
+    N.textContent=mode==="sen"?"競合州はRealClearPolitics（10月中旬）、それ以外はCook（8/20〜10/20）の評価":"Cook Political Report 10/23の評価（Likely/Solid Rは同色）";}
+  else{items=[["🟦民主勝利","var(--sD)"],["🟥共和勝利","var(--sR)"],["⬜無所属勝利","var(--I)"],["未確定","#c9c5bc"],["改選なし","var(--none)"]];
+    const n=Object.keys(RESULTS[mode]).length;N.textContent=n?`${n}州の結果を反映済み`:"11/3投票・開票後に結果を反映します（現在は未確定）";}
+  L.innerHTML=items.map(([t,c])=>`<span><i style="background:${c}"></i>${t}</span>`).join("");
+}
+function summary(){
+  const S=document.getElementById("summary");
+  const B=(t,big,sub)=>`<div class="box"><b>${t}</b><div class="big">${big}</div><div class="muted">${sub}</div></div>`;
+  if(tab==="pre") S.innerHTML=
+    B("上院（100議席）","🟥共和53 ／ 🟦民主47","民主47は無所属2を含む。改選35（共和22・民主13）。民主は差し引き+4で過半数")+
+    B("下院（435議席・全改選）","🟥共和218 ／ 🟦民主214","無所属1・欠員2（下院記者室）。過半数は218。民主は差し引き+3前後で奪還")+
+    B("州知事（36州改選）","🟥共和18 ／ 🟦民主18","改選州の現有内訳");
+  else if(tab==="fc") S.innerHTML=
+    B("上院","民主優勢〜接戦","Kalshi 民主の上院獲得63%（10/16）。RCP：民主46・接戦8・共和46")+
+    B("下院（Cook 10/23）","民主寄り219 ／ 接戦17 ／ 共和寄り198","民主寄りだけで過半数218に到達。DDHQ 民主76%（10/12）／Kalshi 90%（10/16）")+
+    B("州知事（Cook 10/23）","民主寄り19 ／ 接戦3 ／ 共和寄り14","Lean D以上：Solid13＋Lean6")+
+    B("全体環境","政党支持 民主+9超","大統領支持36.9%・不支持60.3%（Silver Bulletin）");
+  else{
+    const cnt=m=>{const v=Object.values(RESULTS[m]);return v.length?`🟦民主${v.filter(x=>x==="D").length} ／ 🟥共和${v.filter(x=>x==="R").length} ／ ⬜無所属${v.filter(x=>x==="I").length}`:"未確定"};
+    const hv=Object.values(RESULTS.house);const hs=hv.length?`🟦民主${hv.reduce((a,x)=>a+(x.D||0),0)} ／ 🟥共和${hv.reduce((a,x)=>a+(x.R||0),0)}`:"未確定";
+    S.innerHTML=B("上院 改選35",cnt("sen"),"開票後に更新")+B("州知事 改選36",cnt("gov"),"開票後に更新")+B("下院 435",hs,"開票後に更新");
+  }
+}
+const chip=(k)=>`<span class="chip" style="background:${RATE[k][1]};${k==="LD"||k==="LR"||k==="TU"?"color:#1d1f24":""}">${RATE[k][0]}</span>`;
+function preHTML(s){
+  const sen=SENATORS[s].split("").map(c=>tag(c)).join("");
+  let h=`<div class="row"><span class="k">上院議員：</span>${sen}</div><div class="row"><span class="k">知事：</span>${tag(GOVP[s])}</div><div class="row"><span class="k">下院（定数${HOUSE[s]}）：</span>${hdTag(s)}${HNOTE[s]?"<br>"+HNOTE[s]:""}</div>`;
+  const r=SEN[s];
+  h+= r?`<div class="row"><span class="k">上院改選：</span>${tag(r.inc)}議席／${r.who}${r.cand?fmtCand(r.cand):""}<span class="k">改選前評価(Cook 8/20)：</span>${RATE[r.pre][0]}</div>`:`<div class="row"><span class="k">上院改選：</span>なし</div>`;
+  const g=GOV[s];
+  h+= g?`<div class="row"><span class="k">知事選：</span>あり（現${tag(GOVP[s])}）${g.who?"／"+g.who:""}${g.cand?fmtCand(g.cand):""}</div>`:`<div class="row"><span class="k">知事選：</span>なし</div>`;
+  const hc=HC[s]||[];
+  if(hc.length)h+=`<div class="row"><span class="k">下院注目区：</span>${hc.map(x=>x[0]+PE[x[1]]).join("　")}</div>`;
+  if(EXTRA[s])h+=`<div class="row"><span class="k">その他：</span>${EXTRA[s]}</div>`;
+  return h;
+}
+const tip=document.getElementById("tip");
+svg.addEventListener("mousemove",e=>{
+  const s=e.target.dataset&&e.target.dataset.s; if(!s){tip.style.display="none";return}
+  tip.innerHTML=`<h4>${NAME[s]}（${s}）｜改選前</h4>`+preHTML(s);
+  tip.style.display="block";
+  const x=Math.min(e.clientX+14,window.innerWidth-310),y=Math.min(e.clientY+14,window.innerHeight-tip.offsetHeight-8);
+  tip.style.left=x+"px";tip.style.top=y+"px";
+});
+svg.addEventListener("mouseleave",()=>tip.style.display="none");
+svg.addEventListener("click",e=>{const s=e.target.dataset&&e.target.dataset.s;if(!s)return;sel=s;tip.style.display="none";paint();panel(s)});
+
+function raceBlock(title,r,resKey,s){
+  if(!r)return `<h3>${title}</h3><div class="muted">今回改選なし</div>`;
+  let h=`<h3>${title}</h3>`;
+  if(r.cand)h+=`<div class="row">${fmtCand(r.cand)}</div>`;
+  h+=`<div class="row">予想：${chip(r.fc)} <span class="muted">${r.src||""}</span></div>`;
+  if(r.poll)h+=`<div class="row">世論調査：${r.poll}</div>`;
+  if(r.note)h+=`<div class="row muted">${r.note}</div>`;
+  const res=RESULTS[resKey][s];
+  h+=`<div class="row">結果：${res?`${tag(res)}勝利`:'<span class="muted">未確定（11/3以降）</span>'}</div>`;
+  return h;
+}
+function houseBlock(s){
+  const hc=HC[s]||[];
+  let h=`<h3>下院 ─ 改選後の予想</h3>`;
+  h+=`<div class="row">現有：${hdTag(s)}</div>`;
+  if(!hc.length)h+=`<div class="muted">競合区なし（全区Solid評価）</div>`;
+  else{
+    h+=hc.map(x=>`<div class="hd"><code>${x[0]}</code>${tag(x[1])}${x[3]} ${chip(x[2])}${x[4]?`<span class="muted">→${x[4]}</span>`:""}</div>`).join("");
+    h+=`<div class="muted" style="font-size:12px">評価はCook 7/16時点。その後10/9に18区、10/23に19区が民主寄りへ移動（共和寄りへの移動なし）。</div>`;
+  }
+  const x=RESULTS.house[s];
+  h+=`<div class="row">結果：${x?tag("D")+(x.D||0)+" "+tag("R")+(x.R||0):'<span class="muted">未確定（11/3以降）</span>'}</div>`;
+  return h;
+}
+function panel(s){
+  document.getElementById("panel").innerHTML=
+   `<h2>${NAME[s]}（${s}）</h2><div class="muted">下院定数 ${HOUSE[s]}</div>`+
+   raceBlock("上院 ─ 改選後の予想",SEN[s],"sen",s)+
+   raceBlock("州知事 ─ 改選後の予想",GOV[s],"gov",s)+
+   houseBlock(s)+
+   `<h3>改選前の状況</h3>`+preHTML(s).replace(/class="k"/g,'class="muted"');
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");tab=b.dataset.t;paint()});
+document.querySelectorAll(".seg").forEach(b=>b.onclick=()=>{document.querySelectorAll(".seg").forEach(x=>x.classList.remove("on"));b.classList.add("on");mode=b.dataset.m;paint()});
+paint();
+</script>
+</body>
+</html>
