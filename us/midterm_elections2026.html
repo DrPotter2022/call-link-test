@@ -47,8 +47,9 @@ svg{width:100%;height:auto;display:block}
 .row{margin:2px 0}
 .muted{color:var(--sub)}
 .pt{display:inline-block;font-weight:800;border-radius:4px;padding:0 6px;margin-right:4px;font-size:12px;line-height:1.7}
-.pt.D{background:#1c4da1;color:#fff}.pt.R{background:#a92d25;color:#fff}.pt.I{background:#f2f2f2;color:#1d1f24;border:1px solid #999}
+.pt.D{background:#1c4da1;color:#fff}.pt.R{background:#a92d25;color:#fff}.pt.I{background:#f2f2f2;color:#1d1f24;border:1px solid #999}.pt.V{background:#fff;color:#5d6270;border:1px dashed #999}
 .cl{margin:2px 0}
+.hd{display:flex;gap:6px;align-items:baseline;margin:3px 0;flex-wrap:wrap}.hd code{font-family:inherit;font-weight:800;min-width:46px}
 .foot{font-size:11px;color:var(--sub);margin-top:14px;line-height:1.7}
 .foot a{color:var(--sub)}
 </style>
@@ -67,6 +68,7 @@ svg{width:100%;height:auto;display:block}
     <span class="muted">表示：</span>
     <button class="seg on" data-m="sen">上院</button>
     <button class="seg" data-m="gov">州知事</button>
+    <button class="seg" data-m="house">下院</button>
   </div>
 
   <div class="summary" id="summary"></div>
@@ -84,7 +86,7 @@ svg{width:100%;height:auto;display:block}
   </div>
 
   <div class="foot">
-    出典：Cook Political Report（上院8/20・10/20変更報道、知事10/23）、RealClearPolling（上院・知事マップ10月中旬）、Fox News／Emerson／Suffolk等の各調査（Forbes・Yahoo News 10/22〜23集計）、Election Central（RCP平均10/23）、US Polling Data（知事平均10/20）、Kalshi（10/16）、Decision Desk HQ（10/12）、NCSL（住民投票）。<br>
+    出典：Cook Political Report（上院8/20・10/20変更報道、知事10/23、下院 区別7/16・総数10/23）、下院記者室（現有議席）、Wikipedia（州別内訳）、RealClearPolling（上院・知事マップ10月中旬）、Fox News／Emerson／Suffolk等の各調査（Forbes・Yahoo News 10/22〜23集計）、Election Central（RCP平均10/23）、US Polling Data（知事平均10/20）、Kalshi（10/16）、Decision Desk HQ（10/12）、NCSL（住民投票）。<br>
     予測・世論調査は時点のスナップショットであり、結果を保証するものではありません。結果タブは開票後に下記スクリプト内の RESULTS を更新すると色分けされます。
   </div>
 </div>
@@ -168,13 +170,48 @@ const EXTRA={
  FL:"新区割りで注目下院区：キャスター議員の選挙区"
 };
 
+// 下院 現有議席（下院記者室：共和218・民主214・無所属1・欠員2）
+const HD={AL:[5,2],AK:[1,0],AZ:[6,3],AR:[4,0],CA:[8,43,1],CO:[4,4],CT:[0,5],DE:[0,1],FL:[20,7,0,1],GA:[9,5],HI:[0,2],ID:[2,0],IL:[3,14],IN:[7,2],IA:[4,0],KS:[3,1],KY:[5,1],LA:[4,2],ME:[0,2],MD:[1,7],MA:[0,9],MI:[7,6],MN:[4,4],MS:[3,1],MO:[6,2],MT:[2,0],NE:[3,0],NV:[1,3],NH:[0,2],NJ:[3,9],NM:[0,3],NY:[7,19],NC:[10,4],ND:[1,0],OH:[10,5],OK:[5,0],OR:[1,5],PA:[10,7],RI:[0,2],SC:[6,1],SD:[1,0],TN:[8,1],TX:[24,13,0,1],UT:[4,0],VT:[0,1],VA:[5,6],WA:[2,8],WV:[2,0],WI:[6,2],WY:[1,0]};
+const HNOTE={CA:"無所属1＝キリー（CA-3）",FL:"欠員：FL-20（4月辞職）",TX:"欠員：TX-23（4月辞職）"};
+// 下院 注目区（Cook 7/16評価。[区, 現有党, 評価, 現職, 10月の判明している変更]）
+const HC={
+ AL:[["AL-02","D","KR","フィギュアズ"]],
+ AK:[["AK-AL","R","KR","ベギッチ"]],
+ AZ:[["AZ-01","R","TU","空席（シュワイカート）"],["AZ-06","R","TU","シスコマニ"],["AZ-02","R","KR","クレイン"]],
+ CA:[["CA-48","R","LD","空席（アイサ）"],["CA-22","R","TU","ヴァラダオ"],["CA-13","D","LD","グレイ"],["CA-21","D","KD","コスタ"],["CA-45","D","KD","トラン"]],
+ CO:[["CO-08","R","TU","エバンス"],["CO-05","R","KR","クランク"]],
+ FL:[["FL-25","D","TU","モスコウィッツ"],["FL-14","D","LR","キャスター"],["FL-22","D","LR","空席（フランケル）"],["FL-09","D","KR","ソト"],["FL-07","R","KR","ミルズ"],["FL-13","R","KR","ルナ"],["FL-27","R","KR","サラザール"]],
+ IN:[["IN-01","D","KD","ムルバン"]],
+ IA:[["IA-01","R","TU","ミラーミークス","10/9 Lean Dへ"],["IA-03","R","TU","ナン"],["IA-02","R","LR","空席（ヒンソン）"]],
+ KY:[["KY-06","R","KR","空席（バー）"]],
+ ME:[["ME-02","D","KR","空席（ゴールデン）"]],
+ MI:[["MI-07","R","TU","バレット"],["MI-04","R","LR","ハイゼンガ"],["MI-10","R","LR","空席（ジェームズ）"],["MI-08","D","LD","マクドナルド・リベット"]],
+ MN:[["MN-02","D","KD","空席（クレイグ）"],["MN-01","R","KR","フィンスタッド"]],
+ MT:[["MT-01","R","KR","空席（ジンキ）"]],
+ NE:[["NE-02","R","LD","空席（ベーコン）"]],
+ NV:[["NV-03","D","LD","リー"],["NV-01","D","KD","タイタス"],["NV-04","D","KD","ホースフォード"]],
+ NH:[["NH-01","D","KD","空席（パパス）"]],
+ NJ:[["NJ-07","R","TU","キーン"],["NJ-09","D","KD","ポウ"]],
+ NM:[["NM-02","D","LD","バスケス"]],
+ NY:[["NY-17","R","TU","ローラー"],["NY-03","D","LD","スオッツィ"],["NY-04","D","LD","ギレン"],["NY-19","D","KD","ライリー"]],
+ NC:[["NC-01","D","LR","デイビス","10/9 接戦へ"],["NC-11","R","LR","空席（エドワーズ）"]],
+ OH:[["OH-09","D","TU","カプター"],["OH-01","D","LD","ランズマン"],["OH-13","D","KD","サイクス"],["OH-07","R","KR","ミラー"]],
+ PA:[["PA-07","R","TU","マッケンジー"],["PA-08","R","TU","ブレスナハン"],["PA-10","R","TU","ペリー"],["PA-01","R","KR","フィッツパトリック"]],
+ SC:[["SC-01","R","KR","空席（メイス）"]],
+ TX:[["TX-34","D","TU","ゴンザレス"],["TX-28","D","LD","クエヤル"],["TX-35","D","KR","空席（カサール）"],["TX-15","R","LR","デラクルス"],["TX-23","R","KR","欠員"]],
+ VA:[["VA-02","R","TU","キガンズ"],["VA-01","R","LR","ウィットマン"],["VA-07","D","KD","ビンドマン"]],
+ WA:[["WA-03","D","TU","ペレス"]],
+ WI:[["WI-03","R","TU","ヴァン・オーデン"],["WI-01","R","KR","スタイル"]]
+};
+const HOT=s=>(HC[s]||[]).filter(x=>["LD","TU","LR"].includes(x[2])).length;
+
 // ===== 開票後にここを更新：例 RESULTS.sen.NC="D"; RESULTS.gov.IA="D"; =====
-const RESULTS={sen:{},gov:{}};
+const RESULTS={sen:{},gov:{},house:{}}; // house例：RESULTS.house.PA={R:9,D:8};
 
 const RATE={SD:["Solid D","var(--sD)"],KD:["Likely D","var(--kD)"],LD:["Lean D","var(--lD)"],TU:["接戦","var(--tU)"],LR:["Lean R","var(--lR)"],KR:["Likely R","var(--kR)"],SR:["Solid R","var(--sR)"],SAFE:["Likely/Solid R","var(--sR)"]};
 const PC={D:"var(--sD)",R:"var(--sR)",I:"var(--I)"};
-const PN={D:"民主",R:"共和",I:"無所属"};
-const PE={D:"🟦",R:"🟥",I:"⬜"};
+const PN={D:"民主",R:"共和",I:"無所属",V:"欠員"};
+const PE={D:"🟦",R:"🟥",I:"⬜",V:"▫️"};
 const tag=p=>`<span class="pt ${p}">${PE[p]} ${PN[p]}</span>`;
 function fmtCand(c){
   return c.split("／").map(x=>x.trim()).map(x=>{
@@ -201,7 +238,14 @@ for(const s in PATHS){
   t.setAttribute("class","lbl");t.textContent=s;svg.appendChild(t);
 }
 
+function hdTag(s){const [r,d,i=0,v=0]=HD[s];return tag("R")+r+" "+tag("D")+d+(i?" "+tag("I")+i:"")+(v?" "+tag("V")+v:"")}
+function fillHouse(s){
+  if(tab==="pre"){const [r,d]=HD[s];return r>d?"var(--sR)":d>r?"var(--sD)":"#9c8fb8";}
+  if(tab==="fc"){const n=HOT(s);return n===0?"var(--none)":n===1?"#f3dc9c":n<=3?"#e2b54a":"#a8740f";}
+  const x=RESULTS.house[s];if(!x)return "#c9c5bc";return x.R>x.D?"var(--sR)":x.D>x.R?"var(--sD)":"#9c8fb8";
+}
 function fill(s){
+  if(mode==="house")return fillHouse(s);
   const race=mode==="sen"?SEN[s]:GOV[s];
   if(tab==="pre"){
     if(!race)return "var(--none)";
@@ -218,74 +262,13 @@ function paint(){
 function legend(){
   const L=document.getElementById("legend"),N=document.getElementById("mapnote");
   let items=[];
+  if(mode==="house"){
+    if(tab==="pre"){items=[["🟦民主が多数","var(--sD)"],["🟥共和が多数","var(--sR)"],["同数","#9c8fb8"]];N.textContent="色＝州選出下院議員の現在の多数派（現行区割りで選出）";}
+    else if(tab==="fc"){items=[["競合区なし","var(--none)"],["競合1区","#f3dc9c"],["競合2〜3区","#e2b54a"],["競合4区以上","#a8740f"]];N.textContent="色＝接戦・Lean評価の区の数（Cook 7/16の区別評価）。10/9・10/23の更新で計37区が民主寄りに移動（区名は一部のみ判明）";}
+    else{items=[["🟦民主が多数","var(--sD)"],["🟥共和が多数","var(--sR)"],["同数","#9c8fb8"],["未確定","#c9c5bc"]];const n=Object.keys(RESULTS.house).length;N.textContent=n?`${n}州の結果を反映済み`:"11/3投票・開票後に結果を反映します（現在は未確定）";}
+    L.innerHTML=items.map(([t,c])=>`<span><i style="background:${c}"></i>${t}</span>`).join("");return;
+  }
   if(tab==="pre"){items=[["🟦民主党が現有","var(--sD)"],["🟥共和党が現有","var(--sR)"],["今回改選なし","var(--none)"]];
     N.textContent=mode==="sen"?"色＝改選される議席を今持っている党":"色＝現知事の党（改選州のみ）";}
   else if(tab==="fc"){items=["SD","KD","LD","TU","LR","KR","SR"].map(k=>RATE[k]);items.push(["改選なし","var(--none)"]);
-    N.textContent=mode==="sen"?"競合州はRealClearPolitics（10月中旬）、それ以外はCook（8/20〜10/20）の評価":"Cook Political Report 10/23の評価（Likely/Solid Rは同色）";}
-  else{items=[["🟦民主勝利","var(--sD)"],["🟥共和勝利","var(--sR)"],["⬜無所属勝利","var(--I)"],["未確定","#c9c5bc"],["改選なし","var(--none)"]];
-    const n=Object.keys(RESULTS[mode]).length;N.textContent=n?`${n}州の結果を反映済み`:"11/3投票・開票後に結果を反映します（現在は未確定）";}
-  L.innerHTML=items.map(([t,c])=>`<span><i style="background:${c}"></i>${t}</span>`).join("");
-}
-function summary(){
-  const S=document.getElementById("summary");
-  const B=(t,big,sub)=>`<div class="box"><b>${t}</b><div class="big">${big}</div><div class="muted">${sub}</div></div>`;
-  if(tab==="pre") S.innerHTML=
-    B("上院（100議席）","🟥共和53 ／ 🟦民主47","民主47は無所属2を含む。改選35（共和22・民主13）。民主は差し引き+4で過半数")+
-    B("下院（435議席・全改選）","共和党が僅差で過半数","民主は差し引き+3で過半数奪還。南部で共和有利の区割り変更")+
-    B("州知事（36州改選）","🟥共和18 ／ 🟦民主18","改選州の現有内訳");
-  else if(tab==="fc") S.innerHTML=
-    B("上院","民主優勢〜接戦","Kalshi 民主の上院獲得63%（10/16）。RCP：民主46・接戦8・共和46")+
-    B("下院","民主優勢","DDHQ 民主76%（10/12）／Kalshi 90%（10/16）／Cook接戦21区（共和15・民主6）")+
-    B("州知事（Cook 10/23）","民主寄り19 ／ 接戦3 ／ 共和寄り14","Lean D以上：Solid13＋Lean6")+
-    B("全体環境","政党支持 民主+9超","大統領支持36.9%・不支持60.3%（Silver Bulletin）");
-  else{
-    const cnt=m=>{const v=Object.values(RESULTS[m]);return v.length?`🟦民主${v.filter(x=>x==="D").length} ／ 🟥共和${v.filter(x=>x==="R").length} ／ ⬜無所属${v.filter(x=>x==="I").length}`:"未確定"};
-    S.innerHTML=B("上院 改選35",cnt("sen"),"開票後に更新")+B("州知事 改選36",cnt("gov"),"開票後に更新")+B("下院 435","未確定","開票後に更新");
-  }
-}
-const chip=(k)=>`<span class="chip" style="background:${RATE[k][1]};${k==="LD"||k==="LR"||k==="TU"?"color:#1d1f24":""}">${RATE[k][0]}</span>`;
-function preHTML(s){
-  const sen=SENATORS[s].split("").map(c=>tag(c)).join("");
-  let h=`<div class="row"><span class="k">上院議員：</span>${sen}</div><div class="row"><span class="k">知事：</span>${tag(GOVP[s])}</div><div class="row"><span class="k">下院定数：</span>${HOUSE[s]}</div>`;
-  const r=SEN[s];
-  h+= r?`<div class="row"><span class="k">上院改選：</span>${tag(r.inc)}議席／${r.who}${r.cand?fmtCand(r.cand):""}<span class="k">改選前評価(Cook 8/20)：</span>${RATE[r.pre][0]}</div>`:`<div class="row"><span class="k">上院改選：</span>なし</div>`;
-  const g=GOV[s];
-  h+= g?`<div class="row"><span class="k">知事選：</span>あり（現${tag(GOVP[s])}）${g.who?"／"+g.who:""}${g.cand?fmtCand(g.cand):""}</div>`:`<div class="row"><span class="k">知事選：</span>なし</div>`;
-  if(EXTRA[s])h+=`<div class="row"><span class="k">その他：</span>${EXTRA[s]}</div>`;
-  return h;
-}
-const tip=document.getElementById("tip");
-svg.addEventListener("mousemove",e=>{
-  const s=e.target.dataset&&e.target.dataset.s; if(!s){tip.style.display="none";return}
-  tip.innerHTML=`<h4>${NAME[s]}（${s}）｜改選前</h4>`+preHTML(s);
-  tip.style.display="block";
-  const x=Math.min(e.clientX+14,window.innerWidth-310),y=Math.min(e.clientY+14,window.innerHeight-tip.offsetHeight-8);
-  tip.style.left=x+"px";tip.style.top=y+"px";
-});
-svg.addEventListener("mouseleave",()=>tip.style.display="none");
-svg.addEventListener("click",e=>{const s=e.target.dataset&&e.target.dataset.s;if(!s)return;sel=s;tip.style.display="none";paint();panel(s)});
-
-function raceBlock(title,r,resKey,s){
-  if(!r)return `<h3>${title}</h3><div class="muted">今回改選なし</div>`;
-  let h=`<h3>${title}</h3>`;
-  if(r.cand)h+=`<div class="row">${fmtCand(r.cand)}</div>`;
-  h+=`<div class="row">予想：${chip(r.fc)} <span class="muted">${r.src||""}</span></div>`;
-  if(r.poll)h+=`<div class="row">世論調査：${r.poll}</div>`;
-  if(r.note)h+=`<div class="row muted">${r.note}</div>`;
-  const res=RESULTS[resKey][s];
-  h+=`<div class="row">結果：${res?`${tag(res)}勝利`:'<span class="muted">未確定（11/3以降）</span>'}</div>`;
-  return h;
-}
-function panel(s){
-  document.getElementById("panel").innerHTML=
-   `<h2>${NAME[s]}（${s}）</h2><div class="muted">下院定数 ${HOUSE[s]}</div>`+
-   raceBlock("上院 ─ 改選後の予想",SEN[s],"sen",s)+
-   raceBlock("州知事 ─ 改選後の予想",GOV[s],"gov",s)+
-   `<h3>改選前の状況</h3>`+preHTML(s).replace(/class="k"/g,'class="muted"');
-}
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");tab=b.dataset.t;paint()});
-document.querySelectorAll(".seg").forEach(b=>b.onclick=()=>{document.querySelectorAll(".seg").forEach(x=>x.classList.remove("on"));b.classList.add("on");mode=b.dataset.m;paint()});
-paint();
-</script>
-</body>
-</html>
+    N.textContent=mode==="sen"?"競合州はRealClearPolitics（10月中旬）、それ以外はCook（8/20〜10/20）の評価":"Cook 
