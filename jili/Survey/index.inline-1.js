@@ -1,0 +1,317 @@
+(()=>{'use strict';
+const FILES={"2025":"data/jili2025.json","2022":"data/jili2022.json","2019":"data/jili2019.json","2016":"data/jili2016.json","2013":"data/jili2013.json"};
+const YEAR_ORDER=["2025","2022","2019","2016","2013"];
+let DATASETS={}, DATA=null, sortMode=false, hiddenSeries=new Set(), sheetOrder=[], answerOrder=[];
+const CHAPTERS={"1":"第Ⅰ章　生活設計と生活保障意識","2":"第Ⅱ章　医療保障","3":"第Ⅲ章　老後保障","4":"第Ⅳ章　死亡保障","5":"第Ⅴ章　介護保障","6":"第Ⅵ章　生命保険の加入状況","7":"第Ⅶ章　直近加入契約の状況と今後の加入意向","8":"補章","9":"属性"};
+const $=id=>document.getElementById(id);
+const baseYear=$('baseYear'), yearChecks=$('yearChecks'), chapterSel=$('chapterSelect'), qSel=$('questionSelect'), sheetChecks=$('sheetChecks'), answerChecks=$('answerChecks'), checks=$('checks'), filterText=$('filterText'), chart=$('chart'), tooltip=$('tooltip'), table=$('dataTable');
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function fmt(v){return Number.isFinite(v)?(Math.round(v*10)/10).toFixed(1):'-';}
+function norm(s){return String(s||'').replace(/\s+/g,'').replace(/[〜～]/g,'～').trim();}
+function sheetDisplayName(name){const s=String(name||'').trim(); if(s.includes('18～69')||s.includes('18〜69'))return '全体（18～69歳）'; return s;}
+function sheetHelpText(name){const s=String(name||'').trim(); if(s==='全体')return '調査回答者全員'; if(s==='男性')return '男性回答者のみ'; if(s==='女性')return '女性回答者のみ'; if(s.includes('18～69')||s.includes('18〜69'))return '70歳以上を除外した18～69歳の集計'; return s;}
+function chapterOf(q){const m=String(q.id||q.file||'').match(/^(\d+)/); return m?m[1]:'';}
+
+function chartScaleValue(){
+  const el=document.getElementById('chartScale');
+  const v=el?Number(el.value):100;
+  return Number.isFinite(v) ? Math.max(10,Math.min(220,v))/100 : 1;
+}
+function applyChartSvgSize(w,h){
+  const scale=chartScaleValue();
+  const sw=Math.round(w*scale);
+  const sh=Math.round(h*scale);
+  chart.setAttribute('width', sw);
+  chart.setAttribute('height', sh);
+  chart.style.setProperty('width', sw+'px', 'important');
+  chart.style.setProperty('height', sh+'px', 'important');
+  chart.style.setProperty('max-width', 'none', 'important');
+  chart.style.setProperty('margin-left', 'auto', 'important');
+  chart.style.setProperty('margin-right', 'auto', 'important');
+  chart.style.setProperty('display', 'block', 'important');
+}
+
+function currentQ(){const idx=+qSel.value; return DATA?.questions?.[idx] || filteredQuestions()[0]?.q || DATA?.questions?.[0];}
+function selectedYears(){return [...yearChecks.querySelectorAll('input:checked')].map(i=>i.value).filter(y=>DATASETS[y]?.questions?.length);}
+function questionInYear(year,id){const ds=DATASETS[year]; if(!ds)return null; return (ds.questions||[]).find(q=>q.id===id) || null;}
+function sheetByDisplay(q, display){return (q?.sheets||[]).find(s=>norm(sheetDisplayName(s.sheet))===norm(display));}
+function allAnswersForSheets(sheets){const set=new Set(); sheets.forEach(s=>s.rows.forEach(r=>Object.keys(r.values||{}).forEach(k=>set.add(k)))); return [...set];}
+function selectedSheetIndexes(){return [...sheetChecks.querySelectorAll('input:checked')].map(i=>+i.value);}
+function selectedSheets(){const q=currentQ(); return selectedSheetIndexes().map(i=>q.sheets[i]).filter(Boolean);}
+function selectedAnswers(){return [...answerChecks.querySelectorAll('input:checked')].map(i=>i.value);}
+function updateOrder(container, order, isNumber=false){const checked=[...container.querySelectorAll('input:checked')].map(i=>isNumber?+i.value:i.value); for(const v of checked){if(!order.includes(v))order.push(v);} return order.filter(v=>checked.includes(v));}
+function filteredQuestions(){const ch=chapterSel.value; return (DATA?.questions||[]).map((q,i)=>({q,i})).filter(x=>!ch||chapterOf(x.q)===ch);}
+function populateYears(){baseYear.innerHTML=YEAR_ORDER.filter(y=>DATASETS[y]?.questions?.length).map(y=>`<option value="${y}">${y}年度</option>`).join(''); baseYear.value=DATASETS["2025"]?.questions?.length?"2025":baseYear.options[0]?.value; yearChecks.innerHTML=YEAR_ORDER.map(y=>{const ok=DATASETS[y]?.questions?.length; const note=ok?`${DATASETS[y].questions.length}設問`:(DATASETS[y]?.unsupported?.length?'旧xls未変換':'未読込'); return `<label class="check" title="${ok?'比較対象に含めます':'この年度はJSON化済み設問がありません'}"><input type="checkbox" value="${y}" ${y===baseYear.value?'checked':''} ${ok?'':'disabled'}> <span>${y}年度 <span class="small">${note}</span></span></label>`;}).join('');}
+function setBaseYear(y){DATA=DATASETS[y]; hiddenSeries.clear(); sortMode=false; populateChapters(); populateQuestions();}
+function populateChapters(){const present=[...new Set((DATA?.questions||[]).map(chapterOf))].filter(Boolean).sort((a,b)=>+a-+b); chapterSel.innerHTML='<option value="">すべて</option>'+present.map(k=>`<option value="${esc(k)}">${esc(k)}-${esc(CHAPTERS[k]||('第'+k+'章'))}</option>`).join('');}
+function populateQuestions(){const items=filteredQuestions(); qSel.innerHTML=items.map(({q,i})=>`<option value="${i}">${esc(q.id)}：${esc(q.title)}</option>`).join('') || '<option value="0">該当する設問がありません</option>'; hiddenSeries.clear(); sortMode=false; populateSheets();}
+function populateSheets(){const q=currentQ(); sheetOrder=q?.sheets?.map((_,i)=>i)||[]; sheetChecks.innerHTML=(q?.sheets||[]).map((s,i)=>`<label class="check" title="${esc(sheetHelpText(s.sheet))}"><input type="checkbox" value="${i}" ${i===0?'checked':''}> <span>${esc(sheetDisplayName(s.sheet))} <span class="small">${s.rows.length}属性</span></span></label>`).join('') || '<div class="empty">集計対象がありません。</div>'; sheetOrder=[0]; populateAnswers();}
+function populateAnswers(){const sheets=selectedSheets(); const ans=allAnswersForSheets(sheets.length?sheets:[currentQ()?.sheets?.[0]].filter(Boolean)); const prev=new Set(answerOrder.length?answerOrder:ans.slice(0,1)); answerChecks.innerHTML=ans.map((a,i)=>`<label class="check"><input type="checkbox" value="${esc(a)}" ${prev.has(a)||(!answerOrder.length&&i===0)?'checked':''}> <span>${esc(a)}</span></label>`).join('') || '<div class="empty">選択可能な回答項目がありません。</div>'; answerOrder=[...answerChecks.querySelectorAll('input:checked')].map(i=>i.value); populateChecks(true);}
+function visibleRows(){const kw=filterText.value.trim().toLowerCase(); const q=currentQ(); const rows=[]; const seen=new Set(); selectedSheetIndexes().forEach(si=>{const sheet=q?.sheets?.[si]; if(!sheet)return; sheet.rows.forEach(r=>{const key=si+'||'+r.category+'||'+r.label; const search=(sheet.sheet+' '+r.category+' '+r.label).toLowerCase(); if(kw&&!search.includes(kw))return; if(seen.has(key))return; seen.add(key); rows.push({sheetIndex:si,sheet:sheet.sheet,category:r.category,label:r.label,n:r.n,key});});}); return rows;}
+function populateChecks(initial){const rows=visibleRows(); const prev=new Set([...checks.querySelectorAll('input:checked')].map(i=>i.value)); let out='', last=''; rows.forEach((r,idx)=>{const section=(selectedSheetIndexes().length>1?sheetDisplayName(r.sheet)+' / ':'')+r.category; if(section!==last){out+=`<div class="section attrSection" data-section="${esc(section)}" title="クリックで全選択 / 全解除">${esc(section)}</div>`; last=section;} const checked=initial?idx===0:prev.has(r.key); out+=`<label class="check"><input type="checkbox" value="${esc(r.key)}" ${checked?'checked':''}> <span>${esc(r.label)} <span class="small">N=${esc(r.n)}</span></span></label>`;}); checks.innerHTML=out||'<div class="empty">該当する属性がありません。</div>'; enableAttributeSectionSelect(); render();}
+function selectedAttrKeys(){return [...checks.querySelectorAll('input:checked')].map(i=>i.value);}
+function makeSeries(){const q=currentQ(); const id=q?.id; const answers=answerOrder.filter(a=>selectedAnswers().includes(a)); const years=selectedYears(); const list=[]; years.forEach(y=>{const qy=questionInYear(y,id); if(!qy)return; answers.forEach(ans=>{const exists=selectedSheetIndexes().some(si=>{const baseSheet=q.sheets[si]; const sy=sheetByDisplay(qy,sheetDisplayName(baseSheet.sheet)); return sy&&sy.rows.some(r=>typeof r.values?.[ans]==='number');}); if(exists){const label=(years.length>1?y+' / ':'')+ans; list.push({year:y,answer:ans,label});}});}); return list;}
+function collectRows(){const q=currentQ(); const keys=selectedAttrKeys(); const series=makeSeries(); let rows=keys.map(key=>{const parts=key.split('||'); const baseSi=+parts[0]; const category=parts[1]||''; const rawLabel=parts.slice(2).join('||')||''; const baseSheet=q.sheets[baseSi]; const displayLabel=(selectedSheetIndexes().length>1?sheetDisplayName(baseSheet.sheet)+' / ':'')+rawLabel; const vals=series.map((ser,idx)=>{const qy=questionInYear(ser.year,q.id); const sy=sheetByDisplay(qy,sheetDisplayName(baseSheet.sheet)); const row=sy?.rows?.find(r=>r.category===category&&r.label===rawLabel); return {seriesIndex:idx,value:row&&typeof row.values?.[ser.answer]==='number'?row.values[ser.answer]:null,n:row?row.n:null,category,label:displayLabel,sheet:sy?sheetDisplayName(sy.sheet):sheetDisplayName(baseSheet.sheet),answer:ser.answer,year:ser.year};}); return {key,category,label:displayLabel,values:vals};}); if(sortMode&&series[0])rows=rows.slice().sort((a,b)=>(b.values[0].value??-Infinity)-(a.values[0].value??-Infinity)); return {rows,series};}
+function findHundredPercentSubset(rows, visibleSeries){const n=visibleSeries.length;if(n<=1||n>14)return null; const totals=rows.map(r=>r.values.reduce((a,v)=>a+(typeof v.value==='number'?v.value:0),0)).filter(Number.isFinite); if(!totals.some(v=>v>101))return null; let best=null; for(let mask=1;mask<(1<<n);mask++){const idx=[]; for(let i=0;i<n;i++)if(mask&(1<<i))idx.push(i); if(idx.length<2||idx.length===n)continue; let tested=0,close=0,abs=0,over=0; rows.forEach(r=>{let sum=0,any=false; idx.forEach(i=>{const val=r.values[i]?.value; if(typeof val==='number'){sum+=val; any=true;}}); if(any){tested++; const d=Math.abs(sum-100); abs+=d; if(d<=1.2)close++; if(sum>101.2)over++;}}); if(!tested)continue; const rate=close/tested; if(rate<.70||over>Math.max(1,tested*.15))continue; const score=rate*100-abs/tested-idx.length*.03; if(!best||score>best.score)best={idx,score};} return best;}
+function colorList(){return ['#2f80ed','#0a7f5a','#e18a17','#8b4de8','#e23b3b','#299bad','#7a5af8','#db2777','#65a30d','#f97316','#2563eb','#9333ea'];}
+
+function polarToCartesian(cx,cy,r,angle){
+  const rad=(angle-90)*Math.PI/180;
+  return {x:cx+r*Math.cos(rad), y:cy+r*Math.sin(rad)};
+}
+function donutArcPath(cx,cy,rOuter,rInner,startAngle,endAngle){
+  const largeArc=(endAngle-startAngle)>180?1:0;
+  const p1=polarToCartesian(cx,cy,rOuter,endAngle);
+  const p2=polarToCartesian(cx,cy,rOuter,startAngle);
+  const p3=polarToCartesian(cx,cy,rInner,startAngle);
+  const p4=polarToCartesian(cx,cy,rInner,endAngle);
+  return `M ${p1.x} ${p1.y} A ${rOuter} ${rOuter} 0 ${largeArc} 0 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rInner} ${rInner} 0 ${largeArc} 1 ${p4.x} ${p4.y} Z`;
+}
+
+function splitRowsByYearForComposition(rows, series){
+  const years=[...new Set(series.map(s=>s.year))];
+  const answers=[...new Set(series.map(s=>s.answer))].filter(a=>!hiddenSeries.has(a));
+  const newSeries=answers.map((ans,i)=>({year:'',answer:ans,label:ans,origIndex:i}));
+  const newRows=[];
+  rows.forEach(r=>{
+    years.forEach(y=>{
+      const vals=answers.map((ans,idx)=>{
+        const found=r.values.find(v=>v.year===y && v.answer===ans);
+        if(!found) return {seriesIndex:idx,value:null,n:null,category:r.category,label:(years.length>1?y+' / ':'')+r.label,sheet:'',answer:ans,year:y};
+        return {...found,seriesIndex:idx,label:(years.length>1?y+' / ':'')+r.label,answer:ans,year:y};
+      });
+      if(vals.some(v=>typeof v.value==='number')){
+        newRows.push({...r,key:y+'||'+r.key,label:(years.length>1?y+' / ':'')+r.label,values:vals});
+      }
+    });
+  });
+  return {rows:newRows,series:newSeries};
+}
+
+
+function drawDonutChart(displayRows, visibleSeries, colors, mode, autoStack, allSeries){
+  chart.innerHTML='';
+  tooltip.style.display='none';
+  const wrap=$('chartWrap');
+  const w=Math.max(520,Math.floor(wrap.clientWidth||1000));
+  const rowCount=Math.max(1,displayRows.length);
+  const cols=w>1120?3:(w>760?2:1);
+  const cellW=w/cols;
+  const cellH=250;
+  const h=Math.max(380,Math.ceil(rowCount/cols)*cellH+42);
+  chart.setAttribute('viewBox',`-36 0 ${w+36} ${h}`);
+  applyChartSvgSize(w+36,h);
+
+  displayRows.forEach((r,idx)=>{
+    const col=idx%cols, gridRow=Math.floor(idx/cols);
+    const x0=col*cellW, y0=gridRow*cellH;
+    const cx=x0+cellW/2;
+    const cy=y0+125;
+    const outer=Math.min(74,cellW*.24);
+    const inner=outer*.58;
+    const vals=r.values.map((v,si)=>({v,si,ser:visibleSeries[si]})).filter(x=>typeof x.v.value==='number' && x.v.value>0);
+    const total=vals.reduce((a,x)=>a+x.v.value,0);
+    let angle=-90;
+
+    const title=document.createElementNS('http://www.w3.org/2000/svg','text');
+    title.setAttribute('x',cx);
+    title.setAttribute('y',y0+26);
+    title.setAttribute('text-anchor','middle');
+    title.setAttribute('font-size','12');
+    title.setAttribute('font-weight','700');
+    title.setAttribute('fill','#344054');
+    title.textContent=(r.label.length>40?r.label.slice(0,39)+'…':r.label);
+    chart.appendChild(title);
+
+    if(!total){
+      const empty=document.createElementNS('http://www.w3.org/2000/svg','text');
+      empty.setAttribute('x',cx); empty.setAttribute('y',cy);
+      empty.setAttribute('text-anchor','middle'); empty.setAttribute('fill','#667085');
+      empty.setAttribute('font-size','12'); empty.textContent='データなし';
+      chart.appendChild(empty);
+      return;
+    }
+
+    let maxItem=null;
+    vals.forEach(x=>{if(!maxItem || x.v.value>maxItem.v.value) maxItem=x;});
+
+    vals.forEach(({v,si,ser})=>{
+      const delta=(v.value/total)*360;
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',donutArcPath(cx,cy,outer,inner,angle,angle+delta));
+      path.setAttribute('fill',colors[(ser?.origIndex??si)%colors.length]);
+      path.setAttribute('stroke','#fff');
+      path.setAttribute('stroke-width','2');
+      path.setAttribute('class','bar');
+      path.addEventListener('mousemove',ev=>{
+        tooltip.innerHTML=`<b>${esc(r.label)}</b><br>${esc(v.year)}年度<br>${esc(v.sheet)} / ${esc(v.answer)}：${fmt(v.value)}%<br>構成比：${fmt(v.value/total*100)}%<br>N：${esc(v.n)}`;
+        const box=wrap.getBoundingClientRect();
+        tooltip.style.left=(ev.clientX-box.left+12)+'px';
+        tooltip.style.top=(ev.clientY-box.top+12)+'px';
+        tooltip.style.display='block';
+      });
+      path.addEventListener('mouseleave',()=>tooltip.style.display='none');
+      path.addEventListener('click',ev=>{ev.stopPropagation(); if(ser){hiddenSeries.add(ser.label); render();}});
+      chart.appendChild(path);
+      angle+=delta;
+    });
+
+    const main=maxItem?.v?.answer||'';
+    const mainShort=main.length>8?main.slice(0,7)+'…':main;
+    const largest=vals.slice().sort((a,b)=>b.v.value-a.v.value)[0];
+    const mainLabel=largest?.v?.answer||'';
+    const mainValue=largest?.v?.value;
+
+    const c1=document.createElementNS('http://www.w3.org/2000/svg','text');
+    c1.setAttribute('x',cx); c1.setAttribute('y',cy-4); c1.setAttribute('class','donutCenterText');
+    c1.setAttribute('font-weight','700');
+    c1.textContent=mainShort;
+    chart.appendChild(c1);
+    const c2=document.createElementNS('http://www.w3.org/2000/svg','text');
+    c2.setAttribute('x',cx); c2.setAttribute('y',cy+14); c2.setAttribute('class','donutCenterText');
+    c2.setAttribute('font-weight','800');
+    c2.textContent=fmt(maxItem?.v?.value||0)+'%';
+    chart.appendChild(c2);
+  });
+
+  if(!displayRows.length || !visibleSeries.length){
+    const tx=document.createElementNS('http://www.w3.org/2000/svg','text');
+    tx.setAttribute('x',w/2);tx.setAttribute('y',h/2);tx.setAttribute('text-anchor','middle');tx.setAttribute('fill','#667085');
+    tx.textContent='年度・集計対象・回答項目・属性を選択してください';
+    chart.appendChild(tx);
+  }
+
+  const legendSource=(allSeries||visibleSeries).map((s,i)=>({...s,origIndex:i}));
+  $('legend').innerHTML=legendSource.map((s,i)=>`<span data-series="${esc(s.label)}" title="${esc(s.label)}" class="${hiddenSeries.has(s.label)?'off':''}"><span class="sw" style="background:${colors[(s.origIndex??i)%colors.length]};opacity:${hiddenSeries.has(s.label)?.25:.9}"></span>${esc(s.label)}</span>`).join('')+(autoStack?'<span class="small">※100%構成に自動補正中</span>':'');
+  $('legend').querySelectorAll('[data-series]').forEach(el=>el.addEventListener('click',()=>{const k=el.getAttribute('data-series'); hiddenSeries.has(k)?hiddenSeries.delete(k):hiddenSeries.add(k); render();}));
+}
+
+
+
+function enableAttributeSectionSelect(){
+  checks.querySelectorAll('.attrSection').forEach(sec=>{
+    sec.addEventListener('click',()=>{
+      let el=sec.nextElementSibling;
+      const boxes=[];
+      while(el && !el.classList.contains('section')){
+        const cb=el.querySelector ? el.querySelector('input[type="checkbox"]') : null;
+        if(cb) boxes.push(cb);
+        el=el.nextElementSibling;
+      }
+      const allChecked = boxes.length>0 && boxes.every(cb=>cb.checked);
+      boxes.forEach(cb=>cb.checked=!allChecked);
+      render();
+    });
+  });
+}
+
+function selectedCategoryTitle(rows){
+  const cats=[...new Set((rows||[]).map(r=>r.category).filter(Boolean))];
+  if(cats.length===1) return cats[0];
+  if(cats.length>1) return cats.join('・');
+  const checked=[...checks.querySelectorAll('input:checked')];
+  const sections=[];
+  checked.forEach(cb=>{
+    let el=cb.closest('label');
+    let prev=el?el.previousElementSibling:null;
+    while(prev && !prev.classList?.contains('section')) prev=prev.previousElementSibling;
+    if(prev && !sections.includes(prev.textContent.trim())) sections.push(prev.textContent.trim());
+  });
+  return sections.join('・');
+}
+
+
+function isAutoStackFixEnabled(){
+  const el=document.getElementById('autoStackFix');
+  return !el || el.checked;
+}
+
+function drawChart(rows,series){chart.innerHTML=''; tooltip.style.display='none'; const mode=(document.querySelector('input[name="chartMode"]:checked')||{}).value||'overlay'; const colors=colorList(); let baseVisibleSeries=series.map((s,i)=>({...s,origIndex:i})).filter(s=>!hiddenSeries.has(s.label) && !hiddenSeries.has(s.answer));
+let baseDisplayRows=rows.map(r=>({...r,values:r.values.filter((v,i)=>!hiddenSeries.has(series[i]?.label) && !hiddenSeries.has(series[i]?.answer))}));
+let visibleSeries=baseVisibleSeries, displayRows=baseDisplayRows;
+if(mode==='stack'||mode==='donut'){
+  const split=splitRowsByYearForComposition(rows, series);
+  visibleSeries=split.series.filter(s=>!hiddenSeries.has(s.label));
+  displayRows=split.rows.map(r=>({...r,values:r.values.filter((v,i)=>!hiddenSeries.has(split.series[i]?.label))}));
+  baseVisibleSeries=visibleSeries;
+  baseDisplayRows=displayRows;
+} const warn=$('stackWarn'); warn.innerHTML=''; let autoStack=false, excluded=[]; if((mode==='stack'||mode==='donut') && isAutoStackFixEnabled()){const sums=baseDisplayRows.map(r=>r.values.reduce((a,v)=>a+(typeof v.value==='number'?v.value:0),0)); if(sums.some(v=>v>101)){const subset=findHundredPercentSubset(baseDisplayRows,baseVisibleSeries); if(subset){const keep=new Set(subset.idx); excluded=baseVisibleSeries.filter((_,i)=>!keep.has(i)).map(s=>s.label); visibleSeries=baseVisibleSeries.filter((_,i)=>keep.has(i)); displayRows=baseDisplayRows.map(r=>({...r,values:r.values.filter((_,i)=>keep.has(i))})); autoStack=true; warn.innerHTML=`<details class="warnIcon"><summary title="積み上げ表示の自動補正">⚠️</summary><div><b>積み上げ表示の自動補正：</b>選択項目の合計が100%を超えたため、重複集計項目を除外し、100%構成になる回答項目のみで表示しています。<div style="font-weight:800;margin-top:6px">除外項目</div><ul>${excluded.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></details>`;}else{warn.innerHTML='<details class="warnIcon"><summary title="積み上げ表示の注意">⚠️</summary><div><b>積み上げ表示の注意：</b>選択された回答項目に重複集計項目が含まれている可能性があります。100%構成になる組み合わせを自動判定できませんでした。</div></details>';}}}
+
+if((mode==='stack'||mode==='donut') && !isAutoStackFixEnabled()){
+  const rawSums=baseDisplayRows.map(r=>r.values.reduce((a,v)=>a+(typeof v.value==='number'?v.value:0),0));
+  if(rawSums.some(v=>v>101)){
+    warn.innerHTML='<details class="warnIcon" open><summary title="自動補正オフ">⚠️</summary><div><b>自動補正オフ：</b>選択項目に重複集計項目が含まれている可能性があります。100%を超える場合でも、選択項目をそのまま表示しています。</div></details>';
+  }
+}
+
+if(mode==='donut'){drawDonutChart(displayRows,visibleSeries,colors,mode,autoStack,series);return;}
+const wrap=$('chartWrap');
+const longestLabel=Math.max(4,...displayRows.map(r=>String(r.label||'').length));
+const ml=Math.min(380,Math.max(190,longestLabel*10+56));
+const w=Math.max(760,Math.floor(wrap.clientWidth||1000)), h=560, mr=42, mt=28, mb=98; chart.setAttribute('viewBox',`-36 0 ${w+36} ${h}`); applyChartSvgSize(w+36,h); const nums=[]; displayRows.forEach(r=>r.values.forEach(v=>{if(typeof v.value==='number')nums.push(v.value)})); const max=mode==='stack'?100:Math.max(100,...nums,1); const plotW=w-ml-mr, plotH=h-mt-mb, n=displayRows.length, gap=8; const slotH=Math.max(26,Math.min(54,(plotH-(n-1)*gap)/Math.max(n,1))); const groupGap=2; const barH=mode==='stack'?Math.max(8,slotH*.72):Math.max(4,Math.min(14,(slotH-groupGap*Math.max(0,visibleSeries.length-1))/Math.max(1,visibleSeries.length))); const scale=v=>ml+(Math.min(v,max)/max)*plotW; function line(x1,y1,x2,y2,stroke='#d0d5dd'){const e=document.createElementNS('http://www.w3.org/2000/svg','line'); e.setAttribute('x1',x1);e.setAttribute('y1',y1);e.setAttribute('x2',x2);e.setAttribute('y2',y2);e.setAttribute('stroke',stroke);chart.appendChild(e);}
+for(let t=0;t<=max;t+=20){const x=scale(t); line(x,mt,x,mt+plotH,'#edf1f7'); const tx=document.createElementNS('http://www.w3.org/2000/svg','text'); tx.setAttribute('x',x);tx.setAttribute('y',mt+plotH+22);tx.setAttribute('text-anchor','middle');tx.setAttribute('font-size','11');tx.setAttribute('fill','#667085');tx.textContent=t+'%'; chart.appendChild(tx);} line(ml,mt+plotH,w-mr,mt+plotH,'#98a2b3');
+displayRows.forEach((r,i)=>{const y=mt+i*(slotH+gap); const lab=document.createElementNS('http://www.w3.org/2000/svg','text'); lab.setAttribute('x',ml-14);lab.setAttribute('y',y+slotH*.58);lab.setAttribute('text-anchor','end');lab.setAttribute('font-size',n>18?'10':'12');lab.setAttribute('fill','#344054');lab.textContent=(r.label.length>34?r.label.slice(0,33)+'…':r.label); chart.appendChild(lab); let acc=0; r.values.forEach((v,si)=>{if(typeof v.value!=='number')return; const ser=visibleSeries[si]; const rect=document.createElementNS('http://www.w3.org/2000/svg','rect'); let x=ml,width=Math.max(2,scale(v.value)-ml),yPos=y+(slotH-barH)/2,opacity=1; if(mode==='stack'){x=scale(acc); width=Math.max(2,scale(acc+v.value)-scale(acc)); acc+=v.value; opacity=.9;}else{const totalH=visibleSeries.length*barH+(visibleSeries.length-1)*groupGap; yPos=y+Math.max(0,(slotH-totalH)/2)+si*(barH+groupGap); opacity=Math.max(.38,1-si*.08);} rect.setAttribute('class','bar'); rect.setAttribute('x',x);rect.setAttribute('y',yPos);rect.setAttribute('width',width);rect.setAttribute('height',barH);rect.setAttribute('rx',mode==='stack'?2:3);rect.setAttribute('fill',colors[(ser?.origIndex??si)%colors.length]);rect.setAttribute('fill-opacity',String(opacity));rect.setAttribute('stroke','#fff');rect.setAttribute('stroke-opacity','.75'); rect.addEventListener('mousemove',ev=>{const total=r.values.reduce((a,z)=>a+(typeof z.value==='number'?z.value:0),0); tooltip.innerHTML=`<b>${esc(r.label)}</b><br>${esc(v.year)}年度<br>${esc(v.sheet)} / ${esc(v.answer)}：${fmt(v.value)}%<br>N：${esc(v.n)}${mode==='stack'?'<br>表示項目合計：'+fmt(total)+'%':''}`; const box=wrap.getBoundingClientRect(); tooltip.style.left=(ev.clientX-box.left+12)+'px'; tooltip.style.top=(ev.clientY-box.top+12)+'px'; tooltip.style.display='block';}); rect.addEventListener('mouseleave',()=>tooltip.style.display='none'); rect.addEventListener('click',ev=>{ev.stopPropagation(); if(ser){hiddenSeries.add(ser.label); render();}}); chart.appendChild(rect);});});
+if(!displayRows.length||!visibleSeries.length){const tx=document.createElementNS('http://www.w3.org/2000/svg','text'); tx.setAttribute('x',w/2);tx.setAttribute('y',h/2);tx.setAttribute('text-anchor','middle');tx.setAttribute('fill','#667085');tx.textContent='年度・集計対象・回答項目・属性を選択してください';chart.appendChild(tx);}
+const legendSource=series.map((s,i)=>({...s,origIndex:i}));
+  $('legend').innerHTML=legendSource.map((s,i)=>`<span data-series="${esc(s.label)}" title="${esc(s.label)}" class="${hiddenSeries.has(s.label)?'off':''}"><span class="sw" style="background:${colors[(s.origIndex??i)%colors.length]};opacity:${hiddenSeries.has(s.label)?.25:(mode==='stack'?.9:Math.max(.38,1-i*.08))}"></span>${esc(s.label)}</span>`).join('')+(autoStack?'<span class="small">※100%構成に自動補正中</span>':'');
+  $('legend').querySelectorAll('[data-series]').forEach(el=>el.addEventListener('click',()=>{const k=el.getAttribute('data-series'); hiddenSeries.has(k)?hiddenSeries.delete(k):hiddenSeries.add(k); render();}));}
+function drawTable(rows,series){
+  const shouldTranspose = series.length > Math.max(4, rows.length * 1.5);
+  if(shouldTranspose){
+    const headers=['項目'].concat(rows.map(r=>r.label));
+    table.innerHTML='<thead><tr>'+headers.map(h=>`<th>${esc(h)}</th>`).join('')+'</tr></thead><tbody>'+
+      series.map((s,si)=>{
+        return '<tr><td>'+esc(s.label)+'</td>'+
+          rows.map(r=>{
+            const v=r.values[si];
+            const val=typeof v?.value==='number'?fmt(v.value)+'%':'-';
+            const n=v?.n??'-';
+            return `<td>${val}<span class="small"> / N=${n}</span></td>`;
+          }).join('')+'</tr>';
+      }).join('')+'</tbody>';
+    return;
+  }
+
+  let headers=['属性分類','属性'];
+  series.forEach((s,i)=>headers.push(`${s.label}`,`N${i+1}`));
+  table.innerHTML='<thead><tr>'+headers.map(h=>`<th>${esc(h)}</th>`).join('')+'</tr></thead><tbody>'+
+    rows.map(r=>'<tr><td>'+esc(r.category)+'</td><td>'+esc(r.label)+'</td>'+
+      r.values.map(v=>`<td>${typeof v.value==='number'?fmt(v.value)+'%':'-'}</td><td>${v.n??'-'}</td>`).join('')+
+    '</tr>').join('')+'</tbody>';
+}
+function render(){if(!DATA)return; sheetOrder=updateOrder(sheetChecks,sheetOrder,true); answerOrder=updateOrder(answerChecks,answerOrder,false); const q=currentQ(); const {rows,series}=collectRows(); const groupTitle=selectedCategoryTitle(rows); $('chartGroupTitle').textContent=groupTitle||''; $('qBadge').textContent=`${q?.id||''} / ${selectedYears().join('・')}年度`; $('chartTitle').textContent=q?.title||''; $('chartSub').textContent=`選択属性 ${rows.length}件 / 集計対象 ${selectedSheetIndexes().length}件 / 回答項目 ${selectedAnswers().length}件 / 系列 ${series.length}件`; drawChart(rows,series); drawTable(rows,series);}
+async function loadAll(){const msg=$('loadMsg'); const promises=YEAR_ORDER.map(async y=>{try{const r=await fetch(FILES[y],{cache:'no-store'}); if(!r.ok)throw new Error(r.status); DATASETS[y]=await r.json(); DATASETS[y].year=y;}catch(e){DATASETS[y]={year:y,questions:[],unsupported:[],loadError:String(e)}}}); await Promise.all(promises); if(!DATASETS["2025"]?.questions?.length){document.body.classList.add('loadError'); msg.style.display='block'; msg.textContent='JSONを自動読込できませんでした。GitHub Pages等で公開するか、ローカル表示ではJSONファイルを手動選択してください。';} initUI();}
+function initUI(){populateYears(); const y=baseYear.value||YEAR_ORDER.find(y=>DATASETS[y]?.questions?.length); if(y)setBaseYear(y);}
+baseYear.addEventListener('change',()=>{yearChecks.querySelectorAll('input').forEach(i=>{if(i.value===baseYear.value)i.checked=true}); setBaseYear(baseYear.value);});
+yearChecks.addEventListener('change',()=>{hiddenSeries.clear(); render();});
+chapterSel.addEventListener('change',populateQuestions); qSel.addEventListener('change',()=>{hiddenSeries.clear(); sortMode=false; populateSheets();});
+sheetChecks.addEventListener('change',()=>{hiddenSeries.clear(); populateAnswers();}); answerChecks.addEventListener('change',()=>{hiddenSeries.clear(); render();});
+checks.addEventListener('change',render); filterText.addEventListener('input',()=>populateChecks(false));
+document.querySelectorAll('input[name="chartMode"]').forEach(r=>r.addEventListener('change',()=>{hiddenSeries.clear(); render();}));
+$('sheetAll').onclick=()=>{sheetChecks.querySelectorAll('input').forEach(i=>i.checked=true); populateAnswers();}; $('sheetClear').onclick=()=>{sheetChecks.querySelectorAll('input').forEach(i=>i.checked=false); populateAnswers();};
+$('answerAll').onclick=()=>{answerChecks.querySelectorAll('input').forEach(i=>i.checked=true); hiddenSeries.clear(); render();}; $('answerClear').onclick=()=>{answerChecks.querySelectorAll('input').forEach(i=>i.checked=false); hiddenSeries.clear(); render();};
+$('selectShown').onclick=()=>{checks.querySelectorAll('input').forEach(i=>i.checked=true); render();}; $('clearAll').onclick=()=>{checks.querySelectorAll('input').forEach(i=>i.checked=false); render();};
+$('sortBtn').onclick=()=>{sortMode=true; render();}; $('resetSort').onclick=()=>{sortMode=false; render();};
+$('sideToggle').onclick=()=>{document.body.classList.toggle('sidebar-collapsed'); $('sideToggle').textContent=document.body.classList.contains('sidebar-collapsed')?'+':'−'; setTimeout(render,50);};
+$('agreeBtn').onclick=()=>document.body.classList.remove('consent-pending');
+$('jsonFiles').addEventListener('change',async ev=>{for(const f of ev.target.files){const txt=await f.text(); const d=JSON.parse(txt); const y=String(d.year||f.name.match(/(20\d{2})/)?.[1]||''); if(y)DATASETS[y]=d;} document.body.classList.remove('loadError'); $('loadMsg').style.display='none'; initUI();});
+
+const chartScaleEl=document.getElementById('chartScale');
+const chartScaleVal=document.getElementById('chartScaleVal');
+if(chartScaleEl){
+  chartScaleEl.addEventListener('input',()=>{
+    if(chartScaleVal) chartScaleVal.textContent=chartScaleEl.value+'%';
+    render();
+  });
+  if(chartScaleVal) chartScaleVal.textContent=chartScaleEl.value+'%';
+}
+
+
+const autoStackFixEl=document.getElementById('autoStackFix');
+if(autoStackFixEl){
+  autoStackFixEl.addEventListener('change',()=>{hiddenSeries.clear(); render();});
+}
+
+window.addEventListener('resize',()=>{try{render()}catch(e){}});
+loadAll();
+})();

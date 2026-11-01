@@ -1,0 +1,320 @@
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const raw=id=>Math.max(0,Number(String($(id).value).replace(/,/g,""))||0);
+const yen=n=>new Intl.NumberFormat("ja-JP",{style:"currency",currency:"JPY",maximumFractionDigits:0}).format(Math.max(0,Math.round(n||0)));
+const signedYen=n=>new Intl.NumberFormat("ja-JP",{style:"currency",currency:"JPY",maximumFractionDigits:0}).format(Math.round(n||0));
+const comma=n=>new Intl.NumberFormat("ja-JP").format(Math.max(0,Math.round(n||0)));
+let age="u70";
+const configs={
+ current:{high:[252600,842000,140100,null],mid:[167400,558000,93000,null],standard:[80100,267000,44400,null],low:[57600,0,44400,null],taxfree:[35400,0,24600,null]},
+ r8:{high:[270300,901000,140100,1680000],mid:[179100,597000,93000,1110000],standard:[85800,286000,44400,530000],low:[61500,0,44400,530000],taxfree:[36900,0,24600,290000]}
+};
+const r9=[[1650,342000,1140000,140100,1680000,"約1,650万円以上"],[1410,303000,1010000,140100,1680000,"約1,410万～1,650万円"],[1160,270300,901000,140100,1680000,"約1,160万～1,410万円"],[1040,209400,698000,93000,1110000,"約1,040万～1,160万円"],[950,194400,648000,93000,1110000,"約950万～1,040万円"],[770,179100,597000,93000,1110000,"約770万～950万円"],[650,110400,368000,44400,530000,"約650万～770万円"],[510,98100,327000,44400,530000,"約510万～650万円"],[370,85800,286000,44400,530000,"約370万～510万円"],[260,69600,0,44400,530000,"約260万～370万円"],[200,65400,0,44400,530000,"約200万～260万円"],[0,61500,0,34500,410000,"約200万円未満"]];
+function rowFor(income,period){
+ if(period==="r9"){const x=r9.find(v=>income>=v[0])||r9.at(-1);return{base:x[1],threshold:x[2],multi:x[3],annual:x[4],label:x[5]};}
+ const key=income>=1160?"high":income>=770?"mid":income>=370?"standard":income>0?"low":"taxfree";
+ const label={high:"約1,160万円以上",mid:"約770万～1,160万円",standard:"約370万～770万円",low:"約370万円未満",taxfree:"住民税非課税（目安）"}[key],x=configs[period][key];
+ return{base:x[0],threshold:x[1],multi:x[2],annual:x[3],label};
+}
+function outpatient(income,period){
+ if(income>=370)return null;
+ if(period==="current")return{monthly:18000,annual:144000};
+ if(period==="r8")return{monthly:22000,annual:216000};
+ return income>=200?{monthly:28000,annual:216000}:{monthly:22000,annual:216000};
+}
+function monthlyLimit(cost,row){return row.base+(row.threshold?Math.max(0,cost-row.threshold)*.01:0)}
+let yearCount=1,copyState=null,moneyTarget=null,moneySign=1,lastMonth={m:0,r:0,o:0};
+function monthInput(kind,index,value){
+ const month=index%12+1,year=Math.floor(index/12)+1;
+ const tags=kind==="r"?`<div class="tag-row"><button type="button" class="tag-btn active" data-month-tag="${kind}${index}" data-tag="reduction">減収</button></div>`:kind==="o"?"":`<div class="tag-row"><button type="button" class="tag-btn active" data-month-tag="${kind}${index}" data-tag="diagnosis">診断</button><button type="button" class="tag-btn active" data-month-tag="${kind}${index}" data-tag="hospital">入院</button><button type="button" class="tag-btn active" data-month-tag="${kind}${index}" data-tag="surgery">手術</button><button type="button" class="tag-btn active" data-month-tag="${kind}${index}" data-tag="outpatient">通院</button></div>`;
+ return `<div class="month-field" data-kind="${kind}" data-index="${index}"><label for="${kind}${index}">${month}月</label><div class="input-unit"><input id="${kind}${index}" class="comma ${kind==="m"?"month-cost":"reduction-cost"}" inputmode="numeric" value="${value}"><button class="clear-money" type="button" data-clear="${kind}${index}" aria-label="${year}年目${month}月を消去">×</button><button class="open-money" type="button" data-money="${kind}${index}" aria-label="${year}年目${month}月の金額を調整">円</button></div>${tags}</div>`;
+}
+function applyDefaultMonthTags(start=0,end=yearCount*12){for(let i=start;i<end;i++){const diagnosis=document.querySelector(`[data-month-tag="m${i}"][data-tag="diagnosis"]`),outpatient=document.querySelector(`[data-month-tag="m${i}"][data-tag="outpatient"]`);if(diagnosis)diagnosis.classList.toggle("active",i%12===0);if(outpatient)outpatient.classList.toggle("active",i%12!==0)}}
+function applyDefaultMonthTags(start=0,end=yearCount*12){for(let i=start;i<end;i++){const diagnosis=document.querySelector(`[data-month-tag="m${i}"][data-tag="diagnosis"]`),hospital=document.querySelector(`[data-month-tag="m${i}"][data-tag="hospital"]`),surgery=document.querySelector(`[data-month-tag="m${i}"][data-tag="surgery"]`),outpatient=document.querySelector(`[data-month-tag="m${i}"][data-tag="outpatient"]`),isJanuary=i%12===0;if(diagnosis)diagnosis.classList.toggle("active",isJanuary);if(outpatient)outpatient.classList.toggle("active",!isJanuary);if(!isJanuary){if(hospital)hospital.classList.remove("active");if(surgery)surgery.classList.remove("active")}}}
+function buildMonths(preserve=true){
+ const oldM=preserve?Array.from({length:120},(_,i)=>document.getElementById("m"+i)?.value):[];
+ const oldR=preserve?Array.from({length:120},(_,i)=>document.getElementById("r"+i)?.value):[];
+ const oldO=preserve?Array.from({length:120},(_,i)=>document.getElementById("o"+i)?.value):[];
+ const groups=(kind,old)=>Array.from({length:yearCount},(_,y)=>`<div class="year-block"><div class="year-label">${y+1}年目</div><div class="month-grid">${Array.from({length:12},(_,mo)=>{const i=y*12+mo,def=kind==="m"&&y===0&&mo<3?"1,000,000":"0";return monthInput(kind,i,old[i]??def)}).join("")}</div><div class="year-total" id="${kind}Total${y}">${kind==="m"?"医療費":"減収額"} 年合計：￥0</div></div>`).join("");
+ $("monthGrid").innerHTML=groups("m",oldM);
+ $("reductionGrid").innerHTML=groups("r",oldR);
+ $("otherGrid").innerHTML=groups("o",oldO);
+ buildEmployeeYears();
+ document.querySelectorAll(".year-add").forEach(b=>b.disabled=yearCount>=10);
+ document.querySelectorAll(".year-remove").forEach(b=>b.disabled=yearCount<=1);
+}
+function buildEmployeeYears(){
+ const host=$("employeeYears"),old=Array.from({length:10},(_,y)=>({
+  leave:document.getElementById("leaveMonths"+y)?.value,
+  add:document.getElementById("additionalMonthly"+y)?.value,
+  months:document.getElementById("additionalMonths"+y)?.value
+ }));
+ host.innerHTML=Array.from({length:yearCount},(_,y)=>`<div class="year-block"><div class="year-label">${y+1}年目</div><div class="employee-grid"><div><label>傷病手当金の対象月数</label><div class="input-unit"><input id="leaveMonths${y}" class="comma" inputmode="numeric" value="${old[y].leave??(y===0?"3":"0")}"><span class="unit">月</span></div><p class="hint">年収÷12×2/3を月額概算</p></div><div><label>付加給付（月額）</label><div class="input-unit"><input id="additionalMonthly${y}" class="comma" inputmode="numeric" value="${old[y].add??"0"}"><span class="unit">円</span></div></div><div><label>付加給付の対象月数</label><div class="input-unit"><input id="additionalMonths${y}" class="comma" inputmode="numeric" value="${old[y].months??"0"}"><span class="unit">月</span></div></div></div></div>`).join("");
+}
+function planValue(card,base){const el=card.querySelector(`[id^="${base}"]`);return el?Math.max(0,Number(String(el.value).replace(/,/g,""))||0):0}
+function planCards(kind){return Array.from(document.querySelectorAll(`.plan-card[data-kind="${kind}"]`))}
+function benefits(){
+ const totalMonths=yearCount*12,out=Array(totalMonths).fill(0),sicknessByMonth=Array(totalMonths).fill(0);
+ let medical=0,cancerTotal=0,criticalTotal=0;
+ for(const card of planCards("medical")){
+  const mm=Math.min(12,planValue(card,"medicalMonths")),mf=planValue(card,"medicalFrequency"),fixed=planValue(card,"hospitalDaily")*planValue(card,"hospitalDays")+planValue(card,"hospitalLump")+planValue(card,"medicalOutDaily")*planValue(card,"medicalOutDays")+planValue(card,"medicalOutLump")+planValue(card,"surgeryBenefit");
+  for(let y=0;y<yearCount;y++){const s=y*12;for(let i=0;i<mm;i++)out[s+i]+=planValue(card,"medicalMonthly");out[s]+=fixed+(mf?planValue(card,"medicalDiagnosisLump"):0);if(mf===2)out[s+6]+=planValue(card,"medicalDiagnosisLump")}
+  medical+=yearCount*(planValue(card,"medicalMonthly")*mm+fixed+planValue(card,"medicalDiagnosisLump")*mf);
+ }
+ for(const card of planCards("cancer")){
+  const cm=Math.min(12,planValue(card,"cancerMonths")),cf=planValue(card,"cancerFrequency"),fixed=planValue(card,"cancerInDaily")*planValue(card,"cancerInDays")+planValue(card,"cancerOutDaily")*planValue(card,"cancerOutDays")+planValue(card,"cancerOutLump")+planValue(card,"cancerSurgery");
+  for(let y=0;y<yearCount;y++){const s=y*12;for(let i=0;i<cm;i++)out[s+i]+=planValue(card,"cancerMonthly");out[s]+=(cf?planValue(card,"cancerLump"):0)+fixed;if(cf===2)out[s+6]+=planValue(card,"cancerLump")}
+  cancerTotal+=yearCount*(planValue(card,"cancerMonthly")*cm+planValue(card,"cancerLump")*cf+fixed);
+ }
+ for(const card of planCards("critical")){
+  const cm=Math.min(12,planValue(card,"criticalMonths")),cf=planValue(card,"criticalFrequency"),fixed=planValue(card,"criticalInDaily")*planValue(card,"criticalInDays")+planValue(card,"criticalOutDaily")*planValue(card,"criticalOutDays")+planValue(card,"criticalOutLump")+planValue(card,"criticalSurgery");
+  for(let y=0;y<yearCount;y++){const s=y*12;for(let i=0;i<cm;i++)out[s+i]+=planValue(card,"criticalMonthly");out[s]+=(cf?planValue(card,"criticalLump"):0)+fixed;if(cf===2)out[s+6]+=planValue(card,"criticalLump")}
+  criticalTotal+=yearCount*(planValue(card,"criticalMonthly")*cm+planValue(card,"criticalLump")*cf+fixed);
+ }
+ let sickness=0,additional=0,disability=0;
+ if(age==="u70"&&$("scheme").value==="employee"){
+  const monthlySick=raw("income")*10000/12*2/3;
+  for(let y=0;y<yearCount;y++){
+   const lm=Math.min(12,raw("leaveMonths"+y)),am=Math.min(12,raw("additionalMonths"+y)),add=raw("additionalMonthly"+y);
+   for(let i=0;i<lm;i++){out[y*12+i]+=monthlySick;sicknessByMonth[y*12+i]+=monthlySick;sickness+=monthlySick}
+   for(let i=0;i<am;i++){out[y*12+i]+=add;additional+=add}
+  }
+ }
+ for(const card of planCards("disability")){
+  const waiting=planValue(card,"disabilityWaiting"),dm=Math.min(12,planValue(card,"disabilityMonths")),reduced=Math.min(dm,planValue(card,"disabilityReducedMonths")),monthlyDisability=planValue(card,"disabilityMonthly"),reduction=Math.min(100,planValue(card,"disabilityReduction"));
+  for(let y=0;y<yearCount;y++)for(let i=0;i<dm;i++){const month=y*12+i;if(month<out.length&&i*30>=waiting){const amount=i<reduced?monthlyDisability*(1-reduction/100):monthlyDisability;out[month]+=amount;disability+=amount}}
+ }
+ $("medicalBenefit").textContent=yen(medical);$("cancerBenefit").textContent=yen(cancerTotal);$("criticalBenefit").textContent=yen(criticalTotal);$("sicknessBenefit").textContent=yen(sickness);$("additionalBenefit").textContent=yen(additional);$("disabilityBenefit").textContent=yen(disability);$("totalBenefit").textContent=yen(out.reduce((a,b)=>a+b,0));
+ out.sickness=sicknessByMonth;
+ return out;
+}
+function monthHasTag(kind,index,tag){return !!document.querySelector(`[data-month-tag="${kind}${index}"][data-tag="${tag}"].active`)}
+function benefits(){
+ const totalMonths=yearCount*12,out=Array(totalMonths).fill(0),sicknessByMonth=Array(totalMonths).fill(0);let medical=0,cancerTotal=0,criticalTotal=0;
+ for(const card of planCards("medical")){const mm=Math.min(12,planValue(card,"medicalMonths")),mf=planValue(card,"medicalFrequency"),diag=planValue(card,"medicalDiagnosisLump"),hospital=planValue(card,"hospitalDaily")*planValue(card,"hospitalDays")+planValue(card,"hospitalLump"),surgery=planValue(card,"surgeryBenefit"),outpatient=planValue(card,"medicalOutDaily")*planValue(card,"medicalOutDays")+planValue(card,"medicalOutLump");for(let y=0;y<yearCount;y++){const s=y*12;for(let i=0;i<mm;i++)if(planHasTag(card,"outpatient")&&monthHasTag("m",s+i,"outpatient")){out[s+i]+=planValue(card,"medicalMonthly");medical+=planValue(card,"medicalMonthly")}if(planHasTag(card,"diagnosis")&&mf&&monthHasTag("m",s,"diagnosis")){out[s]+=diag;medical+=diag;if(mf===2&&monthHasTag("m",s+6,"diagnosis")){out[s+6]+=diag;medical+=diag}}if(planHasTag(card,"hospital")&&monthHasTag("m",s,"hospital")){out[s]+=hospital;medical+=hospital}if(planHasTag(card,"surgery")&&monthHasTag("m",s,"surgery")){out[s]+=surgery;medical+=surgery}if(planHasTag(card,"outpatient")&&monthHasTag("m",s,"outpatient")){out[s]+=outpatient;medical+=outpatient}}}
+ for(const [kind,prefix] of [["cancer","cancer"],["critical","critical"]])for(const card of planCards(kind)){const cm=Math.min(12,planValue(card,prefix+"Months")),cf=planValue(card,prefix+"Frequency"),diag=planValue(card,prefix+"Lump"),hospital=planValue(card,prefix+"InDaily")*planValue(card,prefix+"InDays"),outpatient=planValue(card,prefix+"OutDaily")*planValue(card,prefix+"OutDays")+planValue(card,prefix+"OutLump"),surgery=planValue(card,prefix+"Surgery");for(let y=0;y<yearCount;y++){const s=y*12;for(let i=0;i<cm;i++)if(planHasTag(card,"outpatient")&&monthHasTag("m",s+i,"outpatient")){out[s+i]+=planValue(card,prefix+"Monthly");if(kind==="cancer")cancerTotal+=planValue(card,prefix+"Monthly");else criticalTotal+=planValue(card,prefix+"Monthly")}if(planHasTag(card,"diagnosis")&&cf&&monthHasTag("m",s,"diagnosis")){out[s]+=diag;if(kind==="cancer")cancerTotal+=diag;else criticalTotal+=diag;if(cf===2&&monthHasTag("m",s+6,"diagnosis")){out[s+6]+=diag;if(kind==="cancer")cancerTotal+=diag;else criticalTotal+=diag}}if(planHasTag(card,"hospital")&&monthHasTag("m",s,"hospital")){out[s]+=hospital;if(kind==="cancer")cancerTotal+=hospital;else criticalTotal+=hospital}if(planHasTag(card,"outpatient")&&monthHasTag("m",s,"outpatient")){out[s]+=outpatient;if(kind==="cancer")cancerTotal+=outpatient;else criticalTotal+=outpatient}if(planHasTag(card,"surgery")&&monthHasTag("m",s,"surgery")){out[s]+=surgery;if(kind==="cancer")cancerTotal+=surgery;else criticalTotal+=surgery}}}
+ let sickness=0,additional=0; if(age==="u70"&&$("scheme").value==="employee"){const monthlySick=raw("income")*10000/12*2/3;for(let y=0;y<yearCount;y++){const lm=Math.min(12,raw("leaveMonths"+y)),am=Math.min(12,raw("additionalMonths"+y)),add=raw("additionalMonthly"+y);for(let i=0;i<lm;i++){out[y*12+i]+=monthlySick;sicknessByMonth[y*12+i]+=monthlySick;sickness+=monthlySick}for(let i=0;i<am;i++)additional+=add*1}}
+ for(const card of planCards("disability")){const waiting=planValue(card,"disabilityWaiting"),dm=Math.min(12,planValue(card,"disabilityMonths")),reduced=Math.min(dm,planValue(card,"disabilityReducedMonths")),monthlyDisability=planValue(card,"disabilityMonthly"),reduction=Math.min(100,planValue(card,"disabilityReduction"));for(let y=0;y<yearCount;y++)for(let i=0;i<dm;i++){const month=y*12+i;if(month<out.length&&i*30>=waiting&&planHasTag(card,"reduction")&&monthHasTag("r",month,"reduction")){const amount=i<reduced?monthlyDisability*(1-reduction/100):monthlyDisability;out[month]+=amount;disability+=amount}}}
+ $("medicalBenefit").textContent=yen(medical);$("cancerBenefit").textContent=yen(cancerTotal);$("criticalBenefit").textContent=yen(criticalTotal);$("sicknessBenefit").textContent=yen(sickness);$("additionalBenefit").textContent=yen(additional);$("disabilityBenefit").textContent=yen(disability);$("totalBenefit").textContent=yen(out.reduce((a,b)=>a+b,0));out.sickness=sicknessByMonth;return out;
+}
+function benefits(){
+ const totalMonths=yearCount*12,out=Array(totalMonths).fill(0),sicknessByMonth=Array(totalMonths).fill(0);let medical=0,cancerTotal=0,criticalTotal=0;
+ for(const card of planCards("medical")){const mm=Math.min(12,planValue(card,"medicalMonths")),mf=planValue(card,"medicalFrequency"),diag=planValue(card,"medicalDiagnosisLump"),hospital=planValue(card,"hospitalDaily")*planValue(card,"hospitalDays")+planValue(card,"hospitalLump"),surgery=planValue(card,"surgeryBenefit"),outpatientDaily=planValue(card,"medicalOutDaily")*planValue(card,"medicalOutDays")+planValue(card,"medicalOutLump"),treatment=planValue(card,"medicalMonthly")*mm;for(let y=0;y<yearCount;y++){const s=y*12;if(planHasTag(card,"diagnosis")&&mf&&monthHasTag("m",s,"diagnosis")){out[s]+=diag;medical+=diag;if(mf===2&&monthHasTag("m",s+6,"diagnosis")){out[s+6]+=diag;medical+=diag}}if(planHasTag(card,"hospital")&&monthHasTag("m",s,"hospital")){out[s]+=hospital;medical+=hospital}if(planHasTag(card,"surgery")&&monthHasTag("m",s,"surgery")){out[s]+=surgery;medical+=surgery}for(let i=0;i<mm;i++)if(planHasTag(card,"outpatient")&&monthHasTag("m",s+i,"outpatient")){out[s+i]+=planValue(card,"medicalMonthly");medical+=planValue(card,"medicalMonthly")}if(planHasTag(card,"outpatient")&&monthHasTag("m",s,"outpatient")){out[s]+=outpatientDaily;medical+=outpatientDaily}}}
+ for(const [kind,prefix] of [["cancer","cancer"],["critical","critical"]])for(const card of planCards(kind)){const cm=Math.min(12,planValue(card,prefix+"Months")),cf=planValue(card,prefix+"Frequency"),diag=planValue(card,prefix+"Lump"),hospitalDaily=planValue(card,prefix+"InDaily")*planValue(card,prefix+"InDays"),outpatient=planValue(card,prefix+"OutDaily")*planValue(card,prefix+"OutDays")+planValue(card,prefix+"OutLump"),surgery=planValue(card,prefix+"Surgery"),monthly=planValue(card,prefix+"Monthly");for(let y=0;y<yearCount;y++){const s=y*12;if(planHasTag(card,"diagnosis")&&cf&&monthHasTag("m",s,"diagnosis")){out[s]+=diag;if(kind==="cancer")cancerTotal+=diag;else criticalTotal+=diag;if(cf===2&&monthHasTag("m",s+6,"diagnosis")){out[s+6]+=diag;if(kind==="cancer")cancerTotal+=diag;else criticalTotal+=diag}}if(planHasTag(card,"hospital")&&monthHasTag("m",s,"hospital")){out[s]+=hospitalDaily;if(kind==="cancer")cancerTotal+=hospitalDaily;else criticalTotal+=hospitalDaily}if(planHasTag(card,"surgery")&&monthHasTag("m",s,"surgery")){out[s]+=surgery;if(kind==="cancer")cancerTotal+=surgery;else criticalTotal+=surgery}for(let i=0;i<cm;i++){if(planHasTag(card,"hospital")&&monthHasTag("m",s+i,"hospital")){out[s+i]+=monthly;if(kind==="cancer")cancerTotal+=monthly;else criticalTotal+=monthly}if(planHasTag(card,"outpatient")&&monthHasTag("m",s+i,"outpatient")){out[s+i]+=monthly;if(kind==="cancer")cancerTotal+=monthly;else criticalTotal+=monthly}}if(planHasTag(card,"outpatient")&&monthHasTag("m",s,"outpatient")){out[s]+=outpatient;if(kind==="cancer")cancerTotal+=outpatient;else criticalTotal+=outpatient}}}
+ let sickness=0,additional=0,disability=0;if(age==="u70"&&$("scheme").value==="employee"){const monthlySick=raw("income")*10000/12*2/3;for(let y=0;y<yearCount;y++){const lm=Math.min(12,raw("leaveMonths"+y)),am=Math.min(12,raw("additionalMonths"+y)),add=raw("additionalMonthly"+y);for(let i=0;i<lm;i++){out[y*12+i]+=monthlySick;sicknessByMonth[y*12+i]+=monthlySick;sickness+=monthlySick}for(let i=0;i<am;i++)additional+=add}}
+ for(const card of planCards("disability")){const waiting=planValue(card,"disabilityWaiting"),dm=Math.min(12,planValue(card,"disabilityMonths")),reduced=Math.min(dm,planValue(card,"disabilityReducedMonths")),monthlyDisability=planValue(card,"disabilityMonthly"),reduction=Math.min(100,planValue(card,"disabilityReduction"));for(let y=0;y<yearCount;y++)for(let i=0;i<dm;i++){const month=y*12+i;if(month<out.length&&i*30>=waiting&&planHasTag(card,"reduction")&&monthHasTag("r",month,"reduction")){const amount=i<reduced?monthlyDisability*(1-reduction/100):monthlyDisability;out[month]+=amount;disability+=amount}}}
+ $("medicalBenefit").textContent=yen(medical);$("cancerBenefit").textContent=yen(cancerTotal);$("criticalBenefit").textContent=yen(criticalTotal);$("sicknessBenefit").textContent=yen(sickness);$("additionalBenefit").textContent=yen(additional);$("disabilityBenefit").textContent=yen(disability);$("totalBenefit").textContent=yen(out.reduce((a,b)=>a+b,0));out.sickness=sicknessByMonth;return out;
+}
+function fieldHasTag(card,base,tag){const input=card.querySelector(`[id^="${base}"]`),label=input?.closest(".input-unit")?.parentElement?.querySelector("label"),button=label?.querySelector(`[data-plan-tag="${tag}"]`);return button?button.classList.contains("active"):planHasTag(card,tag)}
+function benefits(){
+ const totalMonths=yearCount*12,out=Array(totalMonths).fill(0),sicknessByMonth=Array(totalMonths).fill(0);let medical=0,cancerTotal=0,criticalTotal=0;
+ for(const card of planCards("medical")){const mm=Math.min(12,planValue(card,"medicalMonths")),mf=planValue(card,"medicalFrequency"),diag=planValue(card,"medicalDiagnosisLump"),hospital=planValue(card,"hospitalDaily")*planValue(card,"hospitalDays")+planValue(card,"hospitalLump"),surgery=planValue(card,"surgeryBenefit"),outpatient=planValue(card,"medicalOutDaily")*planValue(card,"medicalOutDays")+planValue(card,"medicalOutLump");for(let y=0;y<yearCount;y++){const s=y*12;if(fieldHasTag(card,"medicalDiagnosisLump","diagnosis")&&mf&&monthHasTag("m",s,"diagnosis")){out[s]+=diag;medical+=diag;if(mf===2&&monthHasTag("m",s+6,"diagnosis")){out[s+6]+=diag;medical+=diag}}if(fieldHasTag(card,"hospitalDaily","hospital")&&monthHasTag("m",s,"hospital")){out[s]+=hospital;medical+=hospital}if(fieldHasTag(card,"surgeryBenefit","surgery")&&monthHasTag("m",s,"surgery")){out[s]+=surgery;medical+=surgery}for(let i=0;i<mm;i++)if(fieldHasTag(card,"medicalMonthly","outpatient")&&monthHasTag("m",s+i,"outpatient")){out[s+i]+=planValue(card,"medicalMonthly");medical+=planValue(card,"medicalMonthly")}if(fieldHasTag(card,"medicalOutDaily","outpatient")&&monthHasTag("m",s,"outpatient")){out[s]+=outpatient;medical+=outpatient}}}
+ for(const [kind,prefix] of [["cancer","cancer"],["critical","critical"]])for(const card of planCards(kind)){const cm=Math.min(12,planValue(card,prefix+"Months")),cf=planValue(card,prefix+"Frequency"),diag=planValue(card,prefix+"Lump"),hospital=planValue(card,prefix+"InDaily")*planValue(card,prefix+"InDays"),outpatient=planValue(card,prefix+"OutDaily")*planValue(card,prefix+"OutDays")+planValue(card,prefix+"OutLump"),surgery=planValue(card,prefix+"Surgery"),monthly=planValue(card,prefix+"Monthly");for(let y=0;y<yearCount;y++){const s=y*12;if(fieldHasTag(card,prefix+"Lump","diagnosis")&&cf&&monthHasTag("m",s,"diagnosis")){out[s]+=diag;if(kind==="cancer")cancerTotal+=diag;else criticalTotal+=diag;if(cf===2&&monthHasTag("m",s+6,"diagnosis")){out[s+6]+=diag;if(kind==="cancer")cancerTotal+=diag;else criticalTotal+=diag}}if(fieldHasTag(card,prefix+"InDaily","hospital")&&monthHasTag("m",s,"hospital")){out[s]+=hospital;if(kind==="cancer")cancerTotal+=hospital;else criticalTotal+=hospital}if(fieldHasTag(card,prefix+"Surgery","surgery")&&monthHasTag("m",s,"surgery")){out[s]+=surgery;if(kind==="cancer")cancerTotal+=surgery;else criticalTotal+=surgery}for(let i=0;i<cm;i++){if(fieldHasTag(card,prefix+"Monthly","hospital")&&monthHasTag("m",s+i,"hospital")){out[s+i]+=monthly;if(kind==="cancer")cancerTotal+=monthly;else criticalTotal+=monthly}if(fieldHasTag(card,prefix+"Monthly","outpatient")&&monthHasTag("m",s+i,"outpatient")){out[s+i]+=monthly;if(kind==="cancer")cancerTotal+=monthly;else criticalTotal+=monthly}}if(fieldHasTag(card,prefix+"OutDaily","outpatient")&&monthHasTag("m",s,"outpatient")){out[s]+=outpatient;if(kind==="cancer")cancerTotal+=outpatient;else criticalTotal+=outpatient}}}
+ let sickness=0,additional=0,disability=0;if(age==="u70"&&$("scheme").value==="employee"){const monthlySick=raw("income")*10000/12*2/3;for(let y=0;y<yearCount;y++){const lm=Math.min(12,raw("leaveMonths"+y)),am=Math.min(12,raw("additionalMonths"+y)),add=raw("additionalMonthly"+y);for(let i=0;i<lm;i++){out[y*12+i]+=monthlySick;sicknessByMonth[y*12+i]+=monthlySick;sickness+=monthlySick}for(let i=0;i<am;i++){out[y*12+i]+=add;additional+=add}}}
+ for(const card of planCards("disability")){const waiting=planValue(card,"disabilityWaiting"),dm=Math.min(12,planValue(card,"disabilityMonths")),reduced=Math.min(dm,planValue(card,"disabilityReducedMonths")),monthlyDisability=planValue(card,"disabilityMonthly"),reduction=Math.min(100,planValue(card,"disabilityReduction"));for(let y=0;y<yearCount;y++)for(let i=0;i<dm;i++){const month=y*12+i;if(month<out.length&&i*30>=waiting&&planHasTag(card,"reduction")&&monthHasTag("r",month,"reduction")){const amount=i<reduced?monthlyDisability*(1-reduction/100):monthlyDisability;out[month]+=amount;disability+=amount}}}
+ $("medicalBenefit").textContent=yen(medical);$("cancerBenefit").textContent=yen(cancerTotal);$("criticalBenefit").textContent=yen(criticalTotal);$("sicknessBenefit").textContent=yen(sickness);$("additionalBenefit").textContent=yen(additional);$("disabilityBenefit").textContent=yen(disability);$("totalBenefit").textContent=yen(out.reduce((a,b)=>a+b,0));out.sickness=sicknessByMonth;return out;
+}
+function additionalBenefitCaps(){
+ const caps=Array(yearCount*12).fill(0);
+ if(age!=="u70"||$("scheme").value!=="employee")return caps;
+ for(let y=0;y<yearCount;y++){
+  const months=Math.min(12,raw("additionalMonths"+y)),amount=raw("additionalMonthly"+y);
+  if(amount<=0)continue;
+  for(let i=0;i<months;i++)caps[y*12+i]=amount;
+ }
+ return caps;
+}
+function calculate(){
+ const period=$("period").value,income=raw("income"),copay=age==="u70"?.3:raw("copay");
+ let row=rowFor(income,period);
+ if(age==="o70"&&income===0)row=period==="current"?{base:24600,threshold:0,multi:24600,annual:null,label:"住民税非課税（目安）"}:{base:25700,threshold:0,multi:24600,annual:290000,label:"住民税非課税（目安）"};
+ const totalMonths=yearCount*12,costs=Array.from({length:totalMonths},(_,i)=>raw("m"+i)),reductions=Array.from({length:totalMonths},(_,i)=>raw("r"+i)),other=Array.from({length:totalMonths},(_,i)=>raw("o"+i)),rawCopays=costs.map(x=>x*copay),thirty=costs.map(x=>x*.3);
+ for(let y=0;y<yearCount;y++){const start=y*12;$("mTotal"+y).textContent=`医療費 年合計：${yen(costs.slice(start,start+12).reduce((a,b)=>a+b,0))}`;$('rTotal'+y).textContent=`減収額 年合計：${yen(reductions.slice(start,start+12).reduce((a,b)=>a+b,0))}`;$('oTotal'+y).textContent=`その他支出 年合計：${yen(other.slice(start,start+12).reduce((a,b)=>a+b,0))}`}
+ let annualCap=row.annual,isOut=age==="o70"&&$("careType").value==="outpatient",outCap=isOut?outpatient(income,period):null,additionalCaps=additionalBenefitCaps();
+ if(outCap)annualCap=outCap.annual;
+ let qualifying=0,cumulative=0;
+ const publicPays=costs.map((cost,i)=>{
+  if(i%12===0){qualifying=0;cumulative=0}
+  if(!cost)return 0;
+  const normalCap=outCap?outCap.monthly:monthlyLimit(cost,row),cap=additionalCaps[i]>0?additionalCaps[i]:normalCap;
+  const initial=Math.min(rawCopays[i],cap);
+  if(initial>=normalCap-1&&normalCap>0)qualifying++;
+  let pay=(!outCap&&additionalCaps[i]<=0&&qualifying>=4)?Math.min(rawCopays[i],row.multi):initial;
+  if(annualCap){pay=Math.min(pay,Math.max(0,annualCap-cumulative));cumulative+=pay}
+  return pay;
+ });
+ const firstIndex=costs.findIndex(x=>x>0),firstCost=firstIndex>=0?costs[firstIndex]:1000000,firstCap=firstIndex>=0&&additionalCaps[firstIndex]>0?additionalCaps[firstIndex]:(outCap?outCap.monthly:monthlyLimit(firstCost,row)),initial=Math.min(firstCost*copay,firstCap);
+ $("initialPay").textContent=yen(initial);$("multiPay").textContent=outCap?"対象外":yen(row.multi);
+ $("annualCap").textContent=annualCap?yen(annualCap):"設定なし";$("annualAverage").textContent=annualCap?yen(annualCap/12):"―";
+ $("formula").textContent=`所得区分目安：${row.label}。多数回該当は上限到達月を自動判定し、4回目以降に${yen(row.multi)}を適用しています。`;
+ const benefit=benefits(),sicknessByMonth=benefit.sickness||Array(totalMonths).fill(0); for(let i=0;i<sicknessByMonth.length;i++){const allowed=Math.min(sicknessByMonth[i]||0,reductions[i]||0),delta=(sicknessByMonth[i]||0)-allowed;if(delta>0)benefit[i]-=delta;sicknessByMonth[i]=allowed;} $("sicknessBenefit").textContent=yen(sicknessByMonth.reduce((a,b)=>a+b,0));
+ const additionalCapsForBenefits=additionalBenefitCaps(); for(let i=0;i<benefit.length;i++)if(additionalCapsForBenefits[i]>0)benefit[i]-=additionalCapsForBenefits[i];
+ const annualPay=publicPays.reduce((a,b)=>a+b,0),annualReduction=reductions.reduce((a,b)=>a+b,0),annualOther=other.reduce((a,b)=>a+b,0),totalNeed=annualPay+annualReduction+annualOther,totalBenefit=benefit.reduce((a,b)=>a+b,0),net=totalBenefit-totalNeed;
+ $("totalBenefit").textContent=yen(totalBenefit);
+ $("remaining").textContent=signedYen(net);
+ $("balanceBox").classList.toggle("covered",net>=0);$("coverageBar").style.width=(totalNeed?Math.min(100,totalBenefit/totalNeed*100):0)+"%";
+ $("coverageText").textContent=`年間自己負担 ${yen(annualPay)} ＋ 減収額 ${yen(annualReduction)} ／ 保険等の給付 ${yen(totalBenefit)}`;
+ $("coverageText").textContent=`年間自己負担 ${yen(annualPay)} ／ 減収額 ${yen(annualReduction)} ／ その他支出 ${yen(annualOther)} ／ 保険等の給付 ${yen(totalBenefit)}`;
+ const actualPay=publicPays.slice();
+ drawChart(costs,thirty,publicPays,actualPay,reductions,other,benefit,sicknessByMonth);
+}
+const chartVisibility={costs:true,thirty:true,publicPays:true,actualPay:true,reductions:true,benefits:true,sickness:true,other:true};
+function setupChartLegend(){document.querySelectorAll(".legend span").forEach((el,i)=>{const key=["costs","thirty","publicPays","reductions","benefits","actualPay","sickness","other"][i];if(key){el.dataset.chartKey=key;el.classList.toggle("legend-off",!chartVisibility[key]);el.title="クリックで表示／非表示"}})}
+function drawChart(costs,thirty,publicPays,actualPay,reductions,other,benefits,sickness){
+ const c=$("chart"),box=c.parentElement,minWidth=Math.max(720,yearCount*720);box.style.width=minWidth+"px";const ratio=window.devicePixelRatio||1,w=box.clientWidth,h=box.clientHeight;c.width=w*ratio;c.height=h*ratio;
+ const x=c.getContext("2d");x.setTransform(ratio,0,0,ratio,0,0);x.clearRect(0,0,w,h);
+ const pad={l:62,r:18,t:18,b:38},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b,maxPos=Math.max(1,...costs,...thirty,...publicPays,...actualPay,...benefits)*1.1,minNeg=-Math.max(1,...reductions,...other,...sickness)*1.1,range=maxPos-minNeg;
+ const py=v=>pad.t+(maxPos-v)/range*ph,zeroY=py(0);
+ x.font="11px system-ui";x.textAlign="right";x.textBaseline="middle";
+ for(let i=0;i<=5;i++){const val=maxPos-range*i/5,y=py(val);x.strokeStyle=Math.abs(val)<range/10?"#9aa8b6":"#e4eaf0";x.lineWidth=Math.abs(val)<range/10?1.5:1;x.beginPath();x.moveTo(pad.l,y);x.lineTo(w-pad.r,y);x.stroke();x.fillStyle="#718096";const abs=Math.abs(val);x.fillText((val<0?"−":"")+(abs>=10000?Math.round(abs/10000)+"万":Math.round(abs)),pad.l-8,y)}
+ x.strokeStyle="#8796a5";x.lineWidth=1.5;x.beginPath();x.moveTo(pad.l,zeroY);x.lineTo(w-pad.r,zeroY);x.stroke();
+ const count=costs.length,step=pw/count,px=i=>pad.l+step*(i+.5);
+ if(chartVisibility.benefits)benefits.forEach((v,i)=>{const bw=Math.max(6,step*.42);x.fillStyle="rgba(82,187,220,.72)";x.fillRect(px(i)-bw/2,py(v),bw,zeroY-py(v))});
+ if(chartVisibility.sickness)sickness.forEach((sv,i)=>{if(sv>0){const bw=Math.max(6,step*.42);x.fillStyle="rgba(22,163,124,.72)";x.fillRect(px(i)+bw*.15,zeroY,bw*.7,py(-sv)-zeroY)}});
+ function line(data,color){x.strokeStyle=color;x.lineWidth=2.6;x.lineJoin="round";x.beginPath();data.forEach((v,i)=>i?x.lineTo(px(i),py(v)):x.moveTo(px(i),py(v)));x.stroke();data.forEach((v,i)=>{x.fillStyle="#fff";x.strokeStyle=color;x.lineWidth=2;x.beginPath();x.arc(px(i),py(v),3,0,Math.PI*2);x.fill();x.stroke()})}
+ if(chartVisibility.costs)line(costs,"#d83b3b");if(chartVisibility.thirty)line(thirty,"#ef7e9b");if(chartVisibility.publicPays)line(publicPays,"#12805c");if(chartVisibility.actualPay)line(actualPay,"#8b5fbf");if(chartVisibility.reductions)line(reductions.map(v=>-v),"#d4912d");if(chartVisibility.other)line(other.map(v=>-v),"#687789");
+ x.fillStyle="#536579";x.textAlign="center";x.textBaseline="top";for(let i=0;i<count;i++)x.fillText((i%12+1)+"月",px(i),pad.t+ph+10);
+ for(let y=1;y<yearCount;y++){const xx=pad.l+step*y*12;x.strokeStyle="#aebbc8";x.setLineDash([4,4]);x.beginPath();x.moveTo(xx,pad.t);x.lineTo(xx,pad.t+ph);x.stroke();x.setLineDash([])}
+ c._chartState={costs,thirty,publicPays,actualPay,reductions,other,benefits,sickness,pad,step,px,w,h};
+}
+function formatInput(el){const v=String(el.value).replace(/[^\d]/g,"");el.value=v?comma(Number(v)):""}
+function copyYear(prefix){
+ const sourceMonth=lastMonth[prefix]%12;
+ const sourceIndex=lastMonth[prefix];
+ for(let y=0;y<yearCount;y++){const value=$(prefix+(y*12+sourceMonth)).value;for(let i=0;i<12;i++){const target=y*12+i;$(prefix+target).value=value;copyMonthTags(prefix,sourceIndex,target)}}
+ if(prefix==="m")applyDefaultMonthTags();
+ calculate();
+}
+function copyMonthTags(kind,source,target){const sourceButtons=document.querySelectorAll(`[data-month-tag="${kind}${source}"]`),targetButtons=document.querySelectorAll(`[data-month-tag="${kind}${target}"]`);targetButtons.forEach(button=>{const sourceButton=Array.from(sourceButtons).find(b=>b.dataset.tag===button.dataset.tag);if(sourceButton)button.classList.toggle("active",sourceButton.classList.contains("active"))})}
+function setReductionDefaults(){
+ const monthly=$("scheme").value==="employee"?raw("income")*10000*.8/3/12:0;
+ for(let i=0;i<yearCount*12;i++)$("r"+i).value=comma(monthly);
+}
+function syncDiagnosisState(){
+ [["medicalFrequency","medicalDiagnosisLump"],["cancerFrequency","cancerLump"],["criticalFrequency","criticalLump"]].forEach(([select,input])=>planCards(select.replace("Frequency","")).forEach(card=>{const s=card.querySelector(`[id^="${select}"]`),i=card.querySelector(`[id^="${input}"]`);if(s&&i)i.disabled=Number(s.value)===0}));
+}
+function setupPlans(){
+ const cards=[...document.querySelectorAll(".insurance-grid .ins-card")].filter(Boolean),kinds=["medical","cancer","critical","disability"];
+ cards.forEach((card,i)=>{
+  card.classList.add("plan-card");card.dataset.kind=kinds[i];
+  const h=card.querySelector("h3"),head=document.createElement("div"),controls=document.createElement("div");head.className="plan-head";controls.className="plan-controls";controls.innerHTML='<button class="plan-btn" type="button" data-plan-add aria-label="プランを追加">＋</button><button class="plan-btn" type="button" data-plan-remove aria-label="プランを削除">−</button>';h.replaceWith(head);head.append(h,controls);
+  card.querySelectorAll("input").forEach(input=>input.value="");card.querySelectorAll("select").forEach(select=>select.selectedIndex=0);
+ });
+ updatePlanButtons();
+}
+function setupPlans(){
+ const cards=[...document.querySelectorAll(".insurance-grid .ins-card")],kinds=["medical","cancer","critical","disability"];
+ cards.forEach((card,i)=>{card.classList.add("plan-card");card.dataset.kind=kinds[i];const h=card.querySelector("h3"),head=document.createElement("div"),controls=document.createElement("div"),tags=document.createElement("div"),defs=i===3?[["reduction","減収"]]:[["diagnosis","診断"],["hospital","入院"],["surgery","手術"],["outpatient","通院"]];head.className="plan-head";controls.className="plan-controls";controls.innerHTML='<button class="plan-btn" type="button" data-plan-add>＋</button><button class="plan-btn" type="button" data-plan-remove>−</button>';tags.className="plan-tags";tags.innerHTML=defs.map(([key,label])=>`<button class="tag-btn active" type="button" data-plan-tag="${key}">${label}</button>`).join("");h.replaceWith(head);head.append(h,controls);card.querySelector(".desc").before(tags);card.querySelectorAll("input").forEach(input=>input.value="");card.querySelectorAll("select").forEach(select=>select.selectedIndex=0)});updatePlanButtons();
+}
+function planHasTag(card,tag){return !!card.querySelector(`[data-plan-tag="${tag}"].active`)}
+function renameCriticalMonthlyLabels(){planCards("critical").forEach(card=>{const input=card.querySelector('[id^="criticalMonthly"]'),label=input?.closest(".input-unit")?.parentElement?.querySelector("label");if(label){if(label.firstChild&&label.firstChild.nodeType===3)label.firstChild.textContent="治療給付（月額）";else label.insertBefore(document.createTextNode("治療給付（月額）"),label.firstChild)}})}
+const planFieldTags={medical:{diagnosis:["medicalDiagnosisLump","medicalFrequency"],hospital:["hospitalDaily","hospitalDays","hospitalLump"],surgery:["surgeryBenefit"],outpatient:["medicalOutDaily","medicalOutDays","medicalOutLump","medicalMonthly","medicalMonths"]},cancer:{diagnosis:["cancerLump","cancerFrequency"],hospital:["cancerMonthly","cancerMonths","cancerInDaily","cancerInDays"],surgery:["cancerSurgery"],outpatient:["cancerMonthly","cancerMonths","cancerOutDaily","cancerOutDays","cancerOutLump"]},critical:{diagnosis:["criticalLump","criticalFrequency"],hospital:["criticalMonthly","criticalMonths","criticalInDaily","criticalInDays"],surgery:["criticalSurgery"],outpatient:["criticalMonthly","criticalMonths","criticalOutDaily","criticalOutDays","criticalOutLump"]},disability:{reduction:["disabilityWaiting","disabilityMonthly","disabilityMonths","disabilityReducedMonths","disabilityReduction"]}};
+function syncPlanFields(card){const map=planFieldTags[card.dataset.kind]||{};Object.entries(map).forEach(([tag,bases])=>{const enabled=planHasTag(card,tag);bases.forEach(base=>{const el=card.querySelector(`[id^="${base}"]`);if(el)el.disabled=!enabled})})}
+function addFieldTags(card,kind){
+ const maps={medical:{diagnosis:["medicalDiagnosisLump"],hospital:["hospitalDaily","hospitalDays","hospitalLump"],surgery:["surgeryBenefit"],outpatient:["medicalOutDaily","medicalOutDays","medicalOutLump","medicalMonthly","medicalMonths"]},cancer:{diagnosis:["cancerLump"],hospital:["cancerMonthly","cancerMonths","cancerInDaily","cancerInDays"],surgery:["cancerSurgery"],outpatient:["cancerMonthly","cancerMonths","cancerOutDaily","cancerOutDays","cancerOutLump"]},critical:{diagnosis:["criticalLump"],hospital:["criticalMonthly","criticalMonths","criticalInDaily","criticalInDays"],surgery:["criticalSurgery"],outpatient:["criticalMonthly","criticalMonths","criticalOutDaily","criticalOutDays","criticalOutLump"]}};
+ Object.entries(maps[kind]||{}).forEach(([tag,bases])=>bases.forEach(base=>{const input=card.querySelector(`[id^="${base}"]`),label=input?.closest(".input-unit")?.parentElement?.querySelector("label");if(!label||label.querySelector(`[data-plan-tag="${tag}"]`))return;label.classList.add("tagged-label");label.insertAdjacentHTML("beforeend",`<button type="button" class="tag-btn field-tag active" data-plan-tag="${tag}">${tag==="diagnosis"?"診断":tag==="hospital"?"入院":tag==="surgery"?"手術":"通院"}</button>`)}));
+}
+function setupPlans(){
+ const cards=[...document.querySelectorAll(".insurance-grid .ins-card")],kinds=["medical","cancer","critical","disability"];
+ cards.forEach((card,i)=>{card.classList.add("plan-card");card.dataset.kind=kinds[i];const h=card.querySelector("h3"),head=document.createElement("div"),controls=document.createElement("div"),tags=document.createElement("div"),defs=i===3?[["reduction","減収"]]:[["diagnosis","診断"],["hospital","入院"],["surgery","手術"],["outpatient","通院"]];head.className="plan-head";controls.className="plan-controls";controls.innerHTML='<button class="plan-btn" type="button" data-plan-add>＋</button><button class="plan-btn" type="button" data-plan-remove>−</button>';tags.className="plan-tags";tags.innerHTML=defs.map(([key,label])=>`<button class="tag-btn active" type="button" data-plan-tag="${key}">${label}</button>`).join("");h.replaceWith(head);head.append(h,controls);card.querySelector(".desc").before(tags);card.querySelectorAll("input").forEach(input=>input.value="");card.querySelectorAll("select").forEach(select=>select.selectedIndex=0);addFieldTags(card,kinds[i]);});updatePlanButtons();
+}
+function syncDiagnosisState(){document.querySelectorAll(".plan-card").forEach(syncPlanFields)}
+function addFieldTags(card,kind){
+ const maps={medical:{diagnosis:["medicalDiagnosisLump"],hospital:["hospitalDaily","hospitalDays","hospitalLump","medicalMonthly","medicalMonths"],surgery:["surgeryBenefit","medicalMonthly","medicalMonths"],outpatient:["medicalOutDaily","medicalOutDays","medicalOutLump","medicalMonthly","medicalMonths"]},cancer:{diagnosis:["cancerLump"],hospital:["cancerMonthly","cancerMonths","cancerInDaily","cancerInDays"],surgery:["cancerSurgery","cancerMonthly","cancerMonths"],outpatient:["cancerOutDaily","cancerOutDays","cancerOutLump","cancerMonthly","cancerMonths"]},critical:{diagnosis:["criticalLump"],hospital:["criticalInDaily","criticalInDays","criticalMonthly","criticalMonths"],surgery:["criticalSurgery","criticalMonthly","criticalMonths"],outpatient:["criticalOutDaily","criticalOutDays","criticalOutLump","criticalMonthly","criticalMonths"]}};
+ Object.entries(maps[kind]||{}).forEach(([tag,bases])=>bases.forEach(base=>{const input=card.querySelector(`[id^="${base}"]`),label=input?.closest(".input-unit")?.parentElement?.querySelector("label");if(!label||label.querySelector(`[data-plan-tag="${tag}"]`))return;label.classList.add("tagged-label");label.insertAdjacentHTML("beforeend",`<button type="button" class="tag-btn field-tag active" data-plan-tag="${tag}">${tag==="diagnosis"?"診断":tag==="hospital"?"入院":tag==="surgery"?"手術":"通院"}</button>`)}));
+}
+function syncPlanFields(card){const map={medical:{diagnosis:["medicalDiagnosisLump"],hospital:["hospitalDaily","hospitalDays","hospitalLump","medicalMonthly","medicalMonths"],surgery:["surgeryBenefit","medicalMonthly","medicalMonths"],outpatient:["medicalOutDaily","medicalOutDays","medicalOutLump","medicalMonthly","medicalMonths"]},cancer:{diagnosis:["cancerLump","cancerFrequency"],hospital:["cancerMonthly","cancerMonths","cancerInDaily","cancerInDays"],surgery:["cancerSurgery","cancerMonthly","cancerMonths"],outpatient:["cancerOutDaily","cancerOutDays","cancerOutLump","cancerMonthly","cancerMonths"]},critical:{diagnosis:["criticalLump","criticalFrequency"],hospital:["criticalInDaily","criticalInDays","criticalMonthly","criticalMonths"],surgery:["criticalSurgery","criticalMonthly","criticalMonths"],outpatient:["criticalOutDaily","criticalOutDays","criticalOutLump","criticalMonthly","criticalMonths"]},disability:{reduction:["disabilityWaiting","disabilityMonthly","disabilityMonths","disabilityReducedMonths","disabilityReduction"]}}[card.dataset.kind]||{};Object.entries(map).forEach(([tag,bases])=>{const enabled=!!card.querySelector(`[data-plan-tag="${tag}"].active`);bases.forEach(base=>{const el=card.querySelector(`[id^="${base}"]`);if(el)el.disabled=!enabled})})}
+function setTreatmentTagDefaults(){["medical","cancer","critical"].forEach(kind=>planCards(kind).forEach(card=>{const defaults=kind==="medical"?{hospital:false,surgery:false,outpatient:true}:{hospital:false,surgery:true,outpatient:true};["medicalMonthly","medicalMonths","cancerMonthly","cancerMonths","criticalMonthly","criticalMonths"].forEach(base=>{const input=card.querySelector(`[id^="${base}"]`),label=input?.closest(".input-unit")?.parentElement?.querySelector("label");if(label)Object.entries(defaults).forEach(([tag,on])=>label.querySelectorAll(`[data-plan-tag="${tag}"]`).forEach(b=>b.classList.toggle("active",on)))})}));document.querySelectorAll(".plan-card").forEach(syncPlanFields)}
+function enhancePlanControls(){document.querySelectorAll(".plan-card").forEach(card=>{const controls=card.querySelector(".plan-controls");if(controls&&!controls.querySelector("[data-plan-clear]"))controls.insertAdjacentHTML("afterbegin",'<button class="plan-btn clear-plan" type="button" data-plan-clear>全クリア</button>');card.querySelectorAll("input").forEach(input=>{const unit=input.closest(".input-unit");if(unit&&!unit.querySelector(".field-clear"))input.insertAdjacentHTML("afterend",'<button class="field-clear" type="button" data-field-clear aria-label="入力を消去">×</button>')})})}
+function formatSummary(){
+ const summary=document.querySelector('.summary');if(!summary)return;
+ summary.innerHTML='<div class="summary-row"><div class="summary-card"><span>医療保険</span><strong id="medicalBenefit">―</strong></div><div class="summary-card"><span>がん保険</span><strong id="cancerBenefit">―</strong></div><div class="summary-card"><span>特定疾病保険</span><strong id="criticalBenefit">―</strong></div><div class="summary-card"><span>就業不能保障</span><strong id="disabilityBenefit">―</strong></div></div><div class="summary-row"><div class="summary-card"><span>傷病手当金</span><strong id="sicknessBenefit">―</strong></div><div class="summary-card"><span>付加給付</span><strong id="additionalBenefit">―</strong></div><div class="summary-card em"><span>給付金合計（概算）</span><strong id="totalBenefit">―</strong></div></div>';
+}
+function addHospitalLumpField(){
+ const card=document.querySelector('.insurance-grid .ins-card[data-kind="medical"]')||document.querySelector('.insurance-grid .ins-card');
+ if(!card||card.querySelector('[id^="hospitalLump"]'))return;
+ const target=card.querySelector('[id="hospitalDays"]')?.parentElement;
+ if(target)target.insertAdjacentHTML('afterend','<div><label>入院一時金</label><div class="input-unit"><input id="hospitalLump" class="comma" inputmode="numeric" value=""><span class="unit">円</span></div></div>');
+}
+function updatePlanButtons(){document.querySelectorAll(".plan-card").forEach(card=>{const cards=planCards(card.dataset.kind);card.querySelector("[data-plan-remove]").disabled=cards.length<=1})}
+function addPlan(card){const kind=card.dataset.kind,clone=card.cloneNode(true),cards=planCards(kind),suffix="P"+(cards.length+1);clone.querySelectorAll("[id]").forEach(el=>{const old=el.id;el.id=old+suffix;const label=clone.querySelector(`label[for="${old}"]`);if(label)label.htmlFor=el.id});clone.querySelectorAll("input").forEach(i=>i.value="");clone.querySelectorAll("select").forEach(s=>s.selectedIndex=0);card.after(clone);updatePlanButtons();renameCriticalMonthlyLabels();enhancePlanControls();syncPlanFields(clone);calculate()}
+function removePlan(card){const cards=planCards(card.dataset.kind);if(cards.length>1){card.remove();updatePlanButtons();calculate()}}
+function showChartTooltip(e){
+ const c=$("chart"),s=c._chartState;if(!s)return;
+ const rect=c.getBoundingClientRect(),mx=e.clientX-rect.left,index=Math.max(0,Math.min(s.costs.length-1,Math.round((mx-s.pad.l)/s.step-.5))),tip=$("chartTooltip"),year=Math.floor(index/12)+1,month=index%12+1;
+ const sickness=s.sickness?.[index]||0,diff=s.publicPays[index]-sickness,actual=s.actualPay?.[index]??Math.max(0,s.publicPays[index]+(s.reductions[index]||0)-sickness);
+ tip.innerHTML=`<strong>${year}年目 ${month}月</strong><span style="color:#d83b3b">● 総医療費 <b>${yen(s.costs[index])}</b></span><span style="color:#ef7e9b">● 3割負担 <b>${yen(s.thirty[index])}</b></span><span style="color:#12805c">● 高額療養費適用後 <b>${yen(s.publicPays[index])}</b></span><span style="color:#16a37c">● 傷病手当金 <b>${yen(sickness)}</b></span><span style="color:#0b3b66">● 高額療養費適用後－傷病手当金 <b>${signedYen(diff)}</b></span><span style="color:#d4912d">● 減収額 <b>−${yen(s.reductions[index])}</b></span><span style="color:#687789">● その他支出 <b>−${yen(s.other[index])}</b></span><span style="color:#52bbdc">■ 保険等の給付 <b>${yen(s.benefits[index])}</b></span>`;
+ tip.innerHTML += `<span style="color:#8b5fbf">● 実際の自己負担額 <b>${yen(actual)}</b></span><span style="color:#d4912d">● 減収額－傷病手当金 <b>${signedYen((s.reductions[index]||0)-sickness)}</b></span>`;
+ tip.style.display="block";const tw=tip.offsetWidth,th=tip.offsetHeight;
+ tip.style.left=Math.max(4,Math.min(rect.width-tw-4,s.px(index)-tw/2))+"px";
+ tip.style.top=Math.max(4,Math.min(rect.height-th-4,e.clientY-rect.top-th-12))+"px";
+}
+function changeYears(delta){
+ const previous=yearCount,next=Math.max(1,Math.min(10,yearCount+delta));if(next===yearCount)return;
+ yearCount=next;copyState=null;document.querySelectorAll(".copy-mode").forEach(b=>b.classList.remove("active"));buildMonths(true);if(next>previous){applyDefaultMonthTags(previous*12,next*12);setReductionDefaultsForNewYear()}calculate();
+}
+function setReductionDefaultsForNewYear(){
+ const y=yearCount-1,monthly=$("scheme").value==="employee"?raw("income")*10000*.8/3/12:0;
+ for(let i=y*12;i<y*12+12;i++)if($("r"+i))$("r"+i).value=comma(monthly);
+}
+function openMoney(button){
+ const buttonTarget=$(button.dataset.money);if(buttonTarget)openPaletteForInput(buttonTarget,button,paletteValues(buttonTarget));
+}
+function paletteValues(input){const id=input.id||"";if(/Daily/.test(id))return[10000,7000,5000,3000,1000,500];if(/hospitalLump/.test(id))return[200000,100000,50000,20000,10000,5000,1000];if(/OutLump/.test(id)||/medicalOutLump/.test(id))return[50000,30000,20000,10000,5000,1000];return[1000000,500000,200000,100000,50000,10000,7000,5000,1000]}
+function openPaletteForInput(input,anchor,values){if(!input||input.disabled)return;moneyTarget=input;const pop=$("moneyPopover"),rect=anchor.getBoundingClientRect();moneySign=1;pop.querySelectorAll("[data-sign]").forEach(b=>b.classList.toggle("active",b.dataset.sign==="1"));pop.querySelector(".money-values").innerHTML=values.map(v=>`<button type="button" data-amount="${v}">${comma(v)}${input.closest(".input-unit")?.querySelector(".unit")?.textContent||""}</button>`).join("");pop.classList.add("open");const pw=pop.offsetWidth,ph=pop.offsetHeight;pop.style.left=Math.max(8,Math.min(window.innerWidth-pw-8,rect.right-pw))+"px";pop.style.top=Math.max(8,Math.min(window.innerHeight-ph-8,rect.bottom+6))+"px"}
+buildMonths();
+applyDefaultMonthTags();
+addHospitalLumpField();
+formatSummary();
+const insuranceGrid=document.querySelector('.insurance-grid'),disabilityCard=document.querySelector('.disability-card');if(insuranceGrid&&disabilityCard)insuranceGrid.appendChild(disabilityCard);
+setupPlans();
+enhancePlanControls();
+renameCriticalMonthlyLabels();
+document.querySelectorAll('.plan-card [data-plan-tag="outpatient"]').forEach(tag=>tag.classList.add("active"));
+setTreatmentTagDefaults();
+["copyMedical","copyReduction","copyOther"].forEach(id=>{const b=$(id);if(b)b.textContent="選択月の金額を各月へコピー"});
+document.querySelectorAll(".subhead-actions").forEach((host)=>{
+ if(host.closest(".monthly-wrap")){const h3=host.closest(".monthly-wrap").querySelector("h3")?.textContent||"";const kind=h3.includes("総医療費")?"m":h3.includes("減収額")?"r":h3.includes("その他")?"o":null;if(kind)host.insertAdjacentHTML("afterbegin",`<button class="copy-btn" type="button" data-clear-all="${kind}">全クリア</button>`)}
+});
+document.querySelectorAll(".step h2")[1].textContent="任意加入の保障を入力";
+document.querySelector(".legend")?.insertAdjacentHTML("beforeend",'<span><i style="background:#8b5fbf"></i>実際の自己負担額</span><span><i style="background:#16a37c;height:9px"></i>傷病手当金</span><span><i style="background:#687789"></i>その他支出</span>');
+document.addEventListener("focusin",e=>{if(e.target.classList.contains("comma")){e.target.value=String(e.target.value).replace(/,/g,"");const match=e.target.id.match(/^([mro])(\d+)$/);if(match)lastMonth[match[1]]=Number(match[2])}});
+document.addEventListener("focusout",e=>{if(e.target.classList.contains("comma"))formatInput(e.target)});
+document.addEventListener("input",e=>{if(e.target.matches("input,select")){syncDiagnosisState();calculate()}});
+document.addEventListener("click",e=>{
+ const tag=e.target.closest(".tag-btn"),legend=e.target.closest(".legend span"),unit=e.target.closest(".unit"),clear=e.target.closest("[data-clear]"),clearAll=e.target.closest("[data-clear-all]"),fieldClear=e.target.closest("[data-field-clear]"),planClear=e.target.closest("[data-plan-clear]"),money=e.target.closest("[data-money]"),field=e.target.closest(".month-field"),copy=e.target.closest(".copy-mode"),add=e.target.closest(".year-add"),remove=e.target.closest(".year-remove"),planAdd=e.target.closest("[data-plan-add]"),planRemove=e.target.closest("[data-plan-remove]");
+ if(legend?.dataset.chartKey){const key=legend.dataset.chartKey;chartVisibility[key]=!chartVisibility[key];legend.classList.toggle("legend-off",!chartVisibility[key]);calculate();return}
+ if(tag){const card=tag.closest(".plan-card"),next=!tag.classList.contains("active");if(card&&tag.dataset.planTag){card.querySelectorAll(`[data-plan-tag="${tag.dataset.planTag}"]`).forEach(b=>b.classList.toggle("active",next));syncPlanFields(card)}else tag.classList.toggle("active");calculate();return}
+ if(unit){const input=unit.closest(".input-unit")?.querySelector("input");if(input){const text=unit.textContent||"",values=/％|%/.test(text)?[10,30,50,70,90,100]:/月|譛・/.test(text)?Array.from({length:12},(_,i)=>i+1):/日|譌・/.test(text)?[1,3,5,7,10,30,60,90,180,360,540]:paletteValues(input);openPaletteForInput(input,unit,values);return}}
+ if(clear){$(clear.dataset.clear).value="0";calculate();return}
+ if(clearAll){for(let i=0;i<yearCount*12;i++)$(clearAll.dataset.clearAll+i).value="0";calculate();return}
+ if(fieldClear){const input=fieldClear.closest(".input-unit")?.querySelector("input");if(input){input.value="";calculate()}return}
+ if(planClear){const card=planClear.closest(".plan-card");if(card){card.querySelectorAll("input").forEach(input=>input.value="");card.querySelectorAll("select").forEach(select=>select.selectedIndex=0);syncPlanFields(card);calculate()}return}
+ if(money){openMoney(money);return}
+ if(copy){const kind=copy.dataset.kind,source=lastMonth[kind]??0;copyState=copyState===kind?null:{kind,value:$(kind+source).value,source};document.querySelectorAll(".copy-mode").forEach(b=>b.classList.toggle("active",copyState&&b.dataset.kind===copyState.kind));document.querySelectorAll(".month-field").forEach(f=>f.classList.toggle("copy-target",copyState&&f.dataset.kind===copyState.kind));return}
+ if(field){lastMonth[field.dataset.kind]=Number(field.dataset.index);if(copyState&&field.dataset.kind===copyState.kind){const target=Number(field.dataset.index);$(copyState.kind+target).value=copyState.value;copyMonthTags(copyState.kind,copyState.source,target);if(copyState.kind==="m")applyDefaultMonthTags(target,target+1);calculate();return}}
+ if(add){changeYears(1);return}
+ if(remove){changeYears(-1);return}
+ if(planAdd){addPlan(planAdd.closest(".plan-card"));return}
+ if(planRemove){removePlan(planRemove.closest(".plan-card"));return}
+ if(!e.target.closest("#moneyPopover"))$("moneyPopover").classList.remove("open");
+});
+$("moneyPopover").addEventListener("click",e=>{
+ const sign=e.target.closest("[data-sign]"),amount=e.target.closest("[data-amount]");
+ if(sign){moneySign=Number(sign.dataset.sign);$("moneyPopover").querySelectorAll("[data-sign]").forEach(b=>b.classList.toggle("active",b===sign));return}
+ if(amount&&moneyTarget){const current=Math.max(0,Number(String(moneyTarget.value).replace(/,/g,""))||0),next=Math.max(0,current+moneySign*Number(amount.dataset.amount));moneyTarget.value=comma(next);calculate()}
+});
+document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{age=btn.dataset.age;document.querySelectorAll(".tab").forEach(b=>{b.classList.toggle("active",b===btn);b.setAttribute("aria-selected",b===btn)});$("schemeWrap").classList.toggle("hidden",age!=="u70");$("copayWrap").classList.toggle("hidden",age!=="o70");$("careTypeWrap").classList.toggle("hidden",age!=="o70");$("employeeBox").classList.toggle("hidden",!(age==="u70"&&$("scheme").value==="employee"));calculate()}));
+$("scheme").addEventListener("change",()=>{$("employeeBox").classList.toggle("hidden",$("scheme").value!=="employee");calculate()});
+$("scheme").addEventListener("change",()=>{setReductionDefaults();calculate()});
+$("copyMedical").addEventListener("click",()=>copyYear("m"));
+$("copyReduction").addEventListener("click",()=>copyYear("r"));
+$("copyOther").addEventListener("click",()=>copyYear("o"));
+window.addEventListener("resize",calculate);
+const chartCanvas=$("chart");
+chartCanvas.addEventListener("mousemove",showChartTooltip);
+chartCanvas.addEventListener("mouseleave",()=>{$("chartTooltip").style.display="none"});
+chartCanvas.addEventListener("touchstart",e=>{if(e.touches[0])showChartTooltip(e.touches[0])},{passive:true});
+setupChartLegend();document.querySelectorAll(".comma").forEach(formatInput);syncDiagnosisState();calculate();
+})();
