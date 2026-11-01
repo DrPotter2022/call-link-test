@@ -541,7 +541,15 @@
   }
 
   function ghConfig() {
-    try { return JSON.parse(localStorage.getItem(GH_KEY) || '{}'); } catch (e) { return {}; }
+    try {
+      var config = JSON.parse(localStorage.getItem(GH_KEY) || '{}');
+      // 旧版が保存したPATは、初回読み込み時にただちに破棄する。
+      if (config.token) {
+        delete config.token;
+        localStorage.setItem(GH_KEY, JSON.stringify(config));
+      }
+      return config;
+    } catch (e) { return {}; }
   }
 
   function openPublish() {
@@ -549,8 +557,7 @@
     var cfg = ghConfig();
     $('#gh-repo').value = cfg.repo || '';
     $('#gh-branch').value = cfg.branch || 'main';
-    $('#gh-token').value = cfg.token || '';
-    $('#gh-remember').checked = !!cfg.token;
+    $('#gh-token').value = '';
     $('#gh-warn').textContent = changed.length
       ? '公開する対象：' + changed.map(function (f) { return f.label; }).join('、')
       : '未公開の変更はありません。';
@@ -592,11 +599,8 @@
     if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return (warn.textContent = 'リポジトリは owner/repo の形式で入力してください。');
     if (!token) return (warn.textContent = 'アクセストークンを入力してください。');
 
-    if ($('#gh-remember').checked) {
-      localStorage.setItem(GH_KEY, JSON.stringify({ repo: repo, branch: branch, token: token }));
-    } else {
-      localStorage.setItem(GH_KEY, JSON.stringify({ repo: repo, branch: branch }));
-    }
+    // PATはメモリ内でこの公開処理にだけ使い、永続ストレージには保存しない。
+    localStorage.setItem(GH_KEY, JSON.stringify({ repo: repo, branch: branch }));
 
     var changed = FILES.filter(function (f) { return state.dirty[f.key]; });
     $('#gh-go').disabled = true;
