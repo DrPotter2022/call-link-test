@@ -221,9 +221,16 @@ npm run export:inplace      # リポジトリ内のHTMLを直接更新する
 
 ### DNS
 
-すでに `www.wize.uno` が GitHub Pages を向いているため、**変更は不要**です。
-apex（`wize.uno`）は現在もペライチを向いており、旧サイトが動いています。
-そちらを止めるかどうかは別途ご判断ください。
+`www.wize.uno` は CNAME で `drpotter2022.github.io` を向いています。
+apex（`wize.uno`）も 2026/09/17 に GitHub Pages の A レコード4件
+（`185.199.108.153`〜`185.199.111.153`）へ切り替え済みで、
+**`wize.uno` へのアクセスは GitHub が `https://www.wize.uno/` へ転送します。**
+
+DNS はお名前.com（`01〜04.dnsv.jp`）で管理しています。
+MX（Google Workspace）と TXT（SPF・認証）は触らないでください。
+
+法務2ページはペライチの直URL（`peraichi.com/...`）を参照しているため、
+**ペライチの契約は解約しないでください**（解約する場合は先に移設が必要です）。
 
 ---
 

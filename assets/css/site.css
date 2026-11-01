@@ -513,6 +513,37 @@ body:has(#wize-admin-bar){padding-bottom:56px}
 .wa-dlg-actions .wa-btn.is-primary{background:var(--ai);color:#fff;border-color:var(--ai)}
 .wa-dlg-actions .wa-btn.is-primary:hover{background:var(--ai-deep)}
 
+/* ---------- お知らせ（ヘッダー直下） ---------- */
+.notice{
+  display:block;
+  background:#FBF1EE;                      /* 朱をごく薄く敷いた紙 */
+  border-bottom:1px solid #E6C9C1;
+  box-shadow:inset 0 3px 0 var(--shu);     /* 上辺に朱の線 */
+}
+.notice-in{
+  display:flex;align-items:flex-start;gap:18px;
+  padding:20px 24px;
+}
+.notice-label{
+  flex:none;margin-top:1px;
+  font-family:var(--mono);font-size:10.5px;font-weight:600;
+  letter-spacing:.18em;color:#fff;background:var(--shu);
+  padding:5px 12px;border-radius:2px;white-space:nowrap;
+}
+.notice-body{
+  font-size:13.5px;line-height:1.95;color:var(--sumi-2);
+}
+.notice-body a{
+  color:var(--shu);font-weight:700;
+  text-underline-offset:3px;text-decoration-thickness:1px;
+}
+.notice-body a:hover{background:rgba(199,53,31,.08)}
+
+@media(max-width:640px){
+  .notice-in{flex-direction:column;gap:10px;padding:16px 20px}
+  .notice-body{font-size:13px}
+}
+
 /* ---------- 404 ---------- */
 .nf{
   position:relative;overflow:hidden;

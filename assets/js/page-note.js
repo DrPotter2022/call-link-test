@@ -152,11 +152,42 @@
       .join('');
   }
 
+  /* ---------- お知らせ ---------- */
+
+  /**
+   * ヘッダー直下に出す告知。
+   * 本文中に linkText と同じ文字列があれば、そこを linkHref へのリンクにする。
+   * （管理画面から編集する人がHTMLを書かずに済むように）
+   */
+  function noticeSection(n) {
+    if (!n || n.enabled === false || !n.body) return '';
+
+    var body = br(n.body);
+    if (n.linkText && n.linkHref) {
+      var needle = esc(n.linkText);
+      var href = esc(n.linkHref);
+      body = body.replace(needle, function () {
+        return '<a href="' + href + '" target="_blank" rel="noopener">' + needle + '</a>';
+      });
+    }
+
+    return (
+      '<aside class="notice" role="note">' +
+      '<div class="wrap notice-in">' +
+      '<span class="notice-label">' + esc(n.label || 'お知らせ') + '</span>' +
+      '<p class="notice-body">' + body + '</p>' +
+      '</div>' +
+      '</aside>'
+    );
+  }
+
   /* ---------- ページ全体 ---------- */
 
   function render(d) {
     var h = d.hero || {};
     return [
+      noticeSection(d.notice),
+
       '<section class="hero">',
       h.tate ? '<p class="tate">' + esc(h.tate) + '</p>' : '',
       '<div class="wrap">',

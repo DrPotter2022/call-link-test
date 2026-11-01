@@ -1,0 +1,27 @@
+# 改行コードは LF で記録する。
+# Windows のスクリプトから JSON などを書き換えると CRLF になり、
+# 1項目直しただけでファイル全体が変更扱いになってしまうため。
+#
+# 公開先リポジトリ（call-link-test）には本サイト以外のページも同居しているので、
+# 全体には適用せず、本サイトが使うファイルだけを対象にしている。
+
+index.html        text eol=lf
+404.html          text eol=lf
+README.md         text eol=lf
+robots.txt        text eol=lf
+sitemap.xml       text eol=lf
+package.json      text eol=lf
+package-lock.json text eol=lf
+.gitignore        text eol=lf
+.gitattributes    text eol=lf
+
+content/**        text eol=lf
+admin/**          text eol=lf
+note/**           text eol=lf
+seminar/**        text eol=lf
+tools/**          text eol=lf
+assets/css/**     text eol=lf
+assets/js/**      text eol=lf
+
+# 記事画像は変換しない
+assets/img/**     binary
