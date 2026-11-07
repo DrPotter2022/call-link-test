@@ -57,6 +57,12 @@ svg{width:100%;height:auto;display:block}
 .tabreset{border:1px solid var(--line);background:#fff;border-radius:6px 6px 0 0;padding:7px 10px;font-family:inherit;font-size:12px;cursor:pointer;color:var(--sub)}
 .hint{font-size:12px;color:var(--sub);margin:2px 0 4px}
 .cmp .charts.one{max-width:460px}
+.lay{display:flex;gap:4px}
+.cmph{display:grid;grid-template-columns:repeat(var(--n),minmax(300px,1fr));gap:14px;overflow-x:auto;padding-bottom:4px}
+.csub{display:block;font-size:12px;font-weight:400;color:var(--sub)}
+.cmph .cmprow{border-top:0;margin-top:0;padding-top:0;border-left:1px dashed var(--line);padding-left:12px;min-width:0}
+.cmph .cmprow:first-child{border-left:0;padding-left:0}
+.cmph .charts,.cmph .charts.one,.cmph .charts.all{grid-template-columns:1fr;max-width:none}
 .cmprow{border-top:1px dashed var(--line);padding-top:8px;margin-top:8px}
 .cmprow:first-child{border-top:0;margin-top:0;padding-top:0}
 .cmphead{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px;margin-bottom:2px}
@@ -113,6 +119,10 @@ svg{width:100%;height:auto;display:block}
   <div class="seatcard">
     <div class="seathead">
       <h2 id="seattitle">議席数（勢力図）</h2>
+      <div class="lay" id="lay">
+        <button class="ib on" data-l="v" title="押した順に上から下へ並べる"><span class="ic">⬇</span>縦に並べる</button>
+        <button class="ib" data-l="h" title="押した順に左から右へ並べる"><span class="ic">➡</span>横に並べる</button>
+      </div>
     </div>
     <div class="slegend" id="slegend"></div>
     <div class="charts" id="charts"></div>
@@ -407,7 +417,7 @@ function chartBlock(title,d,rows){
    <div class="smeta">${parts}</div><div class="smeta">${d.meta}</div>
    ${list&&list.length?`<div class="plist"><b>${d.lt}</b>${list.map(x=>`<div>${x}</div>`).join("")}</div>`:""}</div>`;
 }
-let tabs=["pre"];
+let tabs=["pre"],layout="v";
 const TT={pre:"①改選前",fc:"②予想（世論調査）",res:"③改選後（結果）"};
 function seats(){
   document.getElementById("seattitle").textContent=tabs.length>1?`議席数（勢力図）比較｜${tabs.map(x=>TT[x]).join(" → ")}`:`議席数（勢力図）｜${TT[tabs[0]]}${tabs[0]==="res"?"　"+ASOF:""}`;
@@ -420,10 +430,11 @@ function seats(){
     pick.forEach(x=>x.g.forEach(g=>g[1]&&used.add(g[0]+(g[0]==="U"?tb:""))));
     const cs=()=>chartBlock("上院（100議席）",D.sen,6),ch=()=>chartBlock("下院（435議席）",D.house,12),cg=()=>chartBlock("州知事（50州）",D.gov,5);
     const inner=view==="all"?cs()+ch()+cg():view==="sen"?cs():view==="house"?ch():cg();
-    html+=`<div class="cmprow">${tabs.length>1?`<div class="cmphead"><span class="ord">${i+1}</span>${TT[tb]}${tb==="res"?`<span class="muted">　${ASOF}</span>`:""}</div>`:""}<div class="charts ${view==="all"?"all":"one"}">${inner}</div></div>`;
+    html+=`<div class="cmprow">${tabs.length>1?`<div class="cmphead"><span class="ord">${i+1}</span><span>${TT[tb]}<span class="csub">${({pre:"選挙前の議席構成",fc:"2026/10/25時点の予測",res:ASOF})[tb]}</span></span></div>`:""}<div class="charts ${view==="all"?"all":"one"}">${inner}</div></div>`;
   });
   tab=save;
-  C.className=tabs.length>1?"cmp":"";C.innerHTML=html;
+  C.className=tabs.length>1?("cmp"+(layout==="h"?" cmph":"")):"";C.style.setProperty("--n",tabs.length);C.innerHTML=html;
+  document.getElementById("lay").style.display=tabs.length>1?"":"none";
   const lg=[];
   ["D","R","I"].forEach(p=>used.has(p)&&lg.push([SC[p],PN[p]+(p==="I"?"":"党"),p==="I"]));
   if(used.has("Ufc"))lg.push([SC.U,"接戦（②）"]);
@@ -541,6 +552,7 @@ function panel(s){
    houseBlock(s)+
    `<h3>改選前の状況</h3>`+preHTML(s).replace(/class="k"/g,'class="muted"');
 }
+document.querySelectorAll("#lay .ib").forEach(b=>b.onclick=()=>{document.querySelectorAll("#lay .ib").forEach(x=>x.classList.remove("on"));b.classList.add("on");layout=b.dataset.l;seats()});
 function syncTabs(){
   document.querySelectorAll(".tab").forEach(x=>{const i=tabs.indexOf(x.dataset.t);x.classList.toggle("on",i>=0);x.classList.toggle("last",i>=0&&i===tabs.length-1);
     let o=x.querySelector(".tord");if(!o){o=document.createElement("span");o.className="tord";x.appendChild(o);}
