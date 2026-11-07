@@ -87,7 +87,7 @@
             '<p class="tag">' + esc(c.tag) + '</p>' +
             '<h3>' + esc(c.title) + '</h3>' +
             '<p>' + br(c.body) + '</p>' +
-            '<div class="card-foot">' + cta({ label: c.ctaLabel, href: c.ctaHref }, c.focus ? 'btn-primary btn-sm' : 'btn-ghost btn-sm') + '</div>' +
+            (c.ctaLabel ? '<div class="card-foot">' + cta({ label: c.ctaLabel, href: c.ctaHref }, c.focus ? 'btn-primary btn-sm' : 'btn-ghost btn-sm') + '</div>' : '') +
             '</div>'
           );
         })
