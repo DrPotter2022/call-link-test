@@ -56,6 +56,17 @@ svg{width:100%;height:auto;display:block}
 .cmp .cur{font-weight:700;color:var(--ink)}
 .note{font-size:13px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
 .note ul{margin:4px 0 0;padding-left:18px}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+.ptitle{font-size:14px;font-weight:700;margin-bottom:4px}
+.tabs .no{float:right;font-size:11px;font-weight:600;opacity:.8}
+.grid>.card:last-child{align-self:start;position:sticky;top:12px}
+@media (max-width:820px){.grid>.card:last-child{position:static}}
+.bars{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.bar{display:grid;grid-template-columns:16px 1fr auto;gap:6px;align-items:center}
+.bar .seats{margin:0}
+.bl{font-size:12px;color:var(--sub)}
+.bv{font-size:11px;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
+.list{max-height:none}
 .foot{font-size:11px;color:var(--sub);margin-top:16px}
 .foot a{color:var(--sub)}
 </style>
@@ -63,27 +74,17 @@ svg{width:100%;height:auto;display:block}
 <body>
 <div class="wrap">
 <h1>2026年 中間選挙：区割り改定でどう変わったか</h1>
-<p class="lead">下院の区割りを改定した州（＋改定が使われなかったミズーリ・バージニア）を、①改定前 → ②新区割りの見込み → ③実際の結果（速報）で切り替えて表示します。州の色は民主・共和の議席比率です。</p>
+<p class="lead">下院の区割りを改定した州（＋改定が使われなかったミズーリ・バージニア）を、①改定前・②新区割りの見込み・③実際の結果の勢力図を表示します。タブは複数選べ、押した順に上から並びます（もう一度押すと非表示）。州の色は民主・共和の議席比率です。</p>
 
 <div class="tabs" id="tabs">
-  <button data-v="0"><b>① 改定前</b>2024年選挙時の議席</button>
-  <button data-v="1"><b>② 新区割りの見込み</b>描いた側の狙いどおりなら</button>
-  <button data-v="2"><b>③ 実際の結果</b>2026/11/7時点の判明分</button>
+  <button data-v="0" aria-pressed="false"><b>① 改定前<span class="no"></span></b>2024年選挙時の議席</button>
+  <button data-v="1" aria-pressed="false"><b>② 新区割りの見込み<span class="no"></span></b>描いた側の狙いどおりなら</button>
+  <button data-v="2" aria-pressed="false"><b>③ 実際の結果<span class="no"></span></b>2026/11/7時点の判明分</button>
   <a class="ext" href="https://www.wize.uno/us/vote2026.html" target="_blank" rel="noopener"><b>米国中間選挙2026 ↗</b>wize.uno/us/vote2026</a>
 </div>
 
 <div class="grid">
-  <div class="card">
-    <div class="total">
-      <div class="big" id="tot"></div>
-      <div class="cap" id="totcap"></div>
-    </div>
-    <div class="seats" id="totseats"></div>
-    <svg viewBox="0 0 975 610" id="map" role="img" aria-label="米国州地図"></svg>
-    <div class="legend"><span>共和寄り</span><span class="ramp"></span><span>民主寄り</span>
-      <span style="margin-left:10px" class="hatch"></span><span>未確定の議席</span>
-      <span id="yelLeg" style="display:inline-flex;align-items:center;gap:6px;margin-left:10px"><span style="display:inline-block;width:14px;height:10px;border-radius:2px;background:var(--yel)"></span>改定を試みたが2026年には使われなかった州</span><span style="margin-left:10px">点線の州 ＝ 旧地図で実施</span></div>
-  </div>
+  <div class="stack" id="stack"></div>
   <div class="card">
     <div class="cap">州をクリックすると詳細を表示</div>
     <div class="list" id="list"></div>
@@ -153,63 +154,75 @@ const DATA = [
 const TRIED = {"29":"ミズーリ：新地図は住民投票請求で凍結","51":"バージニア：州最高裁が差し止め","18":"インディアナ：州上院が否決（2025/12）","45":"サウスカロライナ：州上院で審議打ち切りに至らず不成立","24":"メリーランド：州上院が審議せず不成立","13":"ジョージア：改定を見送り"};
 const BY = Object.fromEntries(DATA.map(d=>[d.id,d]));
 const VIEW = ["① 改定前","② 新区割りの見込み","③ 実際の結果（11/7時点）"];
-let view = 0, sel = "48";
-try{const v=localStorage.getItem("rd_view");if(v!==null)view=+v;}catch(e){}
+let order = [0], sel = "48";
+try{const v=JSON.parse(localStorage.getItem("rd_order")||"null");if(Array.isArray(v)&&v.length&&v.every(x=>[0,1,2].includes(x)))order=v;}catch(e){}
 
 const css = n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 function mix(a,b,t){const pa=a.match(/\w\w/g).map(h=>parseInt(h,16)),pb=b.match(/\w\w/g).map(h=>parseInt(h,16));return "#"+pa.map((x,i)=>Math.round(x+(pb[i]-x)*t).toString(16).padStart(2,"0")).join("");}
 function color(s){const [r,d,u]=s;const known=r+d;if(!known)return css("--und");const share=d/known;const mid="#efe9e4";
   return share<.5?mix(css("--rep"),mid,share*2):mix(mid,css("--dem"),(share-.5)*2);}
-
-const svg=document.getElementById("map");
 const NS="http://www.w3.org/2000/svg";
-const defs=document.createElementNS(NS,"defs");
-defs.innerHTML='<pattern id="hp" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2" height="6" fill="rgba(120,120,130,.55)"/></pattern>';
-svg.appendChild(defs);
-const els={},hatch={};
-for(const [id,s] of Object.entries(SHAPES)){
-  const p=document.createElementNS(NS,"path");p.setAttribute("d",s.d);p.setAttribute("class","st"+(BY[id]?" on":""));
-  if(BY[id]){p.addEventListener("click",()=>select(id));if(!BY[id].used){p.style.strokeDasharray="4 3";}}
-  const t=document.createElementNS(NS,"title");t.textContent=TRIED[id]?TRIED[id]:(BY[id]?BY[id].n:s.n);p.appendChild(t);
-  svg.appendChild(p);els[id]=p;
+const used=DATA.filter(d=>d.used);
+const base=[0,1].map(i=>used.reduce((a,d)=>a+d.s[0][i],0));
+const ord=s=>"<i></i>".repeat(s[0])+'<i class="u"></i>'.repeat(s[2])+'<i class="d"></i>'.repeat(s[1]);
+const fmt=([r,d,u])=>`共${r}・民${d}`+(u?`・未${u}`:"");
+
+// 1つの勢力図カード（ビューごとに1枚、作り置き）
+const panels={};
+function makePanel(v){
+  const card=document.createElement("div");card.className="card mapcard";
+  const t=[0,1,2].map(i=>used.reduce((a,d)=>a+d.s[v][i],0));
+  card.innerHTML=`<div class="ptitle">${VIEW[v]}</div>
+    <div class="total"><div class="big"><span class="r">共和 ${t[0]}</span> ・ <span class="d">民主 ${t[1]}</span>${t[2]?` <span class="u">未確定 ${t[2]}</span>`:""}</div>
+    <div class="cap">新区割りを使った9州の合計${v?`<br>改定前比：共和 ${t[0]-base[0]>=0?"+":""}${t[0]-base[0]}、民主 ${t[1]-base[1]>=0?"+":""}${t[1]-base[1]}`:""}</div></div>
+    <div class="seats">${ord(t)}</div>`;
+  const svg=document.createElementNS(NS,"svg");svg.setAttribute("viewBox","0 0 975 610");svg.setAttribute("role","img");svg.setAttribute("aria-label",VIEW[v]+"の勢力図");
+  svg.innerHTML=`<defs><pattern id="hp${v}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2" height="6" fill="rgba(120,120,130,.55)"/></pattern></defs>`;
+  const els={};
+  for(const [id,s] of Object.entries(SHAPES)){
+    const p=document.createElementNS(NS,"path");p.setAttribute("d",s.d);p.setAttribute("class","st"+(BY[id]?" on":""));
+    p.style.fill=(v===0&&TRIED[id])?css("--yel"):(BY[id]?color(BY[id].s[v]):css("--none"));
+    if(BY[id]){p.addEventListener("click",()=>select(id));if(!BY[id].used)p.style.strokeDasharray="4 3";}
+    const ti=document.createElementNS(NS,"title");ti.textContent=TRIED[id]&&v===0?TRIED[id]:(BY[id]?`${BY[id].n}：${fmt(BY[id].s[v])}`:s.n);p.appendChild(ti);
+    svg.appendChild(p);els[id]=p;
+  }
+  for(const id of Object.keys(BY)){const s=BY[id].s[v];if(!s[2]||(v===0&&TRIED[id]))continue;const tot=s[0]+s[1]+s[2];
+    const h=document.createElementNS(NS,"path");h.setAttribute("d",SHAPES[id].d);h.setAttribute("fill",`url(#hp${v})`);h.style.pointerEvents="none";h.style.opacity=Math.min(1,.35+s[2]/tot);svg.appendChild(h);}
+  card.appendChild(svg);
+  const lg=document.createElement("div");lg.className="legend";
+  lg.innerHTML=`<span>共和寄り</span><span class="ramp"></span><span>民主寄り</span><span style="margin-left:10px" class="hatch"></span><span>未確定の議席</span>`+
+   (v===0?`<span style="display:inline-flex;align-items:center;gap:6px;margin-left:10px"><span style="display:inline-block;width:14px;height:10px;border-radius:2px;background:var(--yel)"></span>改定を試みたが2026年には使われなかった州</span>`:"")+
+   `<span style="margin-left:10px">点線の州 ＝ 旧地図で実施</span>`;
+  card.appendChild(lg);
+  panels[v]={card,els};
 }
-for(const id of Object.keys(BY)){const h=document.createElementNS(NS,"path");h.setAttribute("d",SHAPES[id].d);h.setAttribute("fill","url(#hp)");h.style.pointerEvents="none";h.style.opacity=0;svg.appendChild(h);hatch[id]=h;}
-// 改定なし州は薄く
+[0,1,2].forEach(makePanel);
+
 const list=document.getElementById("list");
 for(const d of DATA){const r=document.createElement("div");r.className="row"+(d.used?"":" off");r.dataset.id=d.id;
-  r.innerHTML=`<div class="h"><span>${d.n}${d.used?"":'<span class="tag">旧地図で実施</span>'}</span><span></span></div><div class="seats"></div>`;
+  r.innerHTML=`<div class="h"><span>${d.n}${d.used?"":'<span class="tag">旧地図で実施</span>'}</span></div><div class="bars"></div>`;
   r.addEventListener("click",()=>select(d.id));list.appendChild(r);}
 
-function blocks(el,[r,d,u]){el.innerHTML="";for(let i=0;i<r;i++)el.append(Object.assign(document.createElement("i")));
-  for(let i=0;i<u;i++)el.append(Object.assign(document.createElement("i"),{className:"u"}));
-  for(let i=0;i<d;i++)el.append(Object.assign(document.createElement("i"),{className:"d"}));}
-function fmt([r,d,u]){return `共${r}・民${d}`+(u?`・未${u}`:"");}
-
 function render(){
-  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",+b.dataset.v===view));
-  for(const [id,p] of Object.entries(els)){p.style.fill=(view===0&&TRIED[id])?css("--yel"):(BY[id]?color(BY[id].s[view]):css("--none"));}
-  document.getElementById("yelLeg").style.display=view===0?"inline-flex":"none";
-  for(const [id,h] of Object.entries(hatch)){const s=BY[id].s[view];const tot=s[0]+s[1]+s[2];h.style.opacity=(view===0&&TRIED[id])?0:s[2]?Math.min(1,.35+s[2]/tot):0;}
-  const used=DATA.filter(d=>d.used);const t=[0,1,2].map(i=>used.reduce((a,d)=>a+d.s[view][i],0));
-  document.getElementById("tot").innerHTML=`<span class="r">共和 ${t[0]}</span> ・ <span class="d">民主 ${t[1]}</span>${t[2]?` <span class="u">未確定 ${t[2]}</span>`:""}`;
-  const base=[0,1].map(i=>used.reduce((a,d)=>a+d.s[0][i],0));
-  document.getElementById("totcap").innerHTML=`${VIEW[view]}／新区割りを使った9州の合計${view?`<br>改定前比：共和 ${t[0]-base[0]>=0?"+":""}${t[0]-base[0]}、民主 ${t[1]-base[1]>=0?"+":""}${t[1]-base[1]}`:""}`;
-  blocks(document.getElementById("totseats"),t);
-  list.querySelectorAll(".row").forEach(r=>{const d=BY[r.dataset.id];r.querySelector(".h span:last-child").textContent=fmt(d.s[view]);blocks(r.querySelector(".seats"),d.s[view]);r.classList.toggle("sel",r.dataset.id===sel);});
-  for(const [id,p] of Object.entries(els))p.classList.toggle("sel",id===sel);
-  const d=BY[sel];const rows=d.s.map((s,i)=>`<div class="k ${i===view?"cur":""}">${VIEW[i]}</div><div class="seats">${s.map((n,j)=>`<i class="${["","u","d"][[0,2,1][j]]}"></i>`.repeat(n)).join("")}</div><div class="v ${i===view?"cur":""}">${fmt(s)}</div>`);
-  // 並び順を共→未→民に
-  const ord=s=>"<i></i>".repeat(s[0])+'<i class="u"></i>'.repeat(s[2])+'<i class="d"></i>'.repeat(s[1]);
-  const rows2=d.s.map((s,i)=>`<div class="k ${i===view?"cur":""}">${VIEW[i]}</div><div class="seats">${ord(s)}</div><div class="v ${i===view?"cur":""}">${fmt(s)}</div>`).join("");
+  document.querySelectorAll("#tabs button").forEach(b=>{const v=+b.dataset.v;const k=order.indexOf(v);b.classList.toggle("on",k>=0);b.querySelector(".no").textContent=k>=0?`表示${k+1}`:"";});
+  const stack=document.getElementById("stack");stack.replaceChildren(...order.map(v=>panels[v].card));
+  for(const v of [0,1,2])for(const [id,p] of Object.entries(panels[v].els))p.classList.toggle("sel",id===sel);
+  list.querySelectorAll(".row").forEach(r=>{const d=BY[r.dataset.id];
+    r.querySelector(".bars").innerHTML=order.map(v=>`<div class="bar"><span class="bl">${"①②③"[v]}</span><div class="seats">${ord(d.s[v])}</div><span class="bv">${fmt(d.s[v])}</span></div>`).join("");
+    r.classList.toggle("sel",r.dataset.id===sel);});
+  const d=BY[sel];
+  const rows=order.map(v=>`<div class="k cur">${VIEW[v]}</div><div class="seats">${ord(d.s[v])}</div><div class="v cur">${fmt(d.s[v])}</div>`).join("");
   document.getElementById("detail").innerHTML=`<h2>${d.n}（全${d.s[0][0]+d.s[0][1]+d.s[0][2]}議席）</h2><div class="m">${d.how}</div>
-  <div class="cmp">${rows2}</div>
+  <div class="cmp">${rows}</div>
   <div class="note"><b>新区割りの狙い</b>：${d.plan}<br><b>実際の結果</b><ul>${d.res.map(x=>`<li>${x}</li>`).join("")}</ul>${d.note?`<span class="cap">※${d.note}</span>`:""}</div>`;
 }
 function select(id){sel=id;render();}
-document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",()=>{view=+b.dataset.v;try{localStorage.setItem("rd_view",view)}catch(e){}render();}));
-document.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){view=(view+1)%3;render();}if(e.key==="ArrowLeft"){view=(view+2)%3;render();}});
+document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",()=>{
+  const v=+b.dataset.v;const k=order.indexOf(v);
+  if(k>=0){if(order.length>1)order.splice(k,1);}else order.push(v);
+  try{localStorage.setItem("rd_order",JSON.stringify(order))}catch(e){}
+  render();}));
 render();
-requestAnimationFrame(()=>requestAnimationFrame(()=>{document.body.classList.add("anim");Object.values(hatch).forEach(h=>h.style.transition="opacity .5s");}));
 </script>
 </body>
 </html>
