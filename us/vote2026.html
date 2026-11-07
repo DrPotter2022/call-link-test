@@ -51,6 +51,30 @@ svg{width:100%;height:auto;display:block}
 .pt.D{background:#1c4da1;color:#fff}.pt.R{background:#a92d25;color:#fff}.pt.I{background:#f2f2f2;color:#1d1f24;border:1px solid #999}.pt.V{background:#fff;color:#5d6270;border:1px dashed #999}
 .cl{margin:2px 0}
 .hd{display:flex;gap:6px;align-items:baseline;margin:3px 0;flex-wrap:wrap}.hd code{font-family:inherit;font-weight:800;min-width:46px}
+.tablink{display:inline-block;text-decoration:none;padding:8px 14px;font-size:14px;font-weight:700;color:#fff;background:#7a5a12;border-radius:6px 6px 0 0;margin-left:6px}
+.tablink:hover{background:#5e450c}
+.seatcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin:8px 0 12px}
+.seathead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.seathead h2{font-size:17px;margin:0}
+.ib{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 10px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700}
+.ib.on{background:#2b2f38;color:#fff;border-color:#2b2f38}
+.ib .ic{font-size:16px}
+.slegend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;font-size:12px;margin:6px 0 2px;border:1px solid var(--line);border-radius:6px;padding:4px 10px;width:fit-content;margin-left:auto;margin-right:auto}
+.slegend span{display:inline-flex;align-items:center;gap:4px}
+.slegend i{width:12px;height:12px;display:inline-block;border-radius:2px}
+.charts{display:grid;grid-template-columns:3fr 2fr;gap:18px;margin-top:6px}
+.charts.one{grid-template-columns:1fr;max-width:620px;margin-left:auto;margin-right:auto}
+.charts.all{grid-template-columns:repeat(3,1fr)}
+@media (max-width:900px){.charts.all{grid-template-columns:1fr}}
+@media (max-width:760px){.charts{grid-template-columns:1fr}}
+.chart h3{text-align:center;font-size:17px;margin:4px 0}
+.chart svg{display:block;width:100%;height:auto;min-height:120px}
+.sbar{position:relative;display:flex;height:24px;border-radius:2px;overflow:visible;margin:4px 0 2px;font-size:12px;font-weight:800;color:#fff}
+.sbar div{display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap}
+.sbar .mk{position:absolute;top:-5px;bottom:-5px;width:3px;background:#2e8b57;border-radius:2px}
+.smeta{font-size:12px;color:var(--sub)}
+.plist{font-size:12px;margin-top:6px}
+.plist b{display:block;text-decoration:underline;font-size:13px;color:var(--ink)}
 .foot{font-size:11px;color:var(--sub);margin-top:14px;line-height:1.7}
 .foot a{color:var(--sub)}
 </style>
@@ -64,12 +88,22 @@ svg{width:100%;height:auto;display:block}
     <button class="tab on" data-t="pre">① 改選前</button>
     <button class="tab" data-t="fc">② 予想（世論調査）</button>
     <button class="tab" data-t="res">③ 改選後（結果）</button>
+    <a class="tablink" href="https://www.wize.uno/us/gerrymander2026.html" target="_blank" rel="noopener">選挙区割り変更の影響 ↗</a>
   </div>
   <div class="ctrl">
     <span class="muted">表示：</span>
     <button class="seg on" data-m="sen">上院</button>
-    <button class="seg" data-m="gov">州知事</button>
     <button class="seg" data-m="house">下院</button>
+    <button class="seg" data-m="gov">州知事</button>
+    <button class="seg" data-m="all">全て</button>
+  </div>
+
+  <div class="seatcard">
+    <div class="seathead">
+      <h2 id="seattitle">議席数（勢力図）</h2>
+    </div>
+    <div class="slegend" id="slegend"></div>
+    <div class="charts" id="charts"></div>
   </div>
 
   <div class="summary" id="summary"></div>
@@ -313,9 +347,69 @@ function fill(s){
   if(r.flip)return r.p==="D"?"#0d2f6e":"#6e140f";
   return PC[r.p];
 }
+// ===== 勢力図データ =====
+const SC={D:"#2a6fc0",R:"#e0533f",I:"#ffffff",U:"#e8b400",V:"#cfcac0"};
+const SL={pre:{U:"",V:"欠員"},fc:{U:"接戦"},res:{U:"未確定"}};
+const SEATS={
+ pre:{
+  sen:{g:[["D",45],["I",2],["R",53]],maj:51,meta:"過半数：51（50対50は副大統領＝共和が決する）",list:["無所属2（キング、サンダース）は民主党会派","改選35議席：🟥共和22・🟦民主13"],lt:"補足"},
+  house:{g:[["D",214],["V",2],["I",1],["R",218]],maj:218,meta:"過半数：218",list:["欠員2：FL-20（民主）、TX-23（共和）","無所属1：キリー（CA-3、共和会派）"],lt:"補足"},
+  gov:{g:[["D",24],["R",26]],maj:26,meta:"50州（うち改選36州：共和18・民主18）",list:[],lt:""}
+ },
+ fc:{
+  sen:{g:[["D",46],["U",8],["R",46]],maj:51,meta:"RealClearPolitics（10月中旬）の評価で集計。改選なし65議席を含む",list:["メイン、オハイオ、テキサス、アラスカ、アイオワ、カンザス、ミシガン、ミネソタ"],lt:"接戦8州"},
+  house:{g:[["D",219],["U",17],["R",198]],maj:218,meta:"Cook Political Report（10/23）。Likely・Leanを各党に含む",list:["Cook 10/23時点：接戦17区","民主寄りだけで過半数218に到達"],lt:"接戦"},
+  gov:{g:[["D",25],["U",3],["R",22]],maj:26,meta:"Cook（10/23）。改選なし14州（民主6・共和8）を含む",list:["ジョージア、ネバダ、ウィスコンシン"],lt:"接戦3州"}
+ },
+ res:{
+  sen:{g:[["D",52],["I",2],["U",2],["R",44]],maj:51,meta:"過半数：51（無所属2は民主党会派 → 民主系54）",list:["アラスカ：サリバン（共和）vs ペルトラ（民主）順位選択投票の集計待ち","ミシシッピ：コロム（民主）がハイドスミス（共和）を数百票差でリード"],lt:"未確定上院議席"},
+  house:{g:[["D",254],["U",21],["R",160]],maj:218,meta:"過半数：218（当確分。未確定は集計元により21〜29区）",list:null,lt:"未確定下院議席"},
+  gov:{g:[["D",29],["U",1],["R",20]],maj:26,meta:"改選36州：🟦民主23・🟥共和12・未確定1／共和→民主6州",list:["カンザス：ホルシャー（民主）が約5,500票リードし勝利宣言。マスターソン（共和）は敗北を認めず"],lt:"未確定州知事"}
+ }
+};
+let view="sen";
+function hemicycle(groups,rows){
+  const total=groups.reduce((a,g)=>a+g[1],0);
+  const r0=0.38,rad=[];for(let i=0;i<rows;i++)rad.push(r0+(1-r0)*i/(rows-1));
+  const sr=rad.reduce((a,b)=>a+b,0);
+  const per=rad.map(r=>Math.floor(total*r/sr));let rem=total-per.reduce((a,b)=>a+b,0);
+  for(let i=rows-1;rem>0;i=(i-1+rows)%rows){per[i]++;rem--;}
+  const pts=[];
+  rad.forEach((r,i)=>{const n=per[i];for(let k=0;k<n;k++){const a=n===1?Math.PI/2:Math.PI*(1-k/(n-1));pts.push({a,r,x:r*Math.cos(a),y:-r*Math.sin(a)});}});
+  pts.sort((p,q)=>q.a-p.a||p.r-q.r);
+  const dr=Math.min(0.5*(1-r0)/(rows-1)*0.82, 0.5*Math.PI*r0/Math.max(1,per[0]-1)*0.85);
+  let idx=0,out="";
+  groups.forEach(([p,n])=>{for(let k=0;k<n;k++){const s=pts[idx++];out+=`<circle cx="${s.x.toFixed(3)}" cy="${s.y.toFixed(3)}" r="${dr.toFixed(3)}" fill="${SC[p]}"${p==="I"?' stroke="#777" stroke-width="0.008"':""}/>`;}});
+  const m=dr+0.02;return `<svg viewBox="${-1-m} ${-1-m} ${2+2*m} ${1+2*m}" role="img">${out}</svg>`;
+}
+function seatBar(groups,maj){
+  const total=groups.reduce((a,g)=>a+g[1],0);
+  const segs=groups.filter(g=>g[1]>0).map(([p,n])=>`<div style="width:${n/total*100}%;background:${SC[p]};${p==="I"||p==="V"||p==="U"?"color:#1d1f24;":""}${p==="I"?"box-shadow:inset 0 0 0 1px #999;":""}">${n/total>0.06?n:""}</div>`).join("");
+  return `<div class="sbar">${segs}<span class="mk" style="left:calc(${maj/total*100}% - 1.5px)" title="過半数ライン"></span></div>`;
+}
+function chartBlock(title,d,rows){
+  const parts=d.g.filter(g=>g[1]>0).map(([p,n])=>`${p==="U"?"🟨":p==="V"?"▫️":PE[p]}${p==="U"?SL[tab].U:PN[p]} ${n}`).join("　");
+  let list=d.list;
+  if(list===null)list=[Object.values(HPEND).flat().map(x=>x[0]).join("、")];
+  return `<div class="chart"><h3>${title}</h3>${hemicycle(d.g,rows)}${seatBar(d.g,d.maj)}
+   <div class="smeta">${parts}</div><div class="smeta">${d.meta}</div>
+   ${list&&list.length?`<div class="plist"><b>${d.lt}</b>${list.map(x=>`<div>${x}</div>`).join("")}</div>`:""}</div>`;
+}
+function seats(){
+  const D=SEATS[tab],TT={pre:"①改選前",fc:"②予想（世論調査）",res:"③改選後（結果）"};
+  document.getElementById("seattitle").textContent=`議席数（勢力図）｜${TT[tab]}${tab==="res"?"　"+ASOF:""}`;
+  const pick={sen:[D.sen],house:[D.house],gov:[D.gov],all:[D.sen,D.house,D.gov]}[view];
+  const used=new Set();pick.forEach(x=>x.g.forEach(g=>g[1]&&used.add(g[0])));
+  document.getElementById("slegend").innerHTML=["D","R","I","U","V"].filter(p=>used.has(p)).map(p=>`<span><i style="background:${SC[p]};${p==="I"?"border:1px solid #777":""}"></i>${p==="U"?SL[tab].U:p==="V"?"欠員":PN[p]+(p==="I"?"":"党")}</span>`).join("");
+  const C=document.getElementById("charts");
+  const cs=()=>chartBlock("上院（100議席）",D.sen,6),ch=()=>chartBlock("下院（435議席）",D.house,12),cg=()=>chartBlock("州知事（50州）",D.gov,5);
+  if(view==="all"){C.className="charts all";C.innerHTML=cs()+ch()+cg();}
+  else{C.className="charts one";C.innerHTML=view==="sen"?cs():view==="house"?ch():cg();}
+}
+
 function paint(){
   svg.querySelectorAll(".st").forEach(p=>{p.style.fill=fill(p.dataset.s);p.classList.toggle("sel",p.dataset.s===sel)});
-  legend();summary();
+  legend();summary();seats();
 }
 function legend(){
   const L=document.getElementById("legend"),N=document.getElementById("mapnote");
@@ -326,6 +420,7 @@ function legend(){
     else{items=[["🟦民主へ移動 4区以上","var(--sD)"],["🟦民主へ移動 2〜3区","var(--kD)"],["🟦民主へ移動 1区","var(--lD)"],["🟥共和へ純移動","var(--lR)"],["差し引きゼロ","#c7b8dd"],["移動なし・未確定区あり","#c9c5bc"],["判明した移動なし","var(--none)"]];N.textContent=`色＝議席が入れ替わった区の数（民主へ−共和へ）。${ASOF}。移動はCBS集計（11/5）で名前が判明した42区、未確定区は270toWin（11/6）`;}
     L.innerHTML=items.map(([t,c])=>`<span><i style="background:${c}"></i>${t}</span>`).join("");return;
   }
+  if(view==="all")N.dataset.all=1;
   if(tab==="pre"){items=[["🟦民主党が現有","var(--sD)"],["🟥共和党が現有","var(--sR)"],["今回改選なし","var(--none)"]];
     N.textContent=mode==="sen"?"色＝改選される議席を今持っている党":"色＝現知事の党（改選州のみ）";}
   else if(tab==="fc"){items=["SD","KD","LD","TU","LR","KR","SR"].map(k=>RATE[k]);items.push(["改選なし","var(--none)"]);
@@ -333,6 +428,7 @@ function legend(){
   else{items=[["🟦民主勝利（奪取）","#0d2f6e"],["🟦民主勝利（維持）","var(--sD)"],["🟥共和勝利（維持）","var(--sR)"],["未確定","#c9c5bc"],["改選なし","var(--none)"]];
     N.textContent=`${ASOF}。当確は報道機関の予測（CBS・NBC等）。未確定州はクリックでリード状況を表示`;}
   L.innerHTML=items.map(([t,c])=>`<span><i style="background:${c}"></i>${t}</span>`).join("");
+  if(view==="all")N.textContent="【全て表示中：地図は上院】"+N.textContent;
 }
 function summary(){
   const S=document.getElementById("summary");
@@ -421,7 +517,7 @@ function panel(s){
    `<h3>改選前の状況</h3>`+preHTML(s).replace(/class="k"/g,'class="muted"');
 }
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");tab=b.dataset.t;paint()});
-document.querySelectorAll(".seg").forEach(b=>b.onclick=()=>{document.querySelectorAll(".seg").forEach(x=>x.classList.remove("on"));b.classList.add("on");mode=b.dataset.m;paint()});
+document.querySelectorAll(".seg").forEach(b=>b.onclick=()=>{document.querySelectorAll(".seg").forEach(x=>x.classList.remove("on"));b.classList.add("on");view=b.dataset.m;mode=view==="all"?"sen":view;paint()});
 paint();
 </script>
 </body>
