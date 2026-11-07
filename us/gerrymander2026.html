@@ -16,6 +16,10 @@ h1{font-size:22px;margin:0 0 4px;letter-spacing:.01em}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .tabs button{flex:1 1 0;min-width:0;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 8px;border-radius:10px;font:inherit;font-size:13px;cursor:pointer;text-align:left}
 .tabs button b{display:block;font-size:15px}
+.tabs a.ext{flex:1 1 0;min-width:0;border:1px dashed var(--line);background:var(--card);color:var(--ink);padding:10px 8px;border-radius:10px;font-size:13px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tabs a.ext b{display:block;font-size:15px}
+.tabs a.ext:hover{border-color:var(--ink)}
+@media (max-width:600px){.tabs>*{flex:1 1 calc(50% - 3px)!important}}
 .tabs button.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 .grid{display:grid;grid-template-columns:1.55fr 1fr;gap:14px}
 @media (max-width:820px){.grid{grid-template-columns:1fr}}
@@ -65,6 +69,7 @@ svg{width:100%;height:auto;display:block}
   <button data-v="0"><b>① 改定前</b>2024年選挙時の議席</button>
   <button data-v="1"><b>② 新区割りの見込み</b>描いた側の狙いどおりなら</button>
   <button data-v="2"><b>③ 実際の結果</b>2026/11/7時点の判明分</button>
+  <a class="ext" href="https://www.wize.uno/us/vote2026.html" target="_blank" rel="noopener"><b>米国中間選挙2026 ↗</b>wize.uno/us/vote2026</a>
 </div>
 
 <div class="grid">
