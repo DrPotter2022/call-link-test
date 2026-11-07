@@ -13,11 +13,6 @@
       "href": ""
     },
     {
-      "id": "note",
-      "label": ".note（バックナンバー）",
-      "href": "note/"
-    },
-    {
       "id": "seminar",
       "label": "セミナー",
       "href": "seminar/"
@@ -32,10 +27,6 @@
       {
         "label": "WIZEについて",
         "href": ""
-      },
-      {
-        "label": ".note",
-        "href": "note/"
       },
       {
         "label": "セミナー",
