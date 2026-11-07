@@ -51,6 +51,16 @@ svg{width:100%;height:auto;display:block}
 .pt.D{background:#1c4da1;color:#fff}.pt.R{background:#a92d25;color:#fff}.pt.I{background:#f2f2f2;color:#1d1f24;border:1px solid #999}.pt.V{background:#fff;color:#5d6270;border:1px dashed #999}
 .cl{margin:2px 0}
 .hd{display:flex;gap:6px;align-items:baseline;margin:3px 0;flex-wrap:wrap}.hd code{font-family:inherit;font-weight:800;min-width:46px}
+.tab{position:relative}
+.tab.on:not(.last){background:#5d6270}
+.tord:not(:empty){display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;background:#e8b400;color:#1d1f24;font-size:11px;margin-left:6px;padding:0 4px}
+.tabreset{border:1px solid var(--line);background:#fff;border-radius:6px 6px 0 0;padding:7px 10px;font-family:inherit;font-size:12px;cursor:pointer;color:var(--sub)}
+.hint{font-size:12px;color:var(--sub);margin:2px 0 4px}
+.cmp .charts.one{max-width:460px}
+.cmprow{border-top:1px dashed var(--line);padding-top:8px;margin-top:8px}
+.cmprow:first-child{border-top:0;margin-top:0;padding-top:0}
+.cmphead{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.cmphead .ord{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:11px;background:#1d1f24;color:#fff;font-size:12px}
 .tablink{display:inline-block;text-decoration:none;padding:8px 14px;font-size:14px;font-weight:700;color:#fff;background:#7a5a12;border-radius:6px 6px 0 0;margin-left:6px}
 .tablink:hover{background:#5e450c}
 .seatcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin:8px 0 12px}
@@ -88,8 +98,10 @@ svg{width:100%;height:auto;display:block}
     <button class="tab on" data-t="pre">① 改選前</button>
     <button class="tab" data-t="fc">② 予想（世論調査）</button>
     <button class="tab" data-t="res">③ 改選後（結果）</button>
+    <button class="tabreset" id="tabreset" title="選択中の最後のタブだけに戻す">比較を解除</button>
     <a class="tablink" href="https://www.wize.uno/us/gerrymander2026.html" target="_blank" rel="noopener">選挙区割り変更の影響 ↗</a>
   </div>
+  <div class="hint">①②③は複数選択できます（押した順に勢力図を上から並べて比較）。もう一度押すと：最後に押したタブなら選択解除、それ以外なら最後尾へ移動。地図と下の数字は最後に押したタブを表示します。</div>
   <div class="ctrl">
     <span class="muted">表示：</span>
     <button class="seg on" data-m="sen">上院</button>
@@ -395,16 +407,29 @@ function chartBlock(title,d,rows){
    <div class="smeta">${parts}</div><div class="smeta">${d.meta}</div>
    ${list&&list.length?`<div class="plist"><b>${d.lt}</b>${list.map(x=>`<div>${x}</div>`).join("")}</div>`:""}</div>`;
 }
+let tabs=["pre"];
+const TT={pre:"①改選前",fc:"②予想（世論調査）",res:"③改選後（結果）"};
 function seats(){
-  const D=SEATS[tab],TT={pre:"①改選前",fc:"②予想（世論調査）",res:"③改選後（結果）"};
-  document.getElementById("seattitle").textContent=`議席数（勢力図）｜${TT[tab]}${tab==="res"?"　"+ASOF:""}`;
-  const pick={sen:[D.sen],house:[D.house],gov:[D.gov],all:[D.sen,D.house,D.gov]}[view];
-  const used=new Set();pick.forEach(x=>x.g.forEach(g=>g[1]&&used.add(g[0])));
-  document.getElementById("slegend").innerHTML=["D","R","I","U","V"].filter(p=>used.has(p)).map(p=>`<span><i style="background:${SC[p]};${p==="I"?"border:1px solid #777":""}"></i>${p==="U"?SL[tab].U:p==="V"?"欠員":PN[p]+(p==="I"?"":"党")}</span>`).join("");
-  const C=document.getElementById("charts");
-  const cs=()=>chartBlock("上院（100議席）",D.sen,6),ch=()=>chartBlock("下院（435議席）",D.house,12),cg=()=>chartBlock("州知事（50州）",D.gov,5);
-  if(view==="all"){C.className="charts all";C.innerHTML=cs()+ch()+cg();}
-  else{C.className="charts one";C.innerHTML=view==="sen"?cs():view==="house"?ch():cg();}
+  document.getElementById("seattitle").textContent=tabs.length>1?`議席数（勢力図）比較｜${tabs.map(x=>TT[x]).join(" → ")}`:`議席数（勢力図）｜${TT[tabs[0]]}${tabs[0]==="res"?"　"+ASOF:""}`;
+  const used=new Set();const C=document.getElementById("charts");
+  let html="";
+  const save=tab;
+  tabs.forEach((tb,i)=>{
+    tab=tb;const D=SEATS[tb];
+    const pick={sen:[D.sen],house:[D.house],gov:[D.gov],all:[D.sen,D.house,D.gov]}[view];
+    pick.forEach(x=>x.g.forEach(g=>g[1]&&used.add(g[0]+(g[0]==="U"?tb:""))));
+    const cs=()=>chartBlock("上院（100議席）",D.sen,6),ch=()=>chartBlock("下院（435議席）",D.house,12),cg=()=>chartBlock("州知事（50州）",D.gov,5);
+    const inner=view==="all"?cs()+ch()+cg():view==="sen"?cs():view==="house"?ch():cg();
+    html+=`<div class="cmprow">${tabs.length>1?`<div class="cmphead"><span class="ord">${i+1}</span>${TT[tb]}${tb==="res"?`<span class="muted">　${ASOF}</span>`:""}</div>`:""}<div class="charts ${view==="all"?"all":"one"}">${inner}</div></div>`;
+  });
+  tab=save;
+  C.className=tabs.length>1?"cmp":"";C.innerHTML=html;
+  const lg=[];
+  ["D","R","I"].forEach(p=>used.has(p)&&lg.push([SC[p],PN[p]+(p==="I"?"":"党"),p==="I"]));
+  if(used.has("Ufc"))lg.push([SC.U,"接戦（②）"]);
+  if(used.has("Ures"))lg.push([SC.U,"未確定（③）"]);
+  if(used.has("V"))lg.push([SC.V,"欠員"]);
+  document.getElementById("slegend").innerHTML=lg.map(([c,l,b])=>`<span><i style="background:${c};${b?"border:1px solid #777":""}"></i>${l}</span>`).join("");
 }
 
 function paint(){
@@ -516,7 +541,22 @@ function panel(s){
    houseBlock(s)+
    `<h3>改選前の状況</h3>`+preHTML(s).replace(/class="k"/g,'class="muted"');
 }
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");tab=b.dataset.t;paint()});
+function syncTabs(){
+  document.querySelectorAll(".tab").forEach(x=>{const i=tabs.indexOf(x.dataset.t);x.classList.toggle("on",i>=0);x.classList.toggle("last",i>=0&&i===tabs.length-1);
+    let o=x.querySelector(".tord");if(!o){o=document.createElement("span");o.className="tord";x.appendChild(o);}
+    o.textContent=tabs.length>1&&i>=0?String(i+1):"";});
+  tab=tabs[tabs.length-1];
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+  const t=b.dataset.t,i=tabs.indexOf(t);
+  if(i<0)tabs.push(t);
+  else if(i===tabs.length-1&&tabs.length===1)return;
+  else if(i===tabs.length-1)tabs.splice(i,1);
+  else{tabs.splice(i,1);tabs.push(t);}
+  syncTabs();paint();
+});
+document.getElementById("tabreset").onclick=()=>{tabs=[tab];syncTabs();paint()};
+syncTabs();
 document.querySelectorAll(".seg").forEach(b=>b.onclick=()=>{document.querySelectorAll(".seg").forEach(x=>x.classList.remove("on"));b.classList.add("on");view=b.dataset.m;mode=view==="all"?"sen":view;paint()});
 paint();
 </script>
