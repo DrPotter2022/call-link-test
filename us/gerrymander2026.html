@@ -67,6 +67,15 @@ svg{width:100%;height:auto;display:block}
 .bl{font-size:12px;color:var(--sub)}
 .bv{font-size:11px;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
 .list{max-height:none}
+.layout{display:flex;align-items:center;gap:6px;margin:-4px 0 12px;flex-wrap:wrap}
+.layout button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 12px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+.layout button.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+body.horiz .grid{grid-template-columns:1fr}
+body.horiz .stack{flex-direction:row;overflow-x:auto;padding-bottom:4px}
+body.horiz .stack>.card{flex:1 1 0;min-width:300px}
+body.horiz .grid>.card:last-child{position:static}
+body.horiz .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+body.horiz .big{font-size:24px}
 .foot{font-size:11px;color:var(--sub);margin-top:16px}
 .foot a{color:var(--sub)}
 </style>
@@ -74,7 +83,7 @@ svg{width:100%;height:auto;display:block}
 <body>
 <div class="wrap">
 <h1>2026年 中間選挙：区割り改定でどう変わったか</h1>
-<p class="lead">下院の区割りを改定した州（＋改定が使われなかったミズーリ・バージニア）を、①改定前・②新区割りの見込み・③実際の結果の勢力図を表示します。タブは複数選べ、押した順に上から並びます（もう一度押すと非表示）。州の色は民主・共和の議席比率です。</p>
+<p class="lead">下院の区割りを改定した州（＋改定が使われなかったミズーリ・バージニア）を、①改定前・②新区割りの見込み・③実際の結果の勢力図を表示します。タブは複数選べ、押した順に並びます（縦並びは上から、横並びは左から）（もう一度押すと非表示）。州の色は民主・共和の議席比率です。</p>
 
 <div class="tabs" id="tabs">
   <button data-v="0" aria-pressed="false"><b>① 改定前<span class="no"></span></b>2024年選挙時の議席</button>
@@ -83,6 +92,7 @@ svg{width:100%;height:auto;display:block}
   <a class="ext" href="https://www.wize.uno/us/vote2026.html" target="_blank" rel="noopener"><b>米国中間選挙2026 ↗</b>wize.uno/us/vote2026</a>
 </div>
 
+<div class="layout" id="layout"><span class="cap">勢力図の並べ方：</span><button data-l="v" aria-pressed="true">▤ 縦に並べる</button><button data-l="h" aria-pressed="false">▥ 横に並べる</button></div>
 <div class="grid">
   <div class="stack" id="stack"></div>
   <div class="card">
@@ -222,6 +232,10 @@ document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",
   if(k>=0){if(order.length>1)order.splice(k,1);}else order.push(v);
   try{localStorage.setItem("rd_order",JSON.stringify(order))}catch(e){}
   render();}));
+let layout="v";try{const l=localStorage.getItem("rd_layout");if(l==="h"||l==="v")layout=l;}catch(e){}
+function applyLayout(){document.body.classList.toggle("horiz",layout==="h");document.querySelectorAll("#layout button").forEach(b=>{const on=b.dataset.l===layout;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});}
+document.querySelectorAll("#layout button").forEach(b=>b.addEventListener("click",()=>{layout=b.dataset.l;try{localStorage.setItem("rd_layout",layout)}catch(e){}applyLayout();}));
+applyLayout();
 render();
 </script>
 </body>
