@@ -13,6 +13,8 @@
 index.html            トップページ
 note/index.html       .note（バックナンバー一覧）
 seminar/index.html    セミナー一覧
+privacy/index.html    プライバシーポリシー
+terms/index.html      決済に関する利用規約
 admin/index.html      管理画面（掲載内容の編集）
 404.html              旧URLからの誘導つきエラーページ
 
@@ -26,6 +28,7 @@ content/admin.json    管理画面のログイン設定
 content/home.json     トップページの掲載内容
 content/note.json     .note の記事93件／年別バックナンバー155件
 content/seminar.json  セミナーの掲載内容
+content/legal.json    プライバシーポリシーと利用規約の本文
 
 admin/auth.js         管理画面のログイン処理
 assets/js/admin-inline.js  .note ページ上での編集モード（管理者のみ読み込まれる）
@@ -229,8 +232,8 @@ apex（`wize.uno`）も 2026/09/17 に GitHub Pages の A レコード4件
 DNS はお名前.com（`01〜04.dnsv.jp`）で管理しています。
 MX（Google Workspace）と TXT（SPF・認証）は触らないでください。
 
-法務2ページはペライチの直URL（`peraichi.com/...`）を参照しているため、
-**ペライチの契約は解約しないでください**（解約する場合は先に移設が必要です）。
+法務2ページ（プライバシーポリシー・決済に関する利用規約）は
+2026/11/07 にペライチからサイト内へ移設済みです。ペライチへの依存はもうありません。
 
 ---
 
@@ -251,7 +254,7 @@ node tools/optimize-images.mjs        # 画像を幅640px/WebPへ（74MB → 4.3
 
 ## 6. 既知の申し送り
 
-- **フッターの法務ページ2本（プライバシーポリシー・決済に関する利用規約）は、まだペライチ上のURLを指しています。** ペライチを解約する前に、このサイト内へ移す必要があります。
+- **プライバシーポリシーの第４条第３項に「ラクスル株式会社が提供するペライチ」を利用している旨の記述が残っています。** ペライチの利用をやめたため実態と合いません。法務文書のため、こちらでは書き換えていません。文面の見直しをご検討ください。
 - **事業者情報（OPERATOR — 運営）と特定商取引法に関する表記へのリンクは、フッターから削除しました。** 決済はUdemy側で完結し、特商法の表記もUdemy側にあるためです。復活させる場合は `content/site.json` の `footer` に `company`（`name` / `representative` / `address` / `email` / `tel` / `hours`）を書き戻してください。値が入っていれば自動で表示されます。
 - **★ `www.wize.uno` は既に GitHub Pages で動いており、次の3ページが存在します。**
   このリポジトリをそのまま `www.wize.uno` に割り当てると、**これらは消えます。**

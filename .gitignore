@@ -3,13 +3,3 @@ tools/.cache/
 .DS_Store
 Thumbs.db
 dist/
-
-# Local secrets and service credentials must never be committed.
-.env
-.env.*
-!.env.example
-*.pem
-*.p12
-*.key
-service-account*.json
-service_account*.json

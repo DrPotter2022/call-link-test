@@ -12,6 +12,9 @@
     { key: 'home', out: 'index.html', src: '../index.html', base: '', current: 'home', label: 'トップ' },
     { key: 'note', out: 'note/index.html', src: '../note/index.html', base: '../', current: 'note', label: '.note' },
     { key: 'seminar', out: 'seminar/index.html', src: '../seminar/index.html', base: '../', current: 'seminar', label: 'セミナー' },
+    // 法務2ページは content/legal.json を分け合う
+    { key: 'privacy', out: 'privacy/index.html', src: '../privacy/index.html', base: '../', current: 'privacy', label: 'プライバシー', content: 'legal' },
+    { key: 'terms', out: 'terms/index.html', src: '../terms/index.html', base: '../', current: 'terms', label: '利用規約', content: 'legal' },
   ];
 
   /* ---------- 取得ユーティリティ ---------- */
@@ -138,19 +141,22 @@
     var W = global.WIZE;
     var site = opts.getData('site');
     var standalone = opts.standalone;
+    // legal.json のように1つのJSONを分け合うページは、そのページ分だけ取り出す
+    var contentKey = def.content || def.key;
     var base = standalone ? '' : def.base;
 
     // 単体HTMLでは、年の切り替えなど後から描画される分も含めて
     // 画像をすべて data URI にしてから組み立てる
     var prepare = standalone
-      ? embedImages(opts.getData(def.key), opts.assetCache, function (i, n) {
+      ? embedImages(opts.getData(contentKey), opts.assetCache, function (i, n) {
           opts.onProgress(def.label + ' の画像を埋め込み中… ' + i + '/' + n);
         })
-      : Promise.resolve(opts.getData(def.key));
+      : Promise.resolve(opts.getData(contentKey));
 
     return Promise.all([fetchText(def.src), prepare]).then(function (pair) {
       var tpl = pair[0];
-      var data = pair[1];
+      var fileData = pair[1];
+      var data = def.content ? fileData[def.key] : fileData;
 
       var parts = W.withBase(base, function () {
         return {
@@ -177,7 +183,7 @@
       return Promise.all([
         fetchText('../assets/css/site.css'),
         fetchText('../assets/js/site.js'),
-        fetchText('../assets/js/page-' + def.key + '.js'),
+        fetchText('../assets/js/page-' + (def.content ? 'legal' : def.key) + '.js'),
       ]).then(function (r) {
         var css = r[0], siteJs = r[1], pageJs = r[2];
 
@@ -185,7 +191,7 @@
 
         var embedded = {};
         embedded.site = site;
-        embedded[def.key] = data;
+        embedded[contentKey] = fileData;
         // </script> がデータ中に現れてもスクリプトが切れないようにする
         var json = JSON.stringify(embedded).replace(/</g, '\\u003c');
         var map = linkMap(site, opts.pages);

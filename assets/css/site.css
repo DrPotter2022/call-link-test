@@ -513,6 +513,71 @@ body:has(#wize-admin-bar){padding-bottom:56px}
 .wa-dlg-actions .wa-btn.is-primary{background:var(--ai);color:#fff;border-color:var(--ai)}
 .wa-dlg-actions .wa-btn.is-primary:hover{background:var(--ai-deep)}
 
+/* ---------- 法務ページ（規約・ポリシー） ---------- */
+.legal{padding:72px 0 96px}
+.legal-title{
+  font-family:var(--disp);font-weight:800;
+  font-size:clamp(24px,3.6vw,34px);
+  line-height:1.5;letter-spacing:.06em;
+  margin:14px 0 36px;padding-bottom:22px;
+  border-bottom:1.5px solid var(--ai);
+}
+.legal-body{font-size:14.5px;line-height:2.05;color:var(--sumi-2)}
+
+.legal-h{
+  font-family:var(--disp);font-weight:700;
+  font-size:clamp(16px,2.2vw,18.5px);
+  letter-spacing:.06em;color:var(--ai);
+  margin:44px 0 14px;padding-left:14px;
+  border-left:3px solid var(--ai);
+}
+.legal-h:first-child{margin-top:0}
+.legal-sub{
+  font-family:var(--body);font-weight:700;
+  font-size:14.5px;letter-spacing:.02em;color:var(--sumi);
+  margin:22px 0 6px;
+}
+.legal-p{margin:0 0 16px}
+.legal-sub + .legal-p{margin-bottom:10px}
+.legal-p + .legal-h{margin-top:40px}
+
+/* 条文の箇条書き。第一階層は番号、入れ子は丸 */
+.legal-list{list-style:none;counter-reset:cl;margin:0 0 16px}
+.legal-list > li{
+  counter-increment:cl;position:relative;
+  padding:9px 0 9px 36px;
+  border-top:1px dashed var(--line);
+}
+.legal-list > li:first-child{border-top:none}
+.legal-list > li::before{
+  content:counter(cl);position:absolute;left:0;top:11px;
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  color:var(--ai);background:var(--ai-pale);
+  border:1px solid var(--ai-line);border-radius:2px;
+  min-width:22px;height:20px;line-height:19px;text-align:center;
+}
+/* 入れ子だけの行は、番号を出さずに詰める */
+.legal-list > li.is-holder{padding:0 0 0 36px;border-top:none}
+.legal-list > li.is-holder::before{content:none}
+
+.legal-list .is-nested{counter-reset:none;margin:4px 0 10px}
+.legal-list .is-nested > li{
+  counter-increment:none;padding:6px 0 6px 20px;border-top:none;
+}
+.legal-list .is-nested > li::before{
+  content:"—";position:static;float:left;margin-left:-20px;
+  background:none;border:none;color:var(--nezu);
+  min-width:0;height:auto;line-height:inherit;font-size:12px;
+}
+.legal-body a{color:var(--ai);text-underline-offset:3px;word-break:break-all}
+
+@media(max-width:640px){
+  .legal{padding:48px 0 72px}
+  .legal-body{font-size:14px;line-height:1.95}
+  .legal-list > li{padding-left:30px}
+  .legal-list > li.is-holder{padding-left:14px}
+}
+
 /* ---------- お知らせ（ヘッダー直下） ---------- */
 .notice{
   display:block;

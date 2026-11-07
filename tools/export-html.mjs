@@ -33,6 +33,9 @@ const PAGE_DEFS = [
   { key: 'home', out: 'index.html', src: 'index.html', base: '', current: 'home', label: 'トップ' },
   { key: 'note', out: 'note/index.html', src: 'note/index.html', base: '../', current: 'note', label: '.note' },
   { key: 'seminar', out: 'seminar/index.html', src: 'seminar/index.html', base: '../', current: 'seminar', label: 'セミナー' },
+  // 法務2ページは content/legal.json を分け合う
+  { key: 'privacy', out: 'privacy/index.html', src: 'privacy/index.html', base: '../', current: 'privacy', label: 'プライバシー', content: 'legal' },
+  { key: 'terms', out: 'terms/index.html', src: 'terms/index.html', base: '../', current: 'terms', label: '利用規約', content: 'legal' },
 ];
 
 const read = (rel) => fs.readFile(path.join(ROOT, rel), 'utf8');
@@ -71,7 +74,13 @@ async function loadRenderers() {
   sandbox.global = sandbox;
   vm.createContext(sandbox);
 
-  for (const f of ['assets/js/site.js', 'assets/js/page-home.js', 'assets/js/page-note.js', 'assets/js/page-seminar.js']) {
+  for (const f of [
+    'assets/js/site.js',
+    'assets/js/page-home.js',
+    'assets/js/page-note.js',
+    'assets/js/page-seminar.js',
+    'assets/js/page-legal.js',
+  ]) {
     vm.runInContext(await read(f), sandbox, { filename: f });
   }
   if (!sandbox.WIZE || !sandbox.WIZE.pages.home) throw new Error('レンダラを読み込めませんでした');
@@ -155,14 +164,19 @@ function splice(tpl, parts) {
 
 async function buildPage(W, def, site, pages) {
   const tpl = await read(def.src);
-  let data = await readJSON(`content/${def.key}.json`);
+
+  // legal.json のように1つのJSONを複数ページで分け合う場合は、そのページ分だけ取り出す
+  const contentKey = def.content || def.key;
+  let fileData = await readJSON(`content/${contentKey}.json`);
   let embedded = 0;
 
   if (STANDALONE) {
-    const r = await embedImages(data);
-    data = r.data;
+    const r = await embedImages(fileData);
+    fileData = r.data;
     embedded = r.count;
   }
+
+  const data = def.content ? fileData[def.key] : fileData;
 
   const base = STANDALONE ? '' : def.base;
   const parts = W.withBase(base, () => ({
@@ -184,13 +198,13 @@ async function buildPage(W, def, site, pages) {
     const [css, siteJs, pageJs] = await Promise.all([
       read('assets/css/site.css'),
       read('assets/js/site.js'),
-      read(`assets/js/page-${def.key}.js`),
+      read(`assets/js/page-${def.content ? 'legal' : def.key}.js`),
     ]);
 
     html = html.replace(/[ \t]*<link rel="stylesheet" href="[^"]*site\.css">\n?/, `<style>\n${css}\n</style>\n`);
 
     const map = linkMap(site, pages);
-    const payload = JSON.stringify({ site, [def.key]: data }).replace(/</g, '\\u003c');
+    const payload = JSON.stringify({ site, [contentKey]: fileData }).replace(/</g, '\\u003c');
     const block =
       `<script>window.WIZE_EMBEDDED = ${payload};\n` +
       `window.WIZE_LINKMAP = ${JSON.stringify(map)};<\/script>\n` +

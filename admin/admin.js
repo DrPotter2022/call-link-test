@@ -13,6 +13,7 @@
     { key: 'home', label: 'トップ' },
     { key: 'note', label: '.note（記事）' },
     { key: 'seminar', label: 'セミナー' },
+    { key: 'legal', label: '法務ページ' },
   ];
 
   var DRAFT_PREFIX = 'wize_draft_';
@@ -44,6 +45,9 @@
     courses: 'コース', lessons: 'レッスン', lectures: '講座', lecturesTitle: '講座一覧の見出し',
     code: '講座番号', duration: '収録時間', message: '講師メッセージ', voices: '受講者の声',
     subtitle: 'サブタイトル', _comment: 'メモ（サイトには表示されません）',
+    privacy: 'プライバシーポリシー', terms: '決済に関する利用規約',
+    blocks: '本文（見出し・段落・箇条書き）', heading: '見出し', paragraph: '段落', list: '箇条書き',
+    slug: 'URL（変更しないでください）', text: '文章',
   };
 
   /* 一覧の見出しに使う候補 */
@@ -541,15 +545,7 @@
   }
 
   function ghConfig() {
-    try {
-      var config = JSON.parse(localStorage.getItem(GH_KEY) || '{}');
-      // 旧版が保存したPATは、初回読み込み時にただちに破棄する。
-      if (config.token) {
-        delete config.token;
-        localStorage.setItem(GH_KEY, JSON.stringify(config));
-      }
-      return config;
-    } catch (e) { return {}; }
+    try { return JSON.parse(localStorage.getItem(GH_KEY) || '{}'); } catch (e) { return {}; }
   }
 
   function openPublish() {
@@ -557,7 +553,8 @@
     var cfg = ghConfig();
     $('#gh-repo').value = cfg.repo || '';
     $('#gh-branch').value = cfg.branch || 'main';
-    $('#gh-token').value = '';
+    $('#gh-token').value = cfg.token || '';
+    $('#gh-remember').checked = !!cfg.token;
     $('#gh-warn').textContent = changed.length
       ? '公開する対象：' + changed.map(function (f) { return f.label; }).join('、')
       : '未公開の変更はありません。';
@@ -599,8 +596,11 @@
     if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return (warn.textContent = 'リポジトリは owner/repo の形式で入力してください。');
     if (!token) return (warn.textContent = 'アクセストークンを入力してください。');
 
-    // PATはメモリ内でこの公開処理にだけ使い、永続ストレージには保存しない。
-    localStorage.setItem(GH_KEY, JSON.stringify({ repo: repo, branch: branch }));
+    if ($('#gh-remember').checked) {
+      localStorage.setItem(GH_KEY, JSON.stringify({ repo: repo, branch: branch, token: token }));
+    } else {
+      localStorage.setItem(GH_KEY, JSON.stringify({ repo: repo, branch: branch }));
+    }
 
     var changed = FILES.filter(function (f) { return state.dirty[f.key]; });
     $('#gh-go').disabled = true;

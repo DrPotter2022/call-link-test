@@ -62,7 +62,7 @@
     <label>アクセストークン（fine-grained PAT / Contents: Read and write）
       <input id="gh-token" type="password" placeholder="github_pat_..." autocomplete="off">
     </label>
-    <p class="hint">アクセストークンはこの公開処理の間だけ使用され、ブラウザには保存されません。</p>
+    <label class="row"><input id="gh-remember" type="checkbox"> このブラウザにトークンを保存する</label>
     <label>コミットメッセージ
       <input id="gh-message" type="text" value="サイト掲載内容の更新" autocomplete="off">
     </label>
@@ -103,6 +103,8 @@
       <label class="row"><input type="checkbox" class="html-page" value="home" checked> トップ</label>
       <label class="row"><input type="checkbox" class="html-page" value="note" checked> .note（バックナンバー）</label>
       <label class="row"><input type="checkbox" class="html-page" value="seminar" checked> セミナー</label>
+      <label class="row"><input type="checkbox" class="html-page" value="privacy" checked> プライバシーポリシー</label>
+      <label class="row"><input type="checkbox" class="html-page" value="terms" checked> 決済に関する利用規約</label>
     </fieldset>
 
     <p class="warn" id="html-warn"></p>
@@ -119,6 +121,7 @@
 <script src="../assets/js/page-home.js"></script>
 <script src="../assets/js/page-note.js"></script>
 <script src="../assets/js/page-seminar.js"></script>
+<script src="../assets/js/page-legal.js"></script>
 <script src="export-html.js"></script>
 <script src="admin.js"></script>
 </body>
