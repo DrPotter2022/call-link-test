@@ -65,7 +65,7 @@ footer{font-size:11px;color:var(--sub);padding:0 20px 24px;line-height:1.7}
 <body>
 <header>
   <h1>欧州議会 勢力図マップ（第1期 1979〜第10期 2024–2029）</h1>
-  <div class="meta">欧州議会データ：2026/11/11時点（欧州議会公式「加盟国・会派別議員数」）／各国国会：直近の国政選挙結果　｜　地図にマウスを乗せるとその国の欧州議会議員の会派内訳、クリックでその国の国会勢力図を表示</div>
+  <div class="meta">欧州議会データ：2026/11/11時点（欧州議会公式「加盟国・会派別議員数」）／各国国会：直近の国政選挙結果　｜　地図にマウスを乗せるとその国選出の欧州議会議員の会派内訳、クリックで現在の国会勢力図を表示</div>
 </header>
 <div class="tabs">
   <button class="tab on" data-v="ep">① 欧州議会（全体）<span class="n">1</span></button>
@@ -99,7 +99,7 @@ footer{font-size:11px;color:var(--sub);padding:0 20px 24px;line-height:1.7}
   </div>
 </div>
 <footer>
-出典：欧州議会「Members by Member State and political group」（2026/11/11時点）、第1〜9期は各期発足時の会派別議席・国別配分（欧州議会資料等）、各国選挙管理機関・報道（ロベール・シューマン財団 選挙観測ほか）。国会は直近選挙時の議席配分で、その後の離党・会派移動は反映していません（ギリシャ・ルーマニア・クロアチア等は概数を含む）。各党の欧州議会会派は、その党の欧州議会議員が所属する会派（欧州議会に議員がいない党は「議席なし／所属なし」）。
+出典：欧州議会「Members by Member State and political group」（第10期・2026/11/11時点）、欧州議会選挙結果サイト「Breakdown of national parties and political groups」（第1〜9期・各期発足時）、各国選挙管理機関・報道（ロベール・シューマン財団 選挙観測ほか）。国会は直近選挙時の議席配分で、その後の離党・会派移動は反映していません（クロアチアの「その他」など一部は未照合）。各党の欧州議会会派は、その党の現職欧州議会議員が所属する会派（共同リストは複数表示、議員がいない党は「所属なし」）。任期途中の加盟国は発足時の集計に含まれないため、斜線のハッチで表示。
 </footer>
 <div id="tip"></div>
 <script>
@@ -133,32 +133,46 @@ const NAT = {
  AT:{h:"国民議会",d:"2024/09/29",p:[["社会民主党 SPÖ",41,"SD"],["緑の党",16,"G"],["NEOS",18,"RE"],["国民党 ÖVP",51,"EPP"],["自由党 FPÖ",57,"PFE"]]},
  BE:{h:"代議院",d:"2024/06/09",p:[["労働党 PTB-PVDA",15,"L"],["社会党 PS",16,"SD"],["フォールト Vooruit",13,"SD","#f2756f"],["エコロ",3,"G"],["フルン",6,"G","#7cc47f"],["Open VLD",7,"RE","#f7d36b"],["レ・ザンガジェ",14,"EPP"],["CD&V",11,"EPP","#7fa6e8"],["改革運動 MR",20,"RE"],["DéFI",1,"OT"],["新フランドル同盟 N-VA",24,"ECR"],["フラームス・ベラング",20,"PFE"]]},
  BG:{h:"国民議会",d:"2026/04/19",p:[["進歩的ブルガリア（ラデフ）",131,"OT","#b8504b"],["変革継続・民主ブルガリア PP-DB",37,"RE","#f7d36b"],["権利と自由のための運動 DPS",21,"RE"],["GERB",39,"EPP"],["再生 Vazrazhdane",12,"ESN"]]},
- HR:{h:"サボル（議会）",d:"2024/04/17",p:[["モジェモ！",10,"G"],["社会民主党連合",42,"SD"],["少数民族代表",8,"OT","#d9d4c7"],["その他",5,"OT"],["クロアチア民主同盟 HDZ連合",61,"EPP"],["モスト",11,"OT","#9a8f7a"],["祖国運動 DP連合",14,"ECR"]]},
+ HR:{h:"サボル（議会）",d:"2024/04/17",note:"「その他」5議席と連合の内訳は未照合",p:[["モジェモ！",10,"G"],["社会民主党連合",42,"SD"],["少数民族代表",8,"OT","#d9d4c7"],["その他",5,"OT"],["クロアチア民主同盟 HDZ連合",61,"EPP"],["モスト",11,"OT","#9a8f7a"],["祖国運動 DP連合",14,"ECR"]]},
  CY:{h:"代議院",d:"2026/05/24",note:"トルコ系住民割当の24議席は1964年以降空席（定数80のうち56議席）",p:[["労働者進歩党 AKEL",15,"L"],["直接民主主義 ADK",4,"NI"],["ALMA",4,"OT","#9fb7c9"],["民主党 DIKO",8,"SD"],["民主連合 DISY",17,"EPP"],["国民人民戦線 ELAM",8,"ECR"]]},
  CZ:{h:"下院（代議院）",d:"2025/10/04",p:[["海賊党",18,"G"],["市長と独立派 STAN",22,"EPP","#7fa6e8"],["SPOLU（ODS・KDU-ČSL・TOP 09）",52,"EPP"],["ANO 2011",80,"PFE"],["モトリスト",13,"PFE","#7b6aa8"],["自由と直接民主主義 SPD",15,"ESN"]]},
  DK:{h:"フォルケティング",d:"2026/03/24",p:[["赤緑連合",11,"L"],["社会主義人民党 SF",20,"G"],["オルタナティブ",5,"OT","#8fc28f"],["社会民主党",38,"SD"],["急進左翼党",10,"RE","#c9a1e0"],["モデラーテルネ",14,"RE","#e8c860"],["自由党 ヴェンスタ",18,"RE"],["保守人民党",13,"EPP"],["自由同盟",16,"OT","#5ec4d0"],["デンマーク民主党",10,"ECR"],["デンマーク国民党",16,"PFE"],["市民党",4,"OT","#a89a86"],["フェロー諸島・グリーンランド選出",4,"OT","#d9d4c7"]]},
- EE:{h:"リーギコグ",d:"2023/03/05",p:[["社会民主党",9,"SD"],["中央党",16,"RE","#3fa36a"],["改革党",37,"RE"],["エストニア200",14,"OT","#5aa9d6"],["祖国 Isamaa",8,"EPP"],["保守人民党 EKRE",17,"ECR"]]},
+ EE:{h:"リーギコグ",d:"2023/03/05",p:[["社会民主党",9,"SD"],["中央党",16,"RE/ECR","#3fa36a"],["改革党",37,"RE"],["エストニア200",14,"OT","#5aa9d6"],["祖国 Isamaa",8,"EPP"],["保守人民党 EKRE",17,"OT","#6b5a45"]]},
  FI:{h:"エドゥスクンタ",d:"2023/04/02",p:[["左翼同盟",11,"L"],["緑の同盟",13,"G"],["社会民主党",43,"SD"],["中央党",23,"RE","#3fa36a"],["スウェーデン人民党",9,"RE"],["ムーブメント・ナウ",1,"OT"],["オーランド",1,"OT","#d9d4c7"],["キリスト教民主党",5,"EPP","#7fa6e8"],["国民連合党",48,"EPP"],["フィン人党",46,"ECR"]]},
- FR:{h:"国民議会",d:"2024/07/07",note:"2024年選挙結果の会派ブロック概数（その後の補選・会派移動は未反映）",p:[["不服従のフランス LFI",71,"L"],["共産党ほか左派",27,"L","#c25b6e"],["環境派",33,"G"],["社会党",64,"SD"],["アンサンブル（大統領与党）",159,"RE"],["その他・地域政党",15,"OT"],["共和党 LR・中道右派",66,"EPP"],["国民連合 RN",125,"PFE"],["シオッティ派（UDR）",17,"ECR"]]},
+ FR:{h:"国民議会",d:"2024/07/07",unit:"内務省の候補者分類（nuance）別の当選者数",note:"左派連合（UG）は不服従のフランス（Left）・社会党（S&D）・環境派（緑）・共産党（Left）などの共同候補",p:[["左派連合 UG",178,"L/SD/G","#c23b5a"],["諸派左派 DVG",12,"OT","#e89090"],["社会党（UG外）",2,"SD","#f2756f"],["環境派（UG外）",1,"G","#7cc47f"],["地域主義 REG",9,"OT","#9fb7c9"],["アンサンブル ENS",150,"RE"],["オリゾン（ENS外）",6,"RE","#f7d36b"],["諸派中道 DVC",6,"OT","#e8d9a0"],["UDI",3,"OT","#a7c4e8"],["その他 DIV",1,"OT"],["共和党 LR",39,"EPP"],["諸派右派 DVD",27,"OT","#7fa6e8"],["国民連合 RN",125,"PFE"],["極右連合 UXD（シオッティ派）",17,"OT","#4a3a80"],["極右 EXD",1,"OT","#2a1d55"]]},
  DE:{h:"連邦議会",d:"2025/02/23",p:[["左翼党",64,"L"],["同盟90/緑の党",85,"G"],["社会民主党 SPD",120,"SD"],["南シュレスヴィヒ選挙人同盟",1,"OT"],["CDU/CSU",208,"EPP"],["ドイツのための選択肢 AfD",152,"ESN"]]},
- GR:{h:"ギリシャ議会",d:"2023/06/25",note:"選挙時の配分。その後SYRIZA分裂・スパルタ人議員除名などで現勢は変動",p:[["共産党 KKE",21,"NI"],["自由の航路",8,"OT","#c25b6e"],["急進左派連合 SYRIZA",47,"L"],["全ギリシャ社会主義運動 PASOK",32,"SD"],["新民主主義党 ND",158,"EPP"],["ニキ（勝利）",10,"OT","#5aa9d6"],["ギリシャの解決",12,"ECR"],["スパルタ人",12,"OT","#6b5a45"]]},
+ GR:{h:"ギリシャ議会",d:"2023/06/25",note:"選挙時の確定配分。その後SYRIZA分裂・スパルタ人議員の除名などで現勢は変動（現勢は未反映）",p:[["共産党 KKE",21,"NI"],["自由の航路",8,"OT","#c25b6e"],["急進左派連合 SYRIZA",47,"L"],["全ギリシャ社会主義運動 PASOK",32,"SD"],["新民主主義党 ND",158,"EPP"],["ニキ（勝利）",10,"OT","#5aa9d6"],["ギリシャの解決",12,"ECR"],["スパルタ人",12,"OT","#6b5a45"]]},
  HU:{h:"国民議会",d:"2026/04/12",p:[["ティサ（尊重と自由党）",141,"EPP"],["フィデス＝KDNP",52,"PFE"],["我らの祖国",6,"ESN"]]},
- IE:{h:"ドイル（下院）",d:"2024/11/29",p:[["人民利益優先・連帯",3,"OT","#c25b6e"],["シン・フェイン",39,"L"],["労働党",11,"SD"],["社会民主党",11,"SD","#f2756f"],["共和党 フィアナ・フォイル",48,"RE"],["統一アイルランド党 フィナ・ゲール",38,"EPP"],["独立系アイルランド・アオントゥ等",7,"OT","#9a8f7a"],["無所属",17,"OT"]]},
+ IE:{h:"ドイル（下院）",d:"2024/11/29",p:[["人民利益優先・連帯",3,"OT","#c25b6e"],["シン・フェイン",39,"L"],["緑の党",1,"G"],["労働党",11,"SD"],["社会民主党",11,"SD","#f2756f"],["共和党 フィアナ・フォイル",48,"RE"],["統一アイルランド党 フィナ・ゲール",38,"EPP"],["100% Redress",1,"OT","#d9d4c7"],["独立系アイルランド",4,"RE","#f7d36b"],["アオントゥ",2,"OT","#6b5a45"],["無所属",16,"OT"]]},
  IT:{h:"代議院",d:"2022/09/25",p:[["緑・左派同盟 AVS",12,"G"],["五つ星運動",52,"L"],["民主党 PD",69,"SD"],["＋ヨーロッパ",3,"RE","#f7d36b"],["アツィオーネ・イタリア・ヴィーヴァ",21,"RE"],["その他（SVP等）",6,"OT"],["我らの穏健派",7,"EPP","#7fa6e8"],["フォルツァ・イタリア",45,"EPP"],["イタリアの同胞 FdI",119,"ECR"],["同盟 Lega",66,"PFE"]]},
- LV:{h:"サエイマ",d:"2026/10/03",p:[["プログレッシブ",10,"SD"],["新統一",7,"EPP"],["統一リスト",41,"ECR"],["国民同盟",10,"ECR","#6cc6d1"],["ラトビア第一",17,"PFE"],["主権者の力／若いラトビア人同盟",15,"OT","#8a6a50"]]},
- LT:{h:"セイマス",d:"2024/10/27",p:[["社会民主党 LSDP",52,"SD"],["民主主義者「リトアニアのために」",14,"OT","#e89090"],["農民・緑の同盟",8,"G"],["自由運動",12,"RE"],["祖国同盟 TS-LKD",28,"EPP"],["ネムナスの夜明け",20,"OT","#8a6a50"],["ポーランド人選挙行動",3,"ECR"],["その他・無所属",4,"OT","#d9d4c7"]]},
+ LV:{h:"サエイマ",d:"2026/10/03",p:[["プログレッシブ",10,"G"],["新統一",7,"EPP"],["統一リスト",41,"ECR"],["国民同盟",10,"ECR","#6cc6d1"],["ラトビア第一",17,"PFE"],["主権者の力／若いラトビア人同盟",15,"OT","#8a6a50"]]},
+ LT:{h:"セイマス",d:"2024/10/27",p:[["社会民主党 LSDP",52,"SD"],["民主主義者「リトアニアのために」",14,"G","#7cc47f"],["農民・緑の同盟",8,"ECR","#6cc6d1"],["自由運動",12,"RE"],["祖国同盟 TS-LKD",28,"EPP"],["ネムナスの夜明け",20,"OT","#8a6a50"],["ポーランド人選挙行動",3,"ECR"],["その他・無所属",4,"OT","#d9d4c7"]]},
  LU:{h:"代議院",d:"2023/10/08",p:[["左翼党",2,"L"],["社会主義労働者党 LSAP",11,"SD"],["緑の党",4,"G"],["海賊党",3,"OT"],["民主党 DP",14,"RE"],["キリスト教社会人民党 CSV",21,"EPP"],["改革のための選択民主党 ADR",5,"ECR"]]},
- MT:{h:"代議院",d:"2026/05",note:"ジェンダー均衡規定により追加議席（最大12）が配分される場合あり",p:[["労働党",36,"SD"],["国民党",31,"EPP"]]},
+ MT:{h:"代議院",d:"2026/05/30",note:"男女均衡措置で各党に6議席（計12）が追加された確定構成。追加前は労働党36・国民党31",p:[["労働党",42,"SD"],["国民党",37,"EPP"]]},
  NL:{h:"下院（第二院）",d:"2025/10/29",p:[["社会党 SP",3,"OT","#e05a5a"],["動物党",3,"L"],["緑の左派・労働党",20,"G"],["Volt",1,"G","#6a3fa0"],["DENK",3,"OT","#5ec4d0"],["民主66 D66",26,"RE","#2fa84f"],["50PLUS",2,"OT","#b48bd1"],["キリスト教民主アピール CDA",18,"EPP"],["キリスト教同盟",3,"EPP","#7fa6e8"],["自由民主国民党 VVD",22,"RE"],["農民市民運動 BBB",4,"EPP","#9bbf3a"],["改革派政党 SGP",3,"ECR","#e07a28"],["JA21",9,"ECR"],["民主主義フォーラム FvD",7,"OT","#7a2a2a"],["自由党 PVV",26,"PFE"]]},
- PL:{h:"セイム（下院）",d:"2023/10/15",p:[["左派連合",26,"SD"],["市民連立 KO",157,"EPP"],["ポーランド2050",33,"RE"],["ポーランド農民党 PSL",32,"EPP","#3fa36a"],["法と正義 PiS",194,"ECR"],["同盟 Konfederacja",18,"PFE"]]},
+ PL:{h:"セイム（下院）",d:"2023/10/15",note:"「第三の道」はポーランド2050と農民党の共同リスト（計65議席）。表は内訳",p:[["左派連合",26,"SD"],["市民連立 KO",157,"EPP"],["第三の道：ポーランド2050",33,"RE"],["第三の道：農民党 PSL",32,"EPP","#3fa36a"],["法と正義 PiS",194,"ECR"],["同盟 Konfederacja",18,"PFE/ESN"]]},
  PT:{h:"共和国議会",d:"2025/05/18",p:[["左翼ブロック",1,"L","#c25b6e"],["統一民主連合 CDU",3,"L"],["リヴレ",6,"OT","#8fc28f"],["PAN",1,"OT","#3aa0a0"],["社会党 PS",58,"SD"],["JPP",1,"OT"],["民主同盟 AD（PSD/CDS）",91,"EPP"],["自由主義イニシアチブ",9,"RE"],["シェーガ",60,"PFE"]]},
  RO:{h:"代議院",d:"2024/12/01",p:[["社会民主党 PSD",86,"SD"],["ルーマニア救済同盟 USR",40,"RE"],["国民自由党 PNL",49,"EPP"],["ハンガリー人民主同盟 UDMR",22,"EPP","#3fa36a"],["少数民族代表",19,"OT","#d9d4c7"],["ルーマニア人統一同盟 AUR",63,"ECR"],["SOSルーマニア",28,"NI"],["若者党 POT",24,"OT","#8a6a50"]]},
  SK:{h:"国民議会",d:"2023/09/30",p:[["方向・社会民主主義 Smer",42,"NI"],["声 Hlas",27,"NI","#b5b5b5"],["進歩スロバキア PS",32,"RE"],["自由と連帯 SaS",11,"ECR","#6cc6d1"],["キリスト教民主運動 KDH",12,"EPP"],["スロバキア（旧OĽaNO）",16,"OT","#7fa6e8"],["スロバキア国民党 SNS",10,"OT","#7a4f22"]]},
- SI:{h:"国民議会",d:"2026/03/22",p:[["左派",5,"L"],["社会民主党",6,"SD"],["自由運動 GS",29,"RE"],["民主党（ロガル）",6,"OT","#5aa9d6"],["少数民族代表",2,"OT","#d9d4c7"],["NSi・SLS・フォーカス",9,"EPP","#7fa6e8"],["スロベニア民主党 SDS",28,"EPP"],["レスニツァ（真実）",5,"OT","#8a6a50"]]},
- ES:{h:"下院（代議院）",d:"2023/07/23",p:[["EHビルドゥ",6,"OT","#7cb342"],["スマール",31,"L"],["カタルーニャ共和主義左翼 ERC",7,"G"],["BNG",1,"G","#7cc47f"],["社会労働党 PSOE",121,"SD"],["バスク国民党 PNV",5,"RE"],["カナリア連合",1,"OT"],["ジュンツ",7,"NI"],["国民党 PP",137,"EPP"],["UPN",1,"OT"],["ボックス Vox",33,"PFE"]]},
+ SI:{h:"国民議会",d:"2026/03/22",p:[["レヴィツァ・ヴェスナ（共同リスト）",5,"G","#8e1b3a"],["社会民主党",6,"SD"],["自由運動 GS",29,"RE"],["民主党（ロガル）",6,"OT","#5aa9d6"],["少数民族代表",2,"OT","#d9d4c7"],["NSi・SLS・フォーカス",9,"EPP","#7fa6e8"],["スロベニア民主党 SDS",28,"EPP"],["レスニツァ（真実）",5,"OT","#8a6a50"]]},
+ ES:{h:"下院（代議院）",d:"2023/07/23",note:"スマールは共同リスト（Movimiento SumarはLeft、Compromís・ComunsはGreens/EFA）",p:[["EHビルドゥ",6,"L","#7cb342"],["スマール（共同リスト）",31,"L/G"],["カタルーニャ共和主義左翼 ERC",7,"G"],["BNG",1,"G","#7cc47f"],["社会労働党 PSOE",121,"SD"],["バスク国民党 PNV",5,"RE"],["カナリア連合",1,"OT"],["ジュンツ",7,"NI"],["国民党 PP",137,"EPP"],["UPN",1,"OT"],["ボックス Vox",33,"PFE"]]},
  SE:{h:"リクスダーグ",d:"2026/09/13",p:[["左翼党",30,"L"],["環境党",22,"G"],["社会民主労働党",99,"SD"],["中央党",25,"RE","#3fa36a"],["自由党",19,"RE"],["キリスト教民主党",22,"EPP","#7fa6e8"],["穏健党",70,"EPP"],["スウェーデン民主党",62,"ECR"]]}
 };
 
+const SRC={
+ FR:["フランス内務省 2024年国民議会選挙結果","https://www.archives-resultats-elections.interieur.gouv.fr/resultats/legislatives2024/ensemble_geographique/"],
+ MT:["ロベール・シューマン財団（出典：マルタ選挙委員会）","https://www.robert-schuman.eu/en/observatoire/6826"],
+ IE:["RTÉ（全174議席確定）","https://www.rte.ie/news/election-24/2024/1202/1484147-election-day-three"],
+ PL:["ポーランド国家選挙委員会 公示","https://wybory.gov.pl/sejmsenat2023/statics/PKW_OBWIESZCZENIA/uploaded_files/1697617008_obwieszczenie-sejm.pdf"],
+ NL:["オランダ選挙評議会","https://www.kiesraad.nl/actueel/nieuws/2025/11/7/kiesraad-uitslag-tweede-kamerverkiezing-betrouwbaar"],
+ SI:["スロベニア国家選挙委員会","https://volitve.dvk-rs.si/dz2026/"],
+ SE:["スウェーデン議会","https://www.riksdagen.se/en/news/articles/2026/sep/19/the-new-riksdag-after-the-elections_cmsad780a37-f1ae-4d47-a4a7-b6ea2a69a21een/"],
+ DK:["ロベール・シューマン財団","https://www.robert-schuman.eu/en/observatoire/6772"],
+ BG:["ロベール・シューマン財団","https://www.robert-schuman.eu/en/observatoire/6789"],
+ CY:["ロベール・シューマン財団","https://www.robert-schuman.eu/en/observatoire/6817"],
+ LV:["Brussels Signal","https://brusselssignal.eu/2026/10/latvian-right-wins-record-mandate-as-kulbergs-takes-41-seats/"],
+ HU:["intellinews","https://www.intellinews.com/final-hungarian-election-results-confirm-supermajority-for-tisza-438174/"]
+};
 const $=s=>document.querySelector(s);
 const tip=$("#tip");
 const svgNS="http://www.w3.org/2000/svg";
@@ -197,99 +211,83 @@ function drawBar(container,items,total){
   const line=document.createElement("div");line.style.cssText="position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:#111";container.appendChild(line);
 }
 
-// ---- 欧州議会 各期データ（発足時の会派構成・国別配分） ----
+// ---- 欧州議会 各期データ ----
+// 第1〜9期：欧州議会公式「Breakdown of national parties and political groups」発足時（constitutive session）の国別×会派別議席
+const BYC = {"1":{"BE":[0,7,1,4,10,0,0,2],"DE":[0,35,0,4,42,0,0,0],"DK":[1,4,4,3,0,2,1,1],"FR":[19,21,0,17,9,0,15,0],"IE":[0,4,1,1,4,0,5,0],"IT":[24,13,5,5,30,0,0,4],"LU":[0,1,0,2,3,0,0,0],"NL":[0,9,0,4,10,0,0,2],"UK":[0,18,0,0,0,61,1,1]},"2":{"BE":[0,7,4,5,6,0,0,0,2],"DK":[1,4,4,2,1,4,0,0,0],"FR":[10,20,0,12,9,0,20,10,0],"DE":[0,33,7,0,41,0,0,0,0],"GR":[4,10,0,0,9,0,0,1,0],"IE":[0,0,0,1,6,0,8,0,0],"IT":[26,12,3,5,27,0,0,5,3],"LU":[0,2,0,1,3,0,0,0,0],"NL":[0,9,2,5,8,0,0,0,1],"UK":[0,33,0,0,0,46,1,0,1]},"3":{"BE":[0,0,8,3,1,4,7,0,0,1,0],"DE":[0,0,31,8,0,4,32,0,0,6,0],"DK":[0,1,4,0,4,3,2,2,0,0,0],"GR":[3,1,9,0,0,0,10,0,1,0,0],"ES":[0,4,27,1,2,6,16,0,0,0,4],"FR":[7,0,22,8,1,13,6,0,13,10,1],"IE":[1,0,1,0,1,2,4,0,6,0,0],"IT":[0,22,14,7,3,3,27,0,0,0,5],"LU":[0,0,2,0,0,1,3,0,0,0,0],"NL":[0,0,8,2,0,4,10,0,0,0,1],"PT":[3,0,8,1,0,9,3,0,0,0,0],"UK":[0,0,46,0,1,0,1,32,0,0,1]},"4":{"BE":[0,6,2,1,6,7,0,0,0,3],"DE":[0,40,12,0,0,47,0,0,0,0],"DK":[0,3,1,0,5,3,0,0,4,0],"GR":[4,10,0,0,0,9,0,2,0,0],"ES":[9,22,0,1,2,30,0,0,0,0],"FR":[7,15,0,13,1,13,0,14,13,11],"IE":[0,1,2,0,1,4,0,7,0,0],"IT":[5,18,4,2,7,12,27,0,0,12],"LU":[0,2,1,0,1,2,0,0,0,0],"NL":[0,8,1,0,10,10,0,0,2,0],"PT":[3,10,0,0,9,0,0,3,0,0],"UK":[0,63,0,2,2,19,0,0,0,1]},"5":{"AT":[0,7,2,0,7,0,0,0,5],"BE":[0,5,7,5,6,0,0,2,0],"DE":[6,33,7,0,53,0,0,0,0],"DK":[1,3,0,6,1,1,4,0,0],"GR":[7,9,0,0,9,0,0,0,0],"ES":[4,24,4,3,28,0,0,0,1],"FI":[1,3,2,5,5,0,0,0,0],"FR":[11,22,9,0,20,13,6,5,1],"IE":[0,1,2,1,5,6,0,0,0],"IT":[6,17,2,7,34,9,0,11,1],"LU":[0,2,1,1,2,0,0,0,0],"NL":[1,6,4,8,9,0,3,0,0],"PT":[2,12,0,0,9,2,0,0,0],"SE":[3,6,2,4,7,0,0,0,0],"UK":[0,30,6,10,37,0,3,0,1]},"6":{"AT":[0,7,2,0,6,0,0,3],"BE":[0,7,2,6,6,0,0,3],"CY":[2,0,0,1,3,0,0,0],"CZ":[6,2,0,0,14,0,1,1],"DE":[7,23,13,7,49,0,0,0],"DK":[1,5,1,4,1,1,1,0],"EE":[0,3,0,2,1,0,0,0],"GR":[4,8,0,0,11,0,1,0],"ES":[1,24,3,2,24,0,0,0],"FI":[1,3,1,5,4,0,0,0],"FR":[3,31,6,11,17,0,3,7],"HU":[0,9,0,2,13,0,0,0],"IE":[1,1,0,1,5,4,1,0],"IT":[7,16,2,12,24,9,4,4],"LT":[0,2,0,7,2,2,0,0],"LU":[0,1,1,1,3,0,0,0],"LV":[0,0,1,1,3,4,0,0],"MT":[0,3,0,0,2,0,0,0],"NL":[2,7,4,5,7,0,2,0],"PL":[0,8,0,4,19,7,10,6],"PT":[3,12,0,0,9,0,0,0],"SE":[2,5,1,3,5,0,3,0],"SI":[0,1,0,2,4,0,0,0],"SK":[0,3,0,0,8,0,0,3],"UK":[1,19,5,12,28,0,11,2]},"7":{"AT":[0,4,2,0,6,0,0,5],"BE":[0,5,4,5,5,1,0,2],"BG":[0,4,0,5,6,0,0,2],"CY":[2,2,0,0,2,0,0,0],"CZ":[4,7,0,0,2,9,0,0],"DE":[8,23,14,12,42,0,0,0],"DK":[1,4,2,3,1,0,2,0],"EE":[0,1,1,3,1,0,0,0],"GR":[3,8,1,0,8,0,2,0],"ES":[1,21,2,2,23,0,0,1],"FI":[0,2,2,4,4,0,1,0],"FR":[5,14,14,6,29,0,1,3],"HU":[0,4,0,0,14,1,0,3],"IE":[1,3,0,4,4,0,0,0],"IT":[0,21,0,7,35,0,9,0],"LT":[0,3,0,2,4,1,2,0],"LU":[0,1,1,1,3,0,0,0],"LV":[1,1,1,1,3,1,0,0],"MT":[0,3,0,0,2,0,0,0],"NL":[2,3,3,6,5,1,1,4],"PL":[0,7,0,0,28,15,0,0],"PT":[5,7,0,0,10,0,0,0],"RO":[0,11,0,5,14,0,0,3],"SE":[1,5,3,4,5,0,0,0],"SI":[0,2,0,2,3,0,0,0],"SK":[0,5,0,1,6,0,1,0],"UK":[1,13,5,11,0,25,13,4]},"8":{"AT":[0,5,3,1,5,0,0,4],"BE":[0,4,2,6,4,4,0,1],"BG":[0,4,0,4,7,2,0,0],"CY":[2,2,0,0,2,0,0,0],"CZ":[3,4,0,4,7,2,1,0],"DE":[8,27,13,4,34,8,0,2],"DK":[1,3,1,3,1,4,0,0],"EE":[0,1,1,3,1,0,0,0],"GR":[6,4,0,0,5,1,0,5],"ES":[11,14,4,8,17,0,0,0],"FI":[1,2,1,4,3,2,0,0],"FR":[4,13,6,7,20,0,1,23],"HR":[0,2,1,2,5,1,0,0],"HU":[0,4,2,0,12,0,0,3],"IE":[4,1,0,1,4,1,0,0],"IT":[3,31,0,0,17,0,17,5],"LT":[0,2,1,3,2,1,2,0],"LV":[0,1,1,0,4,1,1,0],"LU":[0,1,1,1,3,0,0,0],"MT":[0,3,0,0,3,0,0,0],"NL":[3,3,2,7,5,2,0,4],"PL":[0,5,0,0,23,19,0,4],"PT":[4,8,0,2,7,0,0,0],"RO":[0,16,0,1,15,0,0,0],"SK":[0,4,0,1,6,2,0,0],"SI":[0,1,1,1,5,0,0,0],"SE":[1,6,4,3,4,0,2,0],"UK":[1,20,6,1,0,20,24,1]},"9":{"AT":[0,5,2,1,7,0,3,0],"BE":[1,3,3,4,4,3,3,0],"BG":[0,5,0,3,7,2,0,0],"CY":[2,2,0,0,2,0,0,0],"CZ":[1,0,3,6,5,4,2,0],"DE":[6,16,25,7,29,1,11,1],"DK":[1,3,2,5,1,0,1,0],"EE":[0,2,0,3,0,0,1,0],"GR":[6,2,0,0,8,1,0,4],"ES":[6,20,2,8,12,3,0,3],"FI":[1,2,2,3,3,0,2,0],"FR":[6,5,12,21,8,0,22,0],"HR":[0,3,0,1,4,1,0,2],"HU":[0,5,0,2,13,0,0,1],"IE":[4,0,2,1,4,0,0,0],"IT":[0,19,0,0,7,5,28,14],"LT":[0,2,2,2,4,1,0,0],"LU":[0,1,1,2,2,0,0,0],"LV":[0,2,1,1,2,2,0,0],"MT":[0,4,0,0,2,0,0,0],"NL":[1,6,3,6,6,4,0,0],"PL":[0,8,0,0,17,26,0,0],"PT":[4,9,1,0,7,0,0,0],"RO":[0,10,0,8,14,0,0,0],"SE":[1,5,2,3,6,3,0,0],"SI":[0,2,0,2,4,0,0,0],"SK":[0,3,0,2,4,2,0,2],"UK":[1,10,11,17,0,4,0,30]}};
 const HC={L:"#8e1b3a",L2:"#b04a63",SD:"#e0312f",G:"#3f9b45",RBW:"#7fbf6a",ERA:"#c9a1e0",RE:"#f0b400",TG:"#bdb6a8",EPP:"#2f6fd6",FE:"#6fa8ff",ED:"#159fb0",NAT:"#1d5f8a",ER:"#2a1d55",ID:"#3c2a72",EUS:"#7a4f22",NI:"#8f8f8f"};
-const M1979={DE:81,FR:81,IT:81,UK:81,NL:25,BE:24,DK:16,IE:15,LU:6};
-const M1994={DE:99,FR:87,IT:87,UK:87,ES:64,NL:31,BE:25,GR:25,PT:25,DK:16,IE:15,LU:6};
-const M2014={DE:96,FR:74,IT:73,UK:73,ES:54,PL:51,RO:32,NL:26,BE:21,CZ:21,GR:21,HU:21,PT:21,SE:20,AT:18,BG:17,DK:13,FI:13,SK:13,HR:11,IE:11,LT:11,LV:8,SI:8,CY:6,EE:6,LU:6,MT:6};
+const GN={ // 略称: [名称, 色]
+ COM:["共産主義・同盟者グループ",HC.L],SOC:["社会主義グループ",HC.SD],CDI:["無所属技術調整グループ",HC.TG],LD:["自由民主グループ",HC.RE],
+ EPP:["欧州人民党",HC.EPP],ED:["欧州民主グループ（英保守党など）",HC.ED],EPD:["欧州進歩民主グループ（ゴーリストなど）",HC.NAT],NI:["無所属",HC.NI],
+ RBW:["虹のグループ（緑・地域政党）",HC.RBW],EDA:["欧州民主連合グループ",HC.NAT],ER:["欧州右派グループ",HC.ER],
+ LU:["左派連合",HC.L2],EUL:["欧州統一左派",HC.L],G:["緑のグループ",HC.G],LDR:["自由民主改革グループ",HC.RE],
+ PES:["欧州社会党",HC.SD],ERA:["欧州急進同盟",HC.ERA],ELDR:["欧州自由民主改革党",HC.RE],FE:["フォルツァ・エウローパ",HC.FE],EN:["諸国家のヨーロッパ",HC.EUS],
+ "GUE/NGL":["欧州統一左派・北欧緑左派",HC.L],"G/EFA":["緑の党・欧州自由連盟",HC.G],"EPP-ED":["欧州人民党・欧州民主",HC.EPP],
+ UEN:["諸国家のヨーロッパ連合",HC.NAT],EDD:["民主主義と多様性のヨーロッパ",HC.EUS],TDI:["無所属技術グループ（TDI）",HC.TG],
+ ALDE:["欧州自由民主同盟",HC.RE],"IND/DEM":["独立・民主主義",HC.EUS],"S&D":["社会民主進歩同盟",HC.SD],ECR:["欧州保守改革",HC.ED],
+ EFD:["自由と民主主義のヨーロッパ",HC.EUS],EFDD:["自由と直接民主主義のヨーロッパ",HC.EUS],Renew:["欧州刷新",HC.RE],ID:["アイデンティティと民主主義",HC.ID]
+};
 const TERMS=[
- {t:1,y:"1979–1984",el:"1979/06（初の直接選挙）",mem:M1979,later:"ギリシャは1981年加盟（24議席）",g:[
-  ["COM","共産主義・同盟者グループ",44,HC.L],["SOC","社会主義グループ",113,HC.SD],["CDI","無所属技術調整グループ",11,HC.TG],["LD","自由民主グループ",40,HC.RE],["EPP","欧州人民党（キリスト教民主）",107,HC.EPP],["ED","欧州民主グループ（英保守党など）",64,HC.ED],["EPD","欧州進歩民主グループ（ゴーリストなど）",22,HC.NAT],["NI","無所属",9,HC.NI]]},
- {t:2,y:"1984–1989",el:"1984/06",mem:{...M1979,GR:24},later:"スペイン（60）・ポルトガル（24）は1986年加盟",g:[
-  ["COM","共産主義・同盟者グループ",41,HC.L],["SOC","社会主義グループ",130,HC.SD],["RBW","虹のグループ（緑・地域政党）",20,HC.RBW],["LD","自由民主改革グループ",31,HC.RE],["EPP","欧州人民党",110,HC.EPP],["ED","欧州民主グループ",50,HC.ED],["EDA","欧州民主連合グループ",29,HC.NAT],["ER","欧州右派グループ",16,HC.ER],["NI","無所属",7,HC.NI]]},
- {t:3,y:"1989–1994",el:"1989/06",mem:{...M1979,GR:24,ES:60,PT:24},g:[
-  ["LU","左派連合",14,HC.L2],["EUL","欧州統一左派",28,HC.L],["SOC","社会主義グループ",180,HC.SD],["G","緑のグループ",30,HC.G],["RBW","虹のグループ",13,HC.RBW],["LDR","自由民主改革グループ",49,HC.RE],["EPP","欧州人民党",121,HC.EPP],["ED","欧州民主グループ",34,HC.ED],["EDA","欧州民主連合グループ",20,HC.NAT],["ER","欧州右派グループ",17,HC.ER],["NI","無所属",12,HC.NI]]},
- {t:4,y:"1994–1999",el:"1994/06",mem:M1994,later:"オーストリア（21）・フィンランド（16）・スウェーデン（22）は1995年加盟",g:[
-  ["EUL","欧州統一左派",28,HC.L],["PES","欧州社会党",198,HC.SD],["G","緑のグループ",23,HC.G],["ERA","欧州急進同盟",19,HC.ERA],["ELDR","欧州自由民主改革党",43,HC.RE],["EPP","欧州人民党",157,HC.EPP],["FE","フォルツァ・エウローパ",27,HC.FE],["EDA","欧州民主連合グループ",26,HC.NAT],["EN","諸国家のヨーロッパ",19,HC.EUS],["NI","無所属",27,HC.NI]]},
- {t:5,y:"1999–2004",el:"1999/06",mem:{...M1994,AT:21,FI:16,SE:22},g:[
-  ["GUE/NGL","欧州統一左派・北欧緑左派",42,HC.L],["PES","欧州社会党",180,HC.SD],["G/EFA","緑の党・欧州自由連盟",48,HC.G],["ELDR","欧州自由民主改革党",50,HC.RE],["EPP-ED","欧州人民党・欧州民主",233,HC.EPP],["UEN","諸国家のヨーロッパ連合",30,HC.NAT],["EDD","民主主義と多様性のヨーロッパ",16,HC.EUS],["TGI","無所属技術グループ",18,HC.TG],["NI","無所属",9,HC.NI]]},
- {t:6,y:"2004–2009",el:"2004/06（中東欧10か国加盟後）",mem:{DE:99,FR:78,IT:78,UK:78,ES:54,PL:54,NL:27,BE:24,CZ:24,GR:24,HU:24,PT:24,SE:19,AT:18,DK:14,FI:14,SK:14,IE:13,LT:13,LV:9,SI:7,CY:6,EE:6,LU:6,MT:5},later:"ブルガリア（18）・ルーマニア（35）は2007年加盟",g:[
-  ["GUE/NGL","欧州統一左派・北欧緑左派",41,HC.L],["PES","欧州社会党",200,HC.SD],["G/EFA","緑の党・欧州自由連盟",42,HC.G],["ALDE","欧州自由民主同盟",88,HC.RE],["EPP-ED","欧州人民党・欧州民主",268,HC.EPP],["UEN","諸国家のヨーロッパ連合",27,HC.NAT],["IND/DEM","独立・民主主義",37,HC.EUS],["NI","無所属",29,HC.NI]]},
- {t:7,y:"2009–2014",el:"2009/06",mem:{DE:99,FR:72,IT:72,UK:72,ES:50,PL:50,RO:33,NL:25,BE:22,CZ:22,GR:22,HU:22,PT:22,SE:18,AT:17,BG:17,DK:13,FI:13,SK:13,IE:12,LT:12,LV:8,SI:7,CY:6,EE:6,LU:6,MT:5},later:"リスボン条約で途中から754議席。クロアチア（12）は2013年加盟",g:[
-  ["GUE/NGL","欧州統一左派・北欧緑左派",35,HC.L],["S&D","社会民主進歩同盟",184,HC.SD],["G/EFA","緑の党・欧州自由連盟",55,HC.G],["ALDE","欧州自由民主同盟",84,HC.RE],["EPP","欧州人民党",265,HC.EPP],["ECR","欧州保守改革",54,HC.ED],["EFD","自由と民主主義のヨーロッパ",32,HC.EUS],["NI","無所属",27,HC.NI]]},
- {t:8,y:"2014–2019",el:"2014/05",mem:M2014,later:"2015年に「諸国家と自由のヨーロッパ（ENF）」が無所属議員らで結成",g:[
-  ["GUE/NGL","欧州統一左派・北欧緑左派",52,HC.L],["S&D","社会民主進歩同盟",191,HC.SD],["G/EFA","緑の党・欧州自由連盟",50,HC.G],["ALDE","欧州自由民主同盟",67,HC.RE],["EPP","欧州人民党",221,HC.EPP],["ECR","欧州保守改革",70,HC.ED],["EFDD","自由と直接民主主義のヨーロッパ",48,HC.EUS],["NI","無所属",52,HC.NI]]},
- {t:9,y:"2019–2024",el:"2019/05",mem:M2014,later:"2020/01/31の英国離脱後は705議席に縮小",g:[
-  ["GUE/NGL","欧州統一左派・北欧緑左派",41,HC.L],["S&D","社会民主進歩同盟",154,HC.SD],["G/EFA","緑の党・欧州自由連盟",74,HC.G],["Renew","欧州刷新",108,HC.RE],["EPP","欧州人民党",182,HC.EPP],["ECR","欧州保守改革",62,HC.ED],["ID","アイデンティティと民主主義",73,HC.ID],["NI","無所属",57,HC.NI]]},
+ {t:1,y:"1979–1984",el:"1979/06（初の直接選挙）",g:["COM","SOC","CDI","LD","EPP","ED","EPD","NI"],later:"ギリシャは1981年加盟（24議席）"},
+ {t:2,y:"1984–1989",el:"1984/06",g:["COM","SOC","RBW","LD","EPP","ED","EDA","ER","NI"],later:"スペイン（60議席）・ポルトガル（24議席）は1986年加盟"},
+ {t:3,y:"1989–1994",el:"1989/06",g:["LU","EUL","SOC","G","RBW","LDR","EPP","ED","EDA","ER","NI"]},
+ {t:4,y:"1994–1999",el:"1994/06",g:["EUL","PES","G","ERA","ELDR","EPP","FE","EDA","EN","NI"],later:"オーストリア（21）・フィンランド（16）・スウェーデン（22）は1995年加盟"},
+ {t:5,y:"1999–2004",el:"1999/06",g:["GUE/NGL","PES","G/EFA","ELDR","EPP-ED","UEN","EDD","TDI","NI"]},
+ {t:6,y:"2004–2009",el:"2004/06（10か国加盟後：中東欧8か国・キプロス・マルタ）",g:["GUE/NGL","PES","G/EFA","ALDE","EPP-ED","UEN","IND/DEM","NI"],later:"ブルガリア（18）・ルーマニア（35）は2007年加盟"},
+ {t:7,y:"2009–2014",el:"2009/06",g:["GUE/NGL","S&D","G/EFA","ALDE","EPP","ECR","EFD","NI"],later:"発足時736議席 → リスボン条約による増員で754議席 → 2013年クロアチア加盟（12議席）で766議席"},
+ {t:8,y:"2014–2019",el:"2014/05",g:["GUE/NGL","S&D","G/EFA","ALDE","EPP","ECR","EFDD","NI"],later:"2015年に「諸国家と自由のヨーロッパ（ENF）」が結成（発足時の集計には含まれない）"},
+ {t:9,y:"2019–2024",el:"2019/05",g:["GUE/NGL","S&D","G/EFA","Renew","EPP","ECR","ID","NI"],later:"2020/01/31の英国離脱後は705議席に縮小"},
  {t:10,y:"2024–2029",el:"2024/06",cur:true}
 ];
-// 各期発足時の国別最大会派（同数の場合は第1党の所属会派）
-const TOP={
- 1:{DE:"EPP",FR:"SOC",IT:"EPP",UK:"ED",NL:"EPP",BE:"EPP",DK:"SOC",IE:"EPD",LU:"EPP",GR:"SOC"},
- 2:{DE:"EPP",FR:"EDA",IT:"COM",UK:"ED",NL:"SOC",BE:"SOC",DK:"ED",IE:"EDA",LU:"EPP",GR:"SOC",ES:"SOC",PT:"LD"},
- 3:{DE:"EPP",FR:"SOC",IT:"EPP",UK:"SOC",NL:"EPP",BE:"SOC",DK:"SOC",IE:"EDA",LU:"EPP",GR:"EPP",ES:"SOC",PT:"LDR"},
- 4:{DE:"EPP",FR:"PES",IT:"FE",UK:"PES",NL:"EPP",BE:"EPP",DK:"ELDR",IE:"EDA",LU:"EPP",GR:"PES",ES:"EPP",PT:"PES",AT:"EPP",FI:"ELDR",SE:"PES"},
- 5:{DE:"EPP-ED",FR:"PES",IT:"EPP-ED",UK:"EPP-ED",NL:"EPP-ED",BE:"G/EFA",DK:"ELDR",IE:"UEN",LU:"EPP-ED",GR:"EPP-ED",ES:"EPP-ED",PT:"PES",AT:"EPP-ED",FI:"ELDR",SE:"PES"},
- 6:{DE:"EPP-ED",FR:"PES",IT:"EPP-ED",UK:"EPP-ED",NL:"EPP-ED",BE:"PES",DK:"PES",IE:"EPP-ED",LU:"EPP-ED",GR:"EPP-ED",ES:"PES",PT:"PES",AT:"PES",FI:"ALDE",SE:"PES",PL:"EPP-ED",CZ:"EPP-ED",HU:"EPP-ED",SK:"EPP-ED",SI:"EPP-ED",EE:"PES",LV:"UEN",LT:"ALDE",CY:"EPP-ED",MT:"PES",BG:"EPP-ED",RO:"EPP-ED"},
- 7:{DE:"EPP",FR:"EPP",IT:"EPP",UK:"ECR",NL:"ALDE",BE:"EPP",DK:"S&D",IE:"EPP",LU:"EPP",GR:"S&D",ES:"EPP",PT:"EPP",AT:"EPP",FI:"EPP",SE:"S&D",PL:"EPP",CZ:"ECR",HU:"EPP",SK:"EPP",SI:"EPP",EE:"ALDE",LV:"EPP",LT:"EPP",CY:"EPP",MT:"S&D",BG:"EPP",RO:"EPP",HR:"EPP"},
- 8:{DE:"EPP",FR:"NI",IT:"S&D",UK:"EFDD",NL:"ALDE",BE:"ALDE",DK:"ECR",IE:"EPP",LU:"EPP",GR:"GUE/NGL",ES:"EPP",PT:"S&D",AT:"EPP",FI:"ALDE",SE:"S&D",PL:"EPP",CZ:"EPP",HU:"EPP",SK:"EPP",SI:"EPP",EE:"ALDE",LV:"EPP",LT:"ALDE",CY:"EPP",MT:"S&D",BG:"EPP",RO:"S&D",HR:"EPP"},
- 9:{DE:"EPP",FR:"ID",IT:"ID",UK:"NI",NL:"S&D",BE:"Renew",DK:"Renew",IE:"EPP",LU:"EPP",GR:"EPP",ES:"S&D",PT:"S&D",AT:"EPP",FI:"EPP",SE:"EPP",PL:"ECR",CZ:"Renew",HU:"EPP",SK:"EPP",SI:"EPP",EE:"Renew",LV:"EPP",LT:"EPP",CY:"EPP",MT:"S&D",BG:"EPP",RO:"EPP",HR:"EPP"}
-};
-// 任期途中の加盟国 [加盟年, 議席]
+// 任期途中の加盟国 [加盟年, 議席]（発足時の集計対象外）
 const JOIN={1:{GR:[1981,24]},2:{ES:[1986,60],PT:[1986,24]},4:{AT:[1995,21],FI:[1995,16],SE:[1995,22]},6:{BG:[2007,18],RO:[2007,35]},7:{HR:[2013,12]}};
-function tGroup(T,k){return T.g.find(g=>g[0]===k)}
-let term=10;
-const groupTotals=ORDER.map((g,i)=>Object.values(EP).reduce((a,v)=>a+v[i],0));
-const epSeats=[];
-ORDER.forEach((g,i)=>{Object.keys(EP).sort((a,b)=>EP[b][i]-EP[a][i]).forEach(cc=>{for(let k=0;k<EP[cc][i];k++)epSeats.push({key:g,cc,color:G[g].c})})});
-let ep;
-function buildEP(){
-  const T=TERMS[term-1];
-  if(T.cur){ep=drawHemi($("#ephemi"),epSeats);ep.dots.forEach(d=>{d.addEventListener("mousemove",e=>showTip(e,`${G[d.__seat.key].n}<br>${CN[d.__seat.cc]}選出`));d.addEventListener("mouseleave",hideTip)});}
-  else{const seats=[];T.g.forEach(g=>{for(let k=0;k<g[2];k++)seats.push({g,color:g[3]})});ep=drawHemi($("#ephemi"),seats);
-    ep.dots.forEach(d=>{d.addEventListener("mousemove",e=>showTip(e,`${d.__seat.g[1]}（${d.__seat.g[0]}）：${d.__seat.g[2]}議席`));d.addEventListener("mouseleave",hideTip)});}
+// 期ごとの統一ビュー：groups=[{k,n,s,c}], byc={国:[会派別]}
+function view(t){
+  const T=TERMS[t-1];
+  if(T.cur)return {T,groups:ORDER.map(k=>({k,n:G[k].n,s:G[k].s,c:G[k].c})),byc:EP,asof:"2026/11/11時点"};
+  return {T,groups:T.g.map(k=>({k,n:GN[k][0],s:k,c:GN[k][1]})),byc:BYC[t],asof:"発足時"};
 }
-function termTotal(T){return T.g.reduce((a,g)=>a+g[2],0)}
+function colSums(V){return V.groups.map((g,i)=>Object.values(V.byc).reduce((a,r)=>a+r[i],0))}
+function topIdx(row){const m=Math.max(...row);return row.map((v,i)=>v===m&&m>0?i:-1).filter(i=>i>=0)}
+let term=10,ep,V;
+function buildEP(){
+  V=view(term);const seats=[];
+  V.groups.forEach((g,i)=>{Object.keys(V.byc).sort((a,b)=>V.byc[b][i]-V.byc[a][i]).forEach(cc=>{for(let k=0;k<V.byc[cc][i];k++)seats.push({g,cc,color:g.c})})});
+  ep=drawHemi($("#ephemi"),seats);
+  ep.dots.forEach(d=>{d.addEventListener("mousemove",e=>showTip(e,`${d.__seat.g.n}（${d.__seat.g.s}）<br>${CN[d.__seat.cc]}選出`));d.addEventListener("mouseleave",hideTip)});
+}
+function breakdownTable(groups,row){return "<table>"+groups.map((g,i)=>row[i]?`<tr><td><span class="sw" style="background:${g.c}"></span>${g.n}<span class="tag" style="background:${g.c}">${g.s}</span></td><td class="num">${row[i]}</td></tr>`:"").join("")+"</table>"}
 function epOverview(){
-  const T=TERMS[term-1];$("#epreset").style.display="none";
-  if(T.cur){
-    $("#eptitle").textContent="第10期 欧州議会（720議席・2026/11/11時点）";
-    ep.dots.forEach(d=>d.style.opacity=1);ep.tot.textContent=720;ep.sub.textContent="議席";
-    drawBar($("#epbar"),ORDER.map((g,i)=>({v:groupTotals[i],c:G[g].c,n:G[g].n})),720);
-    $("#epmaj").textContent="過半数：361　｜　EPP＋S&D＋Renew＝"+(groupTotals[4]+groupTotals[1]+groupTotals[3])+"議席　｜　発足時（2024/07）：EPP 188・S&D 136・PfE 84・ECR 78・Renew 77・緑 53・Left 46・ESN 25・無所属 33";
-    $("#epdetail").innerHTML="<table>"+ORDER.map((g,i)=>`<tr><td><span class="sw" style="background:${G[g].c}"></span>${G[g].n}</td><td class="num">${groupTotals[i]}</td></tr>`).join("")+"</table>";
-    return;
-  }
-  const n=termTotal(T),nc=Object.keys(T.mem).length;
-  $("#eptitle").textContent=`第${T.t}期 欧州議会（${T.y}・${n}議席）`;
+  const T=V.T,cs=colSums(V),n=cs.reduce((a,b)=>a+b,0),nc=Object.keys(V.byc).length;
+  $("#epreset").style.display="none";
+  $("#eptitle").textContent=T.cur?`第10期 欧州議会（${n}議席・2026/11/11時点）`:`第${T.t}期 欧州議会（${T.y}・発足時${n}議席）`;
   ep.dots.forEach(d=>d.style.opacity=1);ep.tot.textContent=n;ep.sub.textContent="議席";
-  drawBar($("#epbar"),T.g.map(g=>({v:g[2],c:g[3],n:g[1]})),n);
-  $("#epmaj").textContent=`過半数：${Math.floor(n/2)+1}　｜　選挙：${T.el}　｜　加盟国：${nc}か国`;
-  $("#epdetail").innerHTML="<table>"+T.g.map(g=>`<tr><td><span class="sw" style="background:${g[3]}"></span>${g[1]}<span class="tag" style="background:${g[3]}">${g[0]}</span></td><td class="num">${g[2]}</td></tr>`).join("")+"</table>"+(T.later?`<div class="note">※${T.later}</div>`:"")+`<div class="note">会派構成は各期発足時（選挙直後）の議席数。地図の色は各国選出議員の最大会派（発足時、同数の場合は第1党の所属会派）。地図に乗せると当時の議席配分と最大会派を表示。</div>`;
+  drawBar($("#epbar"),V.groups.map((g,i)=>({v:cs[i],c:g.c,n:g.n})),n);
+  let info=`定数の過半数：${Math.floor(n/2)+1}　｜　選挙：${T.el}　｜　加盟国：${nc}か国`;
+  if(T.cur)info+=`　｜　参考：EPP・S&D・Renewの3会派合計＝${cs[4]+cs[1]+cs[3]}議席　｜　発足時（2024/07）：EPP 188・S&D 136・PfE 84・ECR 78・Renew 77・緑 53・Left 46・ESN 25・無所属 33`;
+  $("#epmaj").textContent=info;
+  $("#epdetail").innerHTML=breakdownTable(V.groups,cs)+(T.later?`<div class="note">※${T.later}</div>`:"")+`<div class="note">${T.cur?"欧州議会公式「加盟国・会派別議員数」（2026/11/11時点）。":"欧州議会公式「国別・会派別内訳」の発足時（constitutive session）の数値。"}表・グラフ・地図・ツールチップは同じ国別×会派別データから集計しています。</div>`;
 }
 function epCountry(cc){
-  const T=TERMS[term-1];
-  if(!T.cur){
-    const s=T.mem[cc],j=(JOIN[T.t]||{})[cc],g=tGroup(T,TOP[T.t][cc]);$("#epreset").style.display="";
-    $("#eptitle").textContent=`第${T.t}期：${CN[cc]}　`+(s?`${s}議席`:j?`${j[0]}年加盟・${j[1]}議席`:"当時は未加盟")+(g?`（最大会派：${g[0]}）`:"");
-    ep.dots.forEach(d=>d.style.opacity=g?(d.__seat.g[0]===g[0]?1:0.18):1);
-    ep.dots.forEach(d=>d.style.opacity=1);
-    return;
+  const T=V.T,row=V.byc[cc];$("#epreset").style.display="";
+  if(!row){
+    const j=(JOIN[T.t]||{})[cc];
+    $("#eptitle").textContent=`第${T.t}期：${CN[cc]}　`+(j?`${j[0]}年に途中加盟（${j[1]}議席・発足時の集計対象外）`:cc==="UK"&&T.cur?"2020/01/31 EU離脱":"当時は未加盟");
+    ep.dots.forEach(d=>d.style.opacity=0.12);ep.tot.textContent=j?j[1]:0;ep.sub.textContent="議席";
+    $("#epbar").innerHTML="";$("#epmaj").textContent="";$("#epdetail").innerHTML="";return;
   }
-  if(!EP[cc]){$("#eptitle").textContent="英国（2020/01/31 EU離脱・第10期は議席なし）";$("#epreset").style.display="";return}
-  const v=EP[cc],n=v.reduce((a,b)=>a+b,0);
-  $("#eptitle").textContent=`${CN[cc]}選出の欧州議会議員（${n}議席）`;$("#epreset").style.display="";
-  ep.dots.forEach(d=>d.style.opacity=d.__seat.cc===cc?1:0.12);ep.tot.textContent=n;ep.sub.textContent="/ 720議席";
-  drawBar($("#epbar"),ORDER.map((g,i)=>({v:v[i],c:G[g].c,n:G[g].n})),n);
-  $("#epmaj").textContent="半円上は"+CN[cc]+"選出議員の位置（会派の並び：左派→右派）";
-  $("#epdetail").innerHTML="<table>"+ORDER.map((g,i)=>v[i]?`<tr><td><span class="sw" style="background:${G[g].c}"></span>${G[g].n}</td><td class="num">${v[i]}</td></tr>`:"").join("")+"</table>";
+  const n=row.reduce((a,b)=>a+b,0),ti=topIdx(row);
+  $("#eptitle").textContent=`第${T.t}期：${CN[cc]}選出の議員（${n}議席）`;
+  ep.dots.forEach(d=>d.style.opacity=d.__seat.cc===cc?1:0.12);ep.tot.textContent=n;ep.sub.textContent=`/ ${colSums(V).reduce((a,b)=>a+b,0)}議席`;
+  drawBar($("#epbar"),V.groups.map((g,i)=>({v:row[i],c:g.c,n:g.n})),n);
+  $("#epmaj").textContent=(ti.length>1?"最大会派（同数首位）：":"最大会派：")+ti.map(i=>V.groups[i].s).join("・")+`（${row[ti[0]]}議席）`+(ti.some(i=>V.groups[i].k==="NI")?"　※無所属は会派ではありません":"");
+  $("#epdetail").innerHTML=breakdownTable(V.groups,row)+`<div class="note">${V.asof}の${CN[cc]}選出議員の所属。半円上はその位置。</div>`;
 }
 $("#epreset").onclick=()=>{locked=null;epOverview();document.querySelectorAll(".c").forEach(p=>p.classList.remove("sel"))};
 $("#terms").innerHTML=`<div class="sl-head"><span id="slval"></span><span class="sl-sub" id="slsub"></span></div>
 <input type="range" id="slider" min="1" max="10" step="1" value="${term}">
 <div class="sl-ticks">${TERMS.map(T=>`<span data-t="${T.t}">${T.t}<small>${T.y.slice(0,4)}</small></span>`).join("")}</div>`;
 function setTerm(v){term=+v;$("#slider").value=term;const T=TERMS[term-1];
-  $("#slval").textContent=`第${T.t}期`;$("#slsub").textContent=`${T.y}（選挙 ${T.el}）`;
+  $("#slval").textContent=`第${T.t}期`;$("#slsub").textContent=`${T.y}（選挙 ${T.el.split("（")[0]}）`;
   document.querySelectorAll(".sl-ticks span").forEach(s=>s.classList.toggle("on",+s.dataset.t===term));
   $("#slider").style.setProperty("--p",((term-1)/9*100)+"%");
   buildEP();if(locked)epCountry(locked);else epOverview();recolor();}
@@ -299,40 +297,51 @@ document.querySelectorAll(".sl-ticks span").forEach(s=>s.onclick=()=>setTerm(s.d
 // ---- 国会 ----
 function natShow(cc){
   const N=NAT[cc],tot=N.p.reduce((a,p)=>a+p[1],0),maj=Math.floor(tot/2)+1;
-  const used={};const parties=N.p.map(p=>{let c=p[3]||G[p[2]].c;return {n:p[0],v:p[1],g:p[2],c}});
+  const parties=N.p.map(p=>({n:p[0],v:p[1],g:p[2],gs:p[2].split("/"),c:p[3]||G[p[2].split("/")[0]].c}));
+  const tags=p=>p.gs.map(k=>`<span class="tag" style="background:${G[k].c}">${G[k].s}</span>`).join("");
+  const top=natTop(cc).map(x=>x[0]);const s=SRC[cc];
   $("#nattitle").textContent=`${CN[cc]}　${N.h}（${tot}議席）`;
-  const body=$("#natbody");body.innerHTML=`<div class="hemi" id="nathemi"></div><div class="bar" id="natbar"></div><div class="maj">過半数：${maj}　｜　選挙日：${N.d}</div><div id="nattab"></div>${N.note?`<div class="note">※${N.note}</div>`:""}`;
+  $("#natbody").innerHTML=`<div class="hemi" id="nathemi"></div><div class="bar" id="natbar"></div><div class="maj">過半数：${maj}　｜　選挙日：${N.d}　｜　集計単位：${N.unit||"政党・選挙リスト別の当選者数（選挙時の確定配分）"}　｜　第1党：${top.join("・")}${top.length>1?"（同数）":""}</div><div id="nattab"></div>${N.note?`<div class="note">※${N.note}</div>`:""}<div class="note">出典：${s?`<a href="${s[1]}" target="_blank" rel="noopener">${s[0]}</a>`:"各国選挙管理機関の公表結果（直接リンク未掲載）"}　／　政党の欧州議会会派は、その党の現職欧州議会議員の所属会派（2026/11/11時点）</div>`;
   const seats=[];parties.forEach(p=>{for(let k=0;k<p.v;k++)seats.push({color:p.c,p})});
   const h=drawHemi($("#nathemi"),seats);h.sub.textContent="議席";
-  h.dots.forEach(d=>{d.addEventListener("mousemove",e=>showTip(e,`${d.__seat.p.n}：${d.__seat.p.v}議席<br>欧州議会：${G[d.__seat.p.g].n}`));d.addEventListener("mouseleave",hideTip)});
+  h.dots.forEach(d=>{d.addEventListener("mousemove",e=>showTip(e,`${d.__seat.p.n}：${d.__seat.p.v}議席<br>欧州議会：${d.__seat.p.gs.map(k=>G[k].n).join("／")}`));d.addEventListener("mouseleave",hideTip)});
   drawBar($("#natbar"),parties.map(p=>({v:p.v,c:p.c,n:p.n})),tot);
-  $("#nattab").innerHTML="<table>"+[...parties].sort((a,b)=>b.v-a.v).map(p=>`<tr><td><span class="sw" style="background:${p.c}"></span>${p.n}<span class="tag" style="background:${G[p.g].c}">${G[p.g].s}</span></td><td class="num">${p.v}</td></tr>`).join("")+"</table>";
+  $("#nattab").innerHTML="<table>"+[...parties].sort((a,b)=>b.v-a.v).map(p=>`<tr><td><span class="sw" style="background:${p.c}"></span>${p.n}${tags(p)}</td><td class="num">${p.v}</td></tr>`).join("")+"</table>";
 }
 
 // ---- 地図 ----
 let mode="ep",locked=null;
 CN.UK="英国";
-function isMember(cc){const T=TERMS[term-1];return T.cur?!!EP[cc]:!!(T.mem[cc]||(JOIN[T.t]||{})[cc])}
-function isJoin(cc){const T=TERMS[term-1];return !T.cur&&!T.mem[cc]&&!!(JOIN[T.t]||{})[cc]}
-function mapColor(cc){
-  if(!isMember(cc))return "#e2ded4";
-  const T=TERMS[term-1];
-  if(!T.cur){const g=tGroup(T,TOP[T.t][cc]);return g?g[3]:"#e2ded4"}
-  if(mode==="ep"){const v=EP[cc];let bi=0;v.forEach((x,i)=>{if(x>v[bi])bi=i});return G[ORDER[bi]].c}
-  const p=NAT[cc].p.reduce((a,b)=>b[1]>a[1]?b:a);return G[p[2]].c;
+const defs=()=>ms.querySelector("defs");
+function stripe(colors){ // 同数首位は斜線で併記
+  if(colors.length===1)return colors[0];
+  const id="st"+colors.join("").replace(/[^0-9a-z]/gi,"");
+  if(!ms.querySelector("#"+id)){const w=5,pt=el("pattern",{id,patternUnits:"userSpaceOnUse",width:w*colors.length,height:w*colors.length,patternTransform:"rotate(45)"},defs());
+    colors.forEach((c,i)=>el("rect",{x:i*w,y:0,width:w,height:w*colors.length,fill:c},pt));}
+  return `url(#${id})`;
+}
+function natTop(cc){const p=NAT[cc].p,m=Math.max(...p.map(x=>x[1]));return p.filter(x=>x[1]===m)}
+function grpColor(k){return G[k.split("/")[0]].c}
+function mapInfo(cc){ // {fill, label}
+  const row=V.byc[cc];
+  if(!row){const j=(JOIN[term]||{})[cc];return j?{fill:"url(#hatch)",join:true}:{fill:"#e2ded4",none:true}}
+  if(V.T.cur&&mode==="nat"){const t=natTop(cc);return {fill:stripe([...new Set(t.flatMap(x=>x[2].split("/").map(k=>G[k].c)))]),ks:t.map(x=>x[0])}}
+  const ti=topIdx(row);return {fill:stripe(ti.map(i=>V.groups[i].c)),ks:ti.map(i=>V.groups[i].s),tie:ti.length>1};
 }
 function tipHTML(cc){
-  const T=TERMS[term-1];
-  if(!T.cur){const s=T.mem[cc],j=(JOIN[T.t]||{})[cc],g=tGroup(T,TOP[T.t][cc]);
-    let h=`<b>${CN[cc]}</b>　第${T.t}期（${T.y}）<br>`;
-    if(s)h+=`欧州議会 ${s}議席<br>最大会派：${g?g[1]+"（"+g[0]+"）":"―"}`;
-    else if(j)h+=`${j[0]}年に途中加盟（${j[1]}議席）<br>最大会派：${g?g[1]+"（"+g[0]+"）":"―"}`;
-    else h+="当時は未加盟";
-    return h+(NAT[cc]?"<br><span style='opacity:.7'>クリックで現在の国会の勢力図</span>":"");}
-  if(!EP[cc])return "<b>英国</b><br>2020/01/31にEU離脱（第1〜9期は加盟）";
-  const v=EP[cc];return `<b>${CN[cc]}</b>　欧州議会 ${v.reduce((a,b)=>a+b,0)}議席<br>`+ORDER.map((g,i)=>v[i]?`${G[g].s} ${v[i]}`:"").filter(Boolean).join("・")+"<br><span style='opacity:.7'>クリックで国会の勢力図</span>";
+  const T=V.T,row=V.byc[cc];
+  if(!row){const j=(JOIN[term]||{})[cc];
+    if(T.cur)return "<b>英国</b><br>2020/01/31にEU離脱（第1〜9期は加盟）";
+    return `<b>${CN[cc]}</b>　第${T.t}期<br>`+(j?`${j[0]}年に途中加盟（${j[1]}議席）<br>発足時の会派集計の対象外`:"当時は未加盟");}
+  const n=row.reduce((a,b)=>a+b,0),ti=topIdx(row);
+  let h=`<b>${CN[cc]}</b>　第${T.t}期・${V.asof} ${n}議席<br>`+V.groups.map((g,i)=>row[i]?`${g.s} ${row[i]}`:"").filter(Boolean).join("・");
+  h+=`<br>最大会派：${ti.map(i=>V.groups[i].s).join("・")}${ti.length>1?"（同数）":""}`;
+  if(T.cur&&mode==="nat"){const t=natTop(cc);h+=`<br>国会第1党：${t.map(x=>x[0]).join("・")}${t.length>1?"（同数）":""}`}
+  return h+(NAT[cc]?"<br><span style='opacity:.7'>クリックで現在の国会の勢力図</span>":"");
 }
 const ms=el("svg",{viewBox:"0 0 800 640"});$("#map").appendChild(ms);
+el("defs",{},ms);
+{const p=el("pattern",{id:"hatch",patternUnits:"userSpaceOnUse",width:6,height:6,patternTransform:"rotate(45)"},defs());el("rect",{width:6,height:6,fill:"#ece8df"},p);el("rect",{width:2,height:6,fill:"#b5ae9f"},p);}
 MAP.other.forEach(d=>el("path",{d,class:"o"},ms));
 const paths={};
 function bind(node,cc){
@@ -354,21 +363,25 @@ Object.entries(ALL).forEach(([cc,o])=>{
   t.textContent=cc;
 });
 function recolor(){
-  Object.entries(paths).forEach(([cc,p])=>{p.style.fill=mapColor(cc);p.classList.toggle("nm",!isMember(cc));p.style.opacity=isJoin(cc)?0.55:1});
-  const T=TERMS[term-1];
-  $("#maptitle").textContent=T.cur?"EU加盟27か国（現在）":`第${T.t}期：各国の最大会派（${Object.keys(T.mem).length}か国）`;
+  const T=V.T;let tie=false,join=false;const used=new Set();
+  Object.entries(paths).forEach(([cc,p])=>{const m=mapInfo(cc);p.style.fill=m.fill;p.classList.toggle("nm",!!m.none);
+    if(m.tie)tie=true;if(m.join)join=true;if(m.ks&&!(T.cur&&mode==="nat"))m.ks.forEach(k=>used.add(k));
+    if(T.cur&&mode==="nat"&&m.ks)NAT[cc]&&natTop(cc).forEach(x=>x[2].split("/").forEach(k=>used.add(k)));});
+  $("#maptitle").textContent=T.cur?(mode==="nat"?"EU加盟27か国：国会第1党の所属会派":"EU加盟27か国：欧州議会での最大会派"):`第${T.t}期：各国選出議員の最大会派（発足時）`;
   $(".hint").style.opacity=T.cur?1:.4;
-  if(!T.cur){const used=new Set(Object.values(TOP[T.t]));const js=Object.keys(JOIN[T.t]||{});
-    $("#legend").innerHTML=T.g.filter(g=>used.has(g[0])).map(g=>`<span><i style="background:${g[3]}"></i>${g[1]}（${g[0]}）</span>`).join("")+(js.length?`<span><i style="background:#999;opacity:.55"></i>薄色＝任期途中の加盟（${js.map(c=>CN[c]).join("・")}）</span>`:"")+`<span><i style="background:#e2ded4"></i>当時は未加盟</span>`;return}
-  const used=new Set(Object.keys(EP).map(cc=>mapColor(cc)));
-  $("#legend").innerHTML=[...ORDER,"OT"].filter(g=>used.has(G[g].c)).map(g=>`<span><i style="background:${G[g].c}"></i>${G[g].n}</span>`).join("")+`<span><i style="background:#e2ded4"></i>英国（2020年離脱）</span>`;
+  let lg;
+  if(T.cur&&mode==="nat")lg=[...ORDER,"OT"].filter(k=>used.has(k)).map(k=>`<span><i style="background:${G[k].c}"></i>${G[k].n}</span>`);
+  else lg=V.groups.filter(g=>used.has(g.s)).map(g=>`<span><i style="background:${g.c}"></i>${g.n}（${g.s}）</span>`);
+  if(tie||(T.cur&&mode==="nat"))lg.push(`<span><i style="background:repeating-linear-gradient(45deg,#2f6fd6 0 3px,#e0312f 3px 6px)"></i>${T.cur&&mode==="nat"?"斜線＝同数首位／複数会派にまたがる共同リスト":"斜線＝同数首位"}</span>`);
+  if(join)lg.push(`<span><i style="background:repeating-linear-gradient(45deg,#ece8df 0 3px,#b5ae9f 3px 5px)"></i>任期途中の加盟（発足時の集計対象外）</span>`);
+  lg.push(`<span><i style="background:#e2ded4"></i>${T.cur?"英国（2020年離脱）":"当時は未加盟"}</span>`);
+  $("#legend").innerHTML=lg.join("");
 }
 document.querySelectorAll(".toggle button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".toggle button").forEach(x=>x.classList.toggle("on",x===b));mode=b.dataset.m;recolor()});
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));(b.dataset.v==="ep"?$("#epcard"):$("#natcard")).scrollIntoView({behavior:"smooth",block:"start"})});
 function showTip(e,h){tip.innerHTML=h;tip.style.display="block";const x=Math.min(e.clientX+14,innerWidth-250);tip.style.left=x+"px";tip.style.top=(e.clientY+14)+"px"}
 function hideTip(){tip.style.display="none"}
 setTerm(term);
-
 </script>
 </body>
 </html>
