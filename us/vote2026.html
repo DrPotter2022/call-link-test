@@ -63,6 +63,12 @@ svg{width:100%;height:auto;display:block}
 .cmph .cmprow{border-top:0;margin-top:0;padding-top:0;border-left:1px dashed var(--line);padding-left:12px;min-width:0}
 .cmph .cmprow:first-child{border-left:0;padding-left:0}
 .cmph .charts,.cmph .charts.one,.cmph .charts.all{grid-template-columns:1fr;max-width:none}
+.mv .mapblk+.mapblk{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px}
+.grid>*{min-width:0}
+[hidden]{display:none!important}
+.mh{display:grid;grid-template-columns:repeat(var(--n),minmax(200px,1fr));gap:12px;overflow-x:auto}
+.mh .mapblk+.mapblk{border-left:1px dashed var(--line);padding-left:10px}
+.mh .legend{font-size:11px;gap:4px 8px}
 .cmprow{border-top:1px dashed var(--line);padding-top:8px;margin-top:8px}
 .cmprow:first-child{border-top:0;margin-top:0;padding-top:0}
 .cmphead{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px;margin-bottom:2px}
@@ -98,7 +104,7 @@ svg{width:100%;height:auto;display:block}
 <body>
 <div class="wrap">
   <h1>2026年 米中間選挙（11月3日投票）州別マップ</h1>
-  <div class="asof">予想データ：2026/10/25時点／結果データ：2026/11/12 21:22（日本時間）時点／地図にマウスを乗せると改選前の情勢、クリックで予想（世論調査）を表示</div>
+  <div class="asof">予想データ：2026/10/25時点／結果データ：2026/11/21 09:57（日本時間）時点／地図にマウスを乗せると改選前の情勢、クリックで予想（世論調査）を表示</div>
 
   <div class="tabs">
     <button class="tab on" data-t="pre">① 改選前</button>
@@ -132,9 +138,9 @@ svg{width:100%;height:auto;display:block}
 
   <div class="grid">
     <div class="mapcard">
-      <svg id="map" viewBox="0 0 975 610" role="img" aria-label="米国50州マップ"></svg>
-      <div class="legend" id="legend"></div>
-      <div class="note" id="mapnote"></div>
+      <div id="maps"></div>
+      <div class="legend" id="legend" hidden></div>
+      <div class="note" id="mapnote" hidden></div>
     </div>
     <div class="panel" id="panel">
       <h2>州を選んでください</h2>
@@ -143,8 +149,8 @@ svg{width:100%;height:auto;display:block}
   </div>
 
   <div class="foot">
-    出典：Cook Political Report（上院8/20・10/20変更報道、知事10/23、下院 区別7/16・総数10/23）、下院記者室（現有議席）、Wikipedia（州別内訳）、RealClearPolling（上院・知事マップ10月中旬）、Fox News／Emerson／Suffolk等の各調査（Forbes・Yahoo News 10/22〜23集計）、Election Central（RCP平均10/23）、US Polling Data（知事平均10/20）、Kalshi（10/16）、Decision Desk HQ（10/12）、NCSL（住民投票）。結果：AP・CNN・CBS・NBC等の当確（TIME 11/12、Yahoo News 11/12、PBS 11/11、270toWin 11/10、Colorado Politics・Advocate等）。<br>
-    予測・世論調査は時点のスナップショットであり、結果を保証するものではありません。結果タブは2026/11/12 21:22（日本時間）時点で判明分を反映。当確は報道機関の予測で、認定前の非公式結果です。
+    出典：Cook Political Report（上院8/20・10/20変更報道、知事10/23、下院 区別7/16・総数10/23）、下院記者室（現有議席）、Wikipedia（州別内訳）、RealClearPolling（上院・知事マップ10月中旬）、Fox News／Emerson／Suffolk等の各調査（Forbes・Yahoo News 10/22〜23集計）、Election Central（RCP平均10/23）、US Polling Data（知事平均10/20）、Kalshi（10/16）、Decision Desk HQ（10/12）、NCSL（住民投票）。結果：AP・CNN・CBS・NBC等の当確（Yahoo News 11/18、CBS News 11/18、FairVote、Alaska Watchman、Axios Raleigh、WRAL、MPR News、WPLN、TIME、PBS等）。<br>
+    予測・世論調査は時点のスナップショットであり、結果を保証するものではありません。結果タブは2026/11/21 09:57（日本時間）時点で判明分を反映。当確は報道機関の予測で、認定前の非公式結果です。
   </div>
 </div>
 <div id="tip"></div>
@@ -262,25 +268,25 @@ const HC={
 };
 const HOT=s=>(HC[s]||[]).filter(x=>["LD","TU","LR"].includes(x[2])).length;
 
-// ===== 開票結果（2026/11/12 21:22 JST時点で判明分。p=勝利政党、pend=未確定、lead=リード側） =====
-const ASOF="2026/11/12 21:22（日本時間）時点";
+// ===== 開票結果（2026/11/21 09:57 JST時点で判明分。p=勝利政党、pend=未確定、lead=リード側） =====
+const ASOF="2026/11/21 09:57（日本時間）時点";
 const RESULTS={sen:{
  CO:{p:"D",w:"ヒッケンルーパー"},DE:{p:"D",w:"クーンズ"},IL:{p:"D",w:"ジュリアナ・ストラットン"},MA:{p:"D",w:"マーキー"},NJ:{p:"D",w:"ブッカー"},NM:{p:"D",w:"ルハン"},OR:{p:"D",w:"マークリー"},RI:{p:"D",w:"リード"},VA:{p:"D",w:"ウォーナー"},
  GA:{p:"D",w:"オソフ"},NH:{p:"D",w:"パパス"},MI:{p:"D",w:"エルサイード"},MN:{p:"D",w:"フラナガン"},
  NC:{p:"D",w:"クーパー",flip:1},ME:{p:"D",w:"トロイ・ジャクソン",flip:1},OH:{p:"D",w:"シェロッド・ブラウン",flip:1},TX:{p:"D",w:"タラリコ",flip:1},IA:{p:"D",w:"ジョシュ・トゥレク",flip:1},KS:{p:"D",w:"アダム・ハミルトン",flip:1},SC:{p:"D",w:"アニー・アンドリュース",flip:1},
  NE:{p:"R",w:"リケッツ",note:"無所属オズボーン氏を退ける"},FL:{p:"R",w:"ムーディ"},AL:{p:"R",w:"バリー・ムーア"},AR:{p:"R",w:"コットン"},ID:{p:"R",w:"リッシュ"},KY:{p:"R",w:"アンディ・バー"},LA:{p:"R",w:"ジュリア・レトロウ"},MT:{p:"R",w:"カート・アルム"},OK:{p:"R",w:"ケビン・ハーン"},SD:{p:"R",w:"ラウンズ"},TN:{p:"R",w:"ハガティ"},WV:{p:"R",w:"キャピト"},WY:{p:"R",w:"ハリエット・ヘイグマン"},
- AK:{pend:1,lead:"D",note:"ペルトラ（民主）がサリバン（共和）を約4,250票リード（開票84%）。過半数に届かなければ11/18に順位選択集計、11/25認定目標"},
+ AK:{p:"D",w:"メアリー・ペルトラ",flip:1,note:"第1選好50.1%で過半数を確保（順位選択集計は不要）。11/17夜（米国時間）当確"},
  MS:{p:"D",w:"スコット・コロム",flip:1,note:"AP 11/11当確。49.2%対48.7%（約4,700票差）。ハイドスミス氏が敗北を認める。州認定12/3"}
 },gov:{
- AK:{pend:1,lead:"D",note:"クライス＝トムキンズ（民主）49.6%対ウィルソン（共和）29.2%（開票76%）。50%未満のため11/18に順位選択集計の見込み（逆転は難しいとの見方）"},AZ:{p:"D",w:"ホッブス"},CA:{p:"D",w:"ハビエル・ベセラ"},CO:{p:"D",w:"フィル・ワイザー"},CT:{p:"D",w:"ラモント"},GA:{p:"D",w:"ケイシャ・ランス・ボトムズ",flip:1},HI:{p:"D",w:"ジョシュ・グリーン"},IL:{p:"D",w:"プリツカー"},IA:{p:"D",w:"ロブ・サンド",flip:1},ME:{p:"D",w:"ハンナ・ピングリー"},MD:{p:"D",w:"ウェス・ムーア"},MA:{p:"D",w:"ヒーリー"},MI:{p:"D",w:"ベンソン"},MN:{p:"D",w:"クロブシャー"},NV:{p:"D",w:"アーロン・フォード",flip:1},NM:{p:"D",w:"デブ・ハーランド"},NY:{p:"D",w:"ホークル"},OH:{p:"D",w:"エイミー・アクトン",flip:1},OR:{p:"D",w:"コテック"},PA:{p:"D",w:"シャピロ"},RI:{p:"D",w:"ヘレナ・フォークス"},TX:{p:"D",w:"ジーナ・イノホサ",flip:1},WI:{p:"D",w:"デビッド・クローリー"},
+ AK:{p:"D",w:"ジョナサン・クライス＝トムキンズ",flip:1,note:"第1選好51.0%で過半数を確保。1998年以来の民主党知事"},AZ:{p:"D",w:"ホッブス"},CA:{p:"D",w:"ハビエル・ベセラ"},CO:{p:"D",w:"フィル・ワイザー"},CT:{p:"D",w:"ラモント"},GA:{p:"D",w:"ケイシャ・ランス・ボトムズ",flip:1},HI:{p:"D",w:"ジョシュ・グリーン"},IL:{p:"D",w:"プリツカー"},IA:{p:"D",w:"ロブ・サンド",flip:1},ME:{p:"D",w:"ハンナ・ピングリー"},MD:{p:"D",w:"ウェス・ムーア"},MA:{p:"D",w:"ヒーリー"},MI:{p:"D",w:"ベンソン"},MN:{p:"D",w:"クロブシャー"},NV:{p:"D",w:"アーロン・フォード",flip:1},NM:{p:"D",w:"デブ・ハーランド"},NY:{p:"D",w:"ホークル"},OH:{p:"D",w:"エイミー・アクトン",flip:1},OR:{p:"D",w:"コテック"},PA:{p:"D",w:"シャピロ"},RI:{p:"D",w:"ヘレナ・フォークス"},TX:{p:"D",w:"ジーナ・イノホサ",flip:1},WI:{p:"D",w:"デビッド・クローリー"},
  AL:{p:"R",w:"タバービル"},AR:{p:"R",w:"サンダース"},FL:{p:"R",w:"バイロン・ドナルズ"},ID:{p:"R",w:"リトル"},NE:{p:"R",w:"ピレン"},NH:{p:"R",w:"エイヨット"},OK:{p:"R",w:"マイク・マッゼイ"},SC:{p:"R",w:"アラン・ウィルソン"},SD:{p:"R",w:"ローデン"},TN:{p:"R",w:"マーシャ・ブラックバーン"},VT:{p:"R",w:"フィル・スコット"},WY:{p:"R",w:"エリック・バーロウ"},
- KS:{pend:1,lead:"D",note:"ホルシャー（民主）が7,500票超リード（ほぼ開票完了）し勝利宣言。手作業の監査中で、郡の認定は11/15〜16"}
+ KS:{p:"D",w:"シンディ・ホルシャー",note:"11/12当確。マスターソン（共和）が敗北を認める"}
 },house:{}};
 // 下院：判明している議席移動（CBS 11/5集計）と未確定区（270toWin 11/6）
 const HFLIP={
  AZ:[["AZ-01","D","シャー"],["AZ-06","D","メンドーサ"]],
  CA:[["CA-01","D","マグワイア"],["CA-22","D","ビジェガス"],["CA-48","D","フォン・ウィルパート"]],
- CO:[["CO-05","D","キリン"],["CO-08","D","ルティネル"]],
+ CO:[["CO-04","D","ローバッカー（ボーバート氏を破る）"],["CO-05","D","キリン"],["CO-08","D","ルティネル"]],
  IN:[["IN-05","D","フォード"]],
  IA:[["IA-01","D","ボハナン"],["IA-02","D","ジェームズ"],["IA-03","D","ギャリオット"]],
  KY:[["KY-06","D","デンボ"]],
@@ -291,33 +297,30 @@ const HFLIP={
  NV:[["NV-02","D","ベニテス＝トンプソン"]],
  NJ:[["NJ-02","D","マロック"],["NJ-07","D","ベネット"]],
  NY:[["NY-17","D","コンリー"]],
- NC:[["NC-06","D","ジェファーソン"],["NC-09","D","オヘダ"],["NC-11","D","エイガー"],["NC-13","D","バリンジャー"],["NC-14","D","ウォマック"]],
+ NC:[["NC-03","D","レイモンド・スミス（約250票差）"],["NC-06","D","ジェファーソン"],["NC-09","D","オヘダ"],["NC-11","D","エイガー"],["NC-13","D","バリンジャー"],["NC-14","D","ウォマック"]],
  OH:[["OH-07","D","ポインデクスター"],["OH-10","D","ニッカーボッカー"],["OH-15","D","レナード"]],
  PA:[["PA-01","D","ハービー"],["PA-07","D","ブルックス"],["PA-08","D","コグネッティ"],["PA-10","D","ステルソン"]],
  TX:[["TX-15","D","プリド"],["TX-23","D","スタウト"],["TX-32","R","ヤーブロー（区割り変更後）"]],
- TN:[["TN-09","R","テイラー（区割り変更後）"]],
+ TN:[["TN-04","D","ブロデリック（約280票差、11/16デジャーレイ氏が敗北宣言）"],["TN-09","R","テイラー（区割り変更後）"]],
+ ME:[["ME-02","R","ルペイジ（順位選択集計後、5,000票超差）"]],
  VA:[["VA-01","D","テイラー"],["VA-02","D","ルリア"]],
  WI:[["WI-01","D","バーマン"],["WI-03","D","クック"]]
 };
 const HPEND={
- AK:[["AK-AL","R","ベギッチ（共和）がリード。11/18に順位選択集計の可能性"]],
- CA:[["CA-04","D","民主同士の対決（民主の議席は確定）"],["CA-23","R","オーバーノルティ（共和）がリード"]],
- CO:[["CO-04","D","ローバッカー（民主）がボーバート（共和）を3,000票超リード。CNNは11/9に当確、APは未確定"]],
- LA:[["LA-05","R","12/12決選投票。ファーメント（共和）が優勢"],["LA-06","R","12/12決選投票。ミゲス（共和）が優勢"]],
- ME:[["ME-02","R","ルペイジ（共和）が5,000票超リード。ダンラップ（民主）は敗北宣言済み、順位選択集計中"]],
- MN:[["MN-01","D","挑戦者（民主）が約300票リード。再集計の可能性"]],
- NC:[["NC-03","D","民主が約300票リード（現職マーフィー）"],["NC-05","D","民主が約300票リード（現職フォックス）"],["NC-07","R","ルーザー（共和）がリード"],["NC-10","R","ハリガン（共和）がリード"]],
- TN:[["TN-04","D","ブロデリック（民主）が現職デジャーレイ（共和）を約300票リード"]]
+ LA:[["LA-05","R","12/12決選投票：ムーア（民主）vs ファーメント（共和）。共和が優勢"],["LA-06","R","12/12決選投票：バンクス（民主）vs ミゲス（共和）。共和が優勢"]],
+ MN:[["MN-01","D","ジョンソン（民主）が現職フィンスタッド（共和）に324票差で勝利と認定（11/19）。フィンスタッド氏の請求で11/30〜12/3に再集計、12/8に再認定"]],
+ NC:[["NC-05","D","ハバード（民主）が現職フォックス（共和）を331票リード。再集計中（州認定11/24）"],["NC-10","R","現職ハリガン（共和）がベル（民主）を約2,500票リード。ベル氏の請求で再集計中"]]
 };
 // 11/7以降に確定した区
 const HNEW={
- CA:[["CA-07","D","マツイ（民主同士の対決）"],["CA-05","",""],["CA-14","",""],["CA-40","","共和同士の対決"]],
+ AK:[["AK-AL","R","ベギッチ（順位選択集計3回目で51.35%）"]],
+ AZ:[["AZ-02","R","クレイン（CNN当確）"],["AZ-08","",""]],
+ CA:[["CA-04","D","エリック・ジョーンズ（民主同士、現職トンプソン敗退）"],["CA-07","D","マツイ（民主同士の対決）"],["CA-23","R","オーバーノルティ（僅差）"],["CA-05","",""],["CA-14","","民主同士の対決"],["CA-40","","共和同士の対決"]],
  FL:[["FL-07","R","ライアン・イライジャ（約1,600票差）"],["FL-09","D","ソト（約1,500票差）"],["FL-26","R","ディアスバラート（約1,700票差）"],["FL-27","R","サラザール（再集計後、約1,000票差）"]],
+ NC:[["NC-07","R","ルーザー（約2,300票差、選挙13日後に当確）"],["NC-08","R","マーク・ハリス"]],
+ NY:[["NY-01","R","ララタ"],["NY-02","R","ガルバリーノ"]],
  SC:[["SC-02","R","ジョー・ウィルソン（3,000票未満の差）"]],
- WA:[["WA-05","R","バウムガートナー"]],
- AZ:[["AZ-02","",""],["AZ-08","",""]],
- NC:[["NC-08","",""]],
- NY:[["NY-01","",""],["NY-02","",""]]
+ WA:[["WA-05","R","バウムガートナー"]]
 };
 
 const RATE={SD:["Solid D","var(--sD)"],KD:["Likely D","var(--kD)"],LD:["Lean D","var(--lD)"],TU:["接戦","var(--tU)"],LR:["Lean R","var(--lR)"],KR:["Likely R","var(--kR)"],SR:["Solid R","var(--sR)"],SAFE:["Likely/Solid R","var(--sR)"]};
@@ -336,18 +339,25 @@ function fmtCand(c){
 }
 
 let tab="pre",mode="sen",sel=null;
-const svg=document.getElementById("map");
-const NS="http://www.w3.org/2000/svg";
-for(const s in PATHS){
-  const p=document.createElementNS(NS,"path");
-  p.setAttribute("d",PATHS[s].d);p.setAttribute("class","st");p.dataset.s=s;svg.appendChild(p);
-}
+const svg=document.getElementById("maps");
 const small=["RI","DE","CT","NJ","MA","NH","VT","MD"];
-for(const s in PATHS){
-  if(small.includes(s))continue;
-  const t=document.createElementNS(NS,"text");
-  t.setAttribute("x",PATHS[s].c[0]);t.setAttribute("y",PATHS[s].c[1]+4);t.setAttribute("text-anchor","middle");
-  t.setAttribute("class","lbl");t.textContent=s;svg.appendChild(t);
+const LBL=Object.keys(PATHS).filter(s=>!small.includes(s)).map(s=>`<text x="${PATHS[s].c[0]}" y="${PATHS[s].c[1]+4}" text-anchor="middle" class="lbl">${s}</text>`).join("");
+function mapSVG(){
+  let o="";for(const s in PATHS)o+=`<path class="st${s===sel?" sel":""}" data-s="${s}" d="${PATHS[s].d}" style="fill:${fill(s)}"></path>`;
+  return `<svg viewBox="0 0 975 610" role="img" aria-label="米国50州マップ">${o}${LBL}</svg>`;
+}
+function buildMaps(){
+  const save=tab,multi=tabs.length>1,L=document.getElementById("legend"),N=document.getElementById("mapnote");
+  const MN={sen:"上院",house:"下院",gov:"州知事",all:"上院"};
+  let h="";
+  tabs.forEach((tb,i)=>{
+    tab=tb;legend();
+    h+=`<div class="mapblk">${multi?`<div class="cmphead"><span class="ord">${i+1}</span><span>${TT[tb]}｜${MN[view]}<span class="csub">${({pre:"選挙前の議席構成",fc:"2026/10/25時点の予測",res:ASOF})[tb]}</span></span></div>`:""}${mapSVG()}<div class="legend">${L.innerHTML}</div><div class="note">${N.textContent}</div></div>`;
+  });
+  tab=save;
+  svg.className=multi?(layout==="h"?"maps mh":"maps mv"):"maps";
+  svg.style.setProperty("--n",tabs.length);
+  svg.innerHTML=h;
 }
 
 function hdTag(s){const [r,d,i=0,v=0]=HD[s];return tag("R")+r+" "+tag("D")+d+(i?" "+tag("I")+i:"")+(v?" "+tag("V")+v:"")}
@@ -388,9 +398,9 @@ const SEATS={
   gov:{g:[["D",25],["U",3],["R",22]],maj:26,meta:"Cook（10/23）。改選なし14州（民主6・共和8）を含む",list:["ジョージア、ネバダ、ウィスコンシン"],lt:"接戦3州"}
  },
  res:{
-  sen:{g:[["D",53],["I",2],["U",1],["R",44]],maj:51,meta:"過半数：51（無所属2は民主党会派 → 民主系55）",list:["アラスカ：ペルトラ（民主）がサリバン（共和）を約4,250票リード（開票84%）。11/18に順位選択集計の可能性"],lt:"未確定上院議席"},
-  house:{g:[["D",255],["U",13],["R",167]],maj:218,meta:"過半数：218（当確分。共和→民主の移動44区）",list:null,lt:"未確定下院議席（13区）"},
-  gov:{g:[["D",28],["U",2],["R",20]],maj:26,meta:"改選36州：🟦民主22・🟥共和12・未確定2／共和→民主の確定5州",list:["アラスカ：クライス＝トムキンズ（民主）49.6%がリード。11/18に順位選択集計の見込み","カンザス：ホルシャー（民主）が7,500票超リード。監査後、郡の認定は11/15〜16"],lt:"未確定州知事"}
+  sen:{g:[["D",54],["I",2],["R",44]],maj:51,meta:"過半数：51（無所属2は民主党会派 → 民主系56）",list:["全35議席が確定。共和→民主の奪取9州：アラスカ、ミシシッピ、メイン、テキサス、サウスカロライナ、オハイオ、ノースカロライナ、アイオワ、カンザス"],lt:"確定"},
+  house:{g:[["D",258],["U",5],["R",172]],maj:218,meta:"過半数：218（当確・敗北宣言済みを含む。改選前214から民主+44）",list:null,lt:"未確定下院議席（5区）"},
+  gov:{g:[["D",30],["R",20]],maj:26,meta:"改選36州：🟦民主24・🟥共和12。民主が2011年以来の過半数",list:["全36州が確定。共和→民主の奪取6州：アイオワ、テキサス、オハイオ、ネバダ、アラスカ、ジョージア"],lt:"確定"}
  }
 };
 let view="sen";
@@ -448,8 +458,7 @@ function seats(){
 }
 
 function paint(){
-  svg.querySelectorAll(".st").forEach(p=>{p.style.fill=fill(p.dataset.s);p.classList.toggle("sel",p.dataset.s===sel)});
-  legend();summary();seats();
+  buildMaps();summary();seats();
 }
 function legend(){
   const L=document.getElementById("legend"),N=document.getElementById("mapnote");
@@ -457,7 +466,7 @@ function legend(){
   if(mode==="house"){
     if(tab==="pre"){items=[["🟦民主が多数","var(--sD)"],["🟥共和が多数","var(--sR)"],["同数","#9c8fb8"]];N.textContent="色＝州選出下院議員の現在の多数派（現行区割りで選出）";}
     else if(tab==="fc"){items=[["競合区なし","var(--none)"],["競合1区","#f3dc9c"],["競合2〜3区","#e2b54a"],["競合4区以上","#a8740f"]];N.textContent="色＝接戦・Lean評価の区の数（Cook 7/16の区別評価）。10/9・10/23の更新で計37区が民主寄りに移動（区名は一部のみ判明）";}
-    else{items=[["🟦民主へ移動 4区以上","var(--sD)"],["🟦民主へ移動 2〜3区","var(--kD)"],["🟦民主へ移動 1区","var(--lD)"],["🟥共和へ純移動","var(--lR)"],["差し引きゼロ","#c7b8dd"],["移動なし・未確定区あり","#c9c5bc"],["判明した移動なし","var(--none)"]];N.textContent=`色＝議席が入れ替わった区の数（民主へ−共和へ）。${ASOF}。移動はCBS集計（11/5）で区名が判明した42区（共和→民主の移動は全体で44区）、未確定区はYahoo News（11/12）`;}
+    else{items=[["🟦民主へ移動 4区以上","var(--sD)"],["🟦民主へ移動 2〜3区","var(--kD)"],["🟦民主へ移動 1区","var(--lD)"],["🟥共和へ純移動","var(--lR)"],["差し引きゼロ","#c7b8dd"],["移動なし・未確定区あり","#c9c5bc"],["判明した移動なし","var(--none)"]];N.textContent=`色＝議席が入れ替わった区の数（民主へ−共和へ）。${ASOF}。移動はCBS集計（11/5）で区名が判明した42区に、その後確定したCO-04・NC-03・TN-04・ME-02を追加。未確定区は11/20時点`;}
     L.innerHTML=items.map(([t,c])=>`<span><i style="background:${c}"></i>${t}</span>`).join("");return;
   }
   if(view==="all")N.dataset.all=1;
@@ -487,10 +496,10 @@ function summary(){
     const pn=m=>Object.values(RESULTS[m]).filter(x=>x.pend).length;
     const fl=m=>Object.values(RESULTS[m]).filter(x=>x.flip).length;
     S.innerHTML=
-     B("上院（100議席）","🟦民主55 ／ 🟥共和44",`民主55は無所属2を含む。未確定1（アラスカ）。民主が多数派（差し引き+8）。改選35：民主${c("sen","D")}・共和${c("sen","R")}・未確定${pn("sen")}`)+
-     B("下院（435議席）","🟦民主255 ／ 🟥共和167",`当確分。未確定13区。民主が過半数218を超え多数派奪還（2008年以来の規模）。共和→民主の移動44区`)+
-     B("州知事（36州改選）",`🟦民主${c("gov","D")} ／ 🟥共和${c("gov","R")}`,`未確定2（アラスカ・カンザス、いずれも民主リード）。共和→民主の確定${fl("gov")}州。全50州では民主28・共和20・未確定2`)+
-     B("集計時点",ASOF,"上院：TIME（AP 11/11）・Yahoo News（11/12）／知事：Yahoo News・PBS（11/11）／下院：Yahoo News（11/12）・270toWin（11/10）");
+     B("上院（100議席）","🟦民主56 ／ 🟥共和44",`全議席確定。民主56は無所属2を含む。共和→民主の奪取9州。改選35：民主${c("sen","D")}・共和${c("sen","R")}`)+
+     B("下院（435議席）","🟦民主258 ／ 🟥共和172",`未確定5区（LA-05・06は12/12決選、MN-01・NC-05・NC-10は再集計中）。民主が過半数218を大きく上回る`)+
+     B("州知事（36州改選）",`🟦民主${c("gov","D")} ／ 🟥共和${c("gov","R")}`,`全州確定。共和→民主の奪取${fl("gov")}州。全50州では民主30・共和20（民主が2011年以来の過半数）`)+
+     B("集計時点",ASOF,"上院・知事：Yahoo News（11/18）・FairVote（11/18）／下院：Yahoo News（11/18）・Axios・WRAL・MPR News・WPLN・Alaska Watchman");
   }
 }
 const chip=(k)=>`<span class="chip" style="background:${RATE[k][1]};${k==="LD"||k==="LR"||k==="TU"?"color:#1d1f24":""}">${RATE[k][0]}</span>`;
@@ -545,7 +554,7 @@ function houseBlock(s){
   h+=`<div class="row"><b>結果（${ASOF}）</b></div>`;
   if(f.length)h+=`<div class="row muted">議席が入れ替わった区</div>`+f.map(x=>`<div class="hd"><code>${x[0]}</code>${tag(x[1])}${x[2]} 当選 <span class="pt V">議席奪取</span></div>`).join("");
   const nw=HNEW[s]||[];
-  if(nw.length)h+=`<div class="row muted">11/7以降に確定した区</div>`+nw.map(x=>`<div class="hd"><code>${x[0]}</code>${x[1]?tag(x[1])+x[2]+" 当選":`<span class="muted">確定（当選者は未確認）${x[2]?"／"+x[2]:""}</span>`}</div>`).join("");
+  if(nw.length)h+=`<div class="row muted">11/7以降に確定した区（議席移動なし）</div>`+nw.map(x=>`<div class="hd"><code>${x[0]}</code>${x[1]?tag(x[1])+x[2]+" 当選":`<span class="muted">確定（当選者は未確認）${x[2]?"／"+x[2]:""}</span>`}</div>`).join("");
   if(pd.length)h+=`<div class="row muted">未確定の区</div>`+pd.map(x=>`<div class="hd"><code>${x[0]}</code>${x[1]?tag(x[1])+"優勢 ":""}<span class="muted">${x[2].trim()}</span></div>`).join("");
   if(!f.length&&!pd.length&&!nw.length)h+=`<div class="muted">判明している議席移動・未確定区なし</div>`;
   return h;
@@ -558,7 +567,7 @@ function panel(s){
    houseBlock(s)+
    `<h3>改選前の状況</h3>`+preHTML(s).replace(/class="k"/g,'class="muted"');
 }
-document.querySelectorAll("#lay .ib").forEach(b=>b.onclick=()=>{document.querySelectorAll("#lay .ib").forEach(x=>x.classList.remove("on"));b.classList.add("on");layout=b.dataset.l;seats()});
+document.querySelectorAll("#lay .ib").forEach(b=>b.onclick=()=>{document.querySelectorAll("#lay .ib").forEach(x=>x.classList.remove("on"));b.classList.add("on");layout=b.dataset.l;paint()});
 function syncTabs(){
   document.querySelectorAll(".tab").forEach(x=>{const i=tabs.indexOf(x.dataset.t);x.classList.toggle("on",i>=0);x.classList.toggle("last",i>=0&&i===tabs.length-1);
     let o=x.querySelector(".tord");if(!o){o=document.createElement("span");o.className="tord";x.appendChild(o);}
