@@ -11,7 +11,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino S
 header{padding:14px 18px 6px}
 h1{font-size:clamp(17px,2.4vw,24px);margin:0 0 4px;letter-spacing:.02em}
 .lead{font-size:13px;color:var(--sub);margin:0}
-.wrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;padding:8px 18px 18px;align-items:start}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;padding:8px 18px 18px;align-items:start}
 @media (max-width:980px){.wrap{grid-template-columns:minmax(0,1fr);padding:8px 10px 14px}.legend .bar{width:120px}.eraband{font-size:9px}}
 .wrap>*,.side>*{min-width:0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
@@ -60,6 +60,12 @@ table.kv td.s{font-size:10px;color:var(--sub);text-align:right;width:70px}
 .selchips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}.selchip{border:2px solid;background:#fff;border-radius:999px;padding:5px 10px;font-size:13px;cursor:pointer;min-height:34px}.cpanel{padding:4px 0 10px 10px;margin-bottom:14px;border-bottom:1px solid var(--line)}.cpanel:last-child{border-bottom:none;margin-bottom:0}
 .pie{display:flex;align-items:center;gap:14px;margin:4px 0 6px}.pkeys{font-size:12px;line-height:1.8}
 .leftcol{display:flex;flex-direction:column;gap:14px;min-width:0}.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}.pgrid>div{min-width:0}@media (max-width:700px){.pgrid{grid-template-columns:1fr}}
+.fold{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;padding:6px 0;cursor:pointer;text-align:left;font:inherit;color:inherit;min-height:40px}
+.fold .arr{display:inline-block;width:14px;font-size:12px;color:var(--sub);transition:transform .15s}
+.fold.closed .arr{transform:rotate(-90deg)}
+.fold h2{margin:0}
+#eracard{margin-top:12px;border-top:1px solid var(--line);padding-top:6px}
+#eracard .era-name{margin-bottom:0}
 .crisis{font-size:12px;color:#8a2b20}
 .hint{font-size:12px;color:var(--sub);text-align:center;padding:16px 4px}
 footer{padding:0 18px 28px;font-size:11px;color:var(--sub);line-height:1.7}
@@ -91,13 +97,11 @@ svg text{font-family:inherit}
    <div class="eraband" id="eraband"></div>
    <div class="ticks"><span>1820</span><span>1870</span><span>1920</span><span>1970</span><span>2020</span></div>
   </div>
+  <div id="eracard"></div>
  </div>
   <div class="card" id="detailcard"><div id="selchips" class="selchips"></div><div id="detail"><div class="hint">地図の国（色付きの20か国）をクリック・タップすると、<br>GDP・産業構成・資金の流れの詳細を表示します。</div></div></div>
  </div>
- <div class="side">
-  <div class="card" id="eracard"></div>
 
- </div>
 </div>
 <footer>
  <h4>データの扱い</h4>
@@ -590,17 +594,19 @@ function draw(){
 const eraOf=y=>EV.eras.find(e=>y>=e.from&&y<=e.to);
 const band=d3.select("#eraband");
 EV.eras.forEach(e=>{const n=(e.to-e.from)/10+1;band.append("div").style("flex",n).style("background",e.color).attr("title",e.name).text(n>=3?e.name:"").on("click",()=>{stop();idx=(e.from-1820)/10;draw();});});
+let eraOpen=true;
 function era(y){const e=eraOf(y),d=EV.decades[y];
- d3.select("#eracard").html(`<span class="era-name" style="background:${e.color}">${e.name}</span>
- <h2>${y-9}〜${y}年の主な出来事</h2>
+ d3.select("#eracard").html(`<button class="fold${eraOpen?"":" closed"}" id="erafold" aria-expanded="${eraOpen}"><span class="arr">▼</span><span class="era-name" style="background:${e.color}">${e.name}</span><span class="muted">${y-9}〜${y}年の主な出来事</span></button>
+ <div style="display:${eraOpen?"block":"none"}">
  <h3>国内政策（主要国）</h3><ul class="ev">${d.dom.map(s=>`<li>${s}</li>`).join("")}</ul>
- <h3>国際協調・国際環境</h3><ul class="ev">${d.intl.map(s=>`<li>${s}</li>`).join("")}</ul>`);}
+ <h3>国際協調・国際環境</h3><ul class="ev">${d.intl.map(s=>`<li>${s}</li>`).join("")}</ul></div>`);
+ d3.select("#erafold").on("click",()=>{eraOpen=!eraOpen;era(y);});}
 
 // --- detail
 function row(label,v,unit,src){return `<tr><td>${label}</td><td class="v">${v==null?'<span class="muted">データなし</span>':fmt(v)+unit}</td><td class="s">${v==null?"":src||""}</td></tr>`}
 const SELC=["#1d2433","#e67e22","#8e44ad"];
-let sels=[];
-function toggleSel(c){const i=sels.indexOf(c);if(i>=0)sels.splice(i,1);else{sels.push(c);if(sels.length>3)sels.shift();}draw();}
+let sels=[];const closedC=new Set();
+function toggleSel(c){const i=sels.indexOf(c);if(i>=0){sels.splice(i,1);closedC.delete(c);}else{sels.push(c);if(sels.length>3)sels.shift();}draw();}
 function chips(){const box=d3.select("#selchips").html("");
  if(!sels.length){box.append("span").attr("class","muted").text("比較する国が選ばれていません");return}
  sels.forEach((c,i)=>box.append("button").attr("class","selchip").style("border-color",SELC[i]).html(`<span class="sw" style="background:${SELC[i]}"></span>${C[c][0]} ✕`).on("click",()=>toggleSel(c)));
@@ -612,8 +618,9 @@ function detail(y){
  // 共通の縦軸（1人当たりGDP）
  const all=[];sels.forEach(c=>YEARS.forEach(yy=>{const v=val(c,yy,"gdppc");if(v!=null)all.push(v)}));
  const ydom=all.length?d3.extent(all):null;
- el.html(sels.map((c,i)=>`<div class="cpanel" style="border-left:5px solid ${SELC[i]}">${panel(c,y,i)}</div>`).join(""));
- sels.forEach((c,i)=>spark(c,y,i,ydom));}
+ el.html(sels.map((c,i)=>{const op=!closedC.has(c);return `<div class="cpanel" style="border-left:5px solid ${SELC[i]}"><button class="fold${op?"":" closed"}" data-c="${c}" aria-expanded="${op}"><span class="arr">▼</span><h2>${C[c][0]}　<span class="muted">${y}年</span></h2></button><div style="display:${op?"block":"none"}">${panel(c,y,i)}</div></div>`}).join(""));
+ el.selectAll("button.fold").on("click",function(){const c=this.dataset.c;closedC.has(c)?closedC.delete(c):closedC.add(c);detail(y);});
+ sels.forEach((c,i)=>{if(!closedC.has(c))spark(c,y,i,ydom)});}
 function panel(sel,y,i){
  const R=(DATA[sel]&&DATA[sel][y])||{},S=R._src||{},s=k=>SRC[S[k]]||"";
  let h=`<h2>${C[sel][0]}　<span class="muted">${y}年</span></h2>`;
@@ -630,20 +637,20 @@ function panel(sel,y,i){
   return `<div class="pie">${svg}<div class="pkeys">${parts.map(p=>`<div><span class="sw" style="background:${p[2]}"></span>${p[0]}　<b>${p[1]==null?"—":p[1]+"%"}</b></div>`).join("")}</div></div>`;};
  let any=false;
  if(R.prim){any=true;h+=`<div class="muted">輸出の構成${R.prim.yr!==y?`（${R.prim.yr}年値）`:""}　出典：F-T</div>`+bar([["一次産品",R.prim.p,"#b07d3c"],["工業製品",R.prim.m,"#3d6f9e"]])}
- if(R.va){any=true;h+=`<div class="muted" style="margin-top:6px">GDPの産業別構成（付加価値）　出典：世銀</div>`+bar([["農業",R.va.agr,"#7aa35a"],["工業",R.va.ind,"#3d6f9e"],["サービス",R.va.srv,"#c9a227"],["GDPとの差額（純生産物税・統計上の調整など）",R.va.oth,"#b8b2a6"]])+`<div class="muted">※差額は産業ではなく、GDPと産業別付加価値の合計との調整差額です。</div>`}
  if(R.exc){any=true;const e=R.exc;h+=`<div class="muted" style="margin-top:6px">輸出品目の構成${e.yr!==y?`（${e.yr}年値）`:""}　出典：世銀</div>`+bar([["食料",e.food,"#7aa35a"],["農産原料",e.agri,"#a5c27c"],["燃料",e.fuel,"#444"],["鉱物・金属",e.ores,"#9a7b5a"],["工業製品",e.manf,"#3d6f9e"]])}
+ if(R.va){any=true;h+=`<div class="muted" style="margin-top:6px">GDPの産業別構成（付加価値）　出典：世銀</div>`+bar([["農業",R.va.agr,"#7aa35a"],["工業",R.va.ind,"#3d6f9e"],["サービス",R.va.srv,"#c9a227"],["GDPとの差額（純生産物税・統計上の調整など）",R.va.oth,"#b8b2a6"]])+`<div class="muted">※差額は産業ではなく、GDPと産業別付加価値の合計との調整差額です。</div>`}
  if(!any)h+=`<div class="muted">この年代の産業構成データはありません</div>`;
  h+=`<h3>金融市場（10年間の年平均）</h3><div class="muted">名目・現地通貨建て、配当・利子再投資、税・費用・為替・インフレ調整前</div><table class="kv">`+row("株式リターン（年率・名目）",R.eqr,"％",s("eqr"))+row("債券リターン（年率・名目）",R.bdr,"％",s("bdr"))+row("長期金利（その年）",R.lt,"％",s("lt"))+`</table>`;
  h+=`<h3>金融危機（${y-9}〜${y}年）</h3>`+(R.crisis?`<div class="crisis">${R.crisis.join("、")}</div>`:`<div class="muted">${sel==="SAU"?"データなし":"記録なし"}</div>`);
  const m=EV.members[sel];
  h+=`<h3>国際機関への加盟・締約状況（${y}年時点）</h3><div class="chips">`+[["IMF",m.imf,m.imfOut],["GATT",m.gatt],["WTO",m.wto]].map(([n,yy,out])=>{const g=n==="GATT";return yy&&yy<=y&&!(out&&y>=out[0]&&y<=out[1])?`<span>${n} ${g?"締約国":"加盟済"}（${yy}年〜）</span>`:`<span class="no">${n} ${yy?(g?"非締約国（"+yy+"年〜締約国）":"未加盟（"+yy+"年加盟）"):(g?"締約国でない":"加盟なし")}</span>`}).join("")+`</div>`+(m.note?`<div class="muted">${m.note}</div>`:"");
  const title=`<h2>${C[sel][0]}　<span class="muted">${y}年</span></h2>`;
- return title+`<div class="pgrid"><div>${L.replace(title,"")}</div><div>${h}</div></div>`;}
+ return `<div class="pgrid"><div>${L.replace(title,"")}</div><div>${h}</div></div>`;}
 function spark(sel,y,i,ydom){
  const box=d3.select("#spark"+i);const w=340,h=110,m={l:44,r:16,t:16,b:18};
  const pts=YEARS.map(yy=>({y:yy,v:val(sel,yy,"gdppc")})).filter(d=>d.v!=null);
  if(pts.length<2||!ydom){return}
- const s=box.append("svg").attr("viewBox",`0 0 ${w} ${h}`).style("width","100%");
+ const s=box.append("svg").attr("viewBox",`0 0 ${w} ${h}`).style("width","100%").style("max-width","400px").style("display","block");
  const x=d3.scaleLinear().domain([1820,2020]).range([m.l,w-m.r]);
  const yS=d3.scaleLog().domain(ydom).nice().range([h-m.b,m.t]);
  s.append("text").attr("x",m.l).attr("y",11).attr("font-size",10).attr("fill","#5b6475").text("1人当たり実質GDPの推移（ドル・対数、比較国と共通目盛）");
